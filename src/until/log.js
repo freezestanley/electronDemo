@@ -7,6 +7,6 @@ log4js.configure({
   categories: { default: { appenders: ['cheese'], level: 'debug' } }
 })
 
-const logger = log4js.getLogger('cheese')
+const logger = log4js.getLogger(__dirname + '/log/log'+ (new Date().getTime()))
 
 module.exports = logger

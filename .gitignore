@@ -18,3 +18,5 @@
 .umi-production
 .idea/
 
+*/*.log
+*.log

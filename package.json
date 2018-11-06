@@ -6,12 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node .",
-    "dev": "nodemon ."
+    "dev": "nodemon .",
+    "win": "electron win.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "devtron": "^1.4.0",
+    "electron": "^3.0.8",
     "koa": "^2.6.1",
     "koa-bodyparser": "^4.2.1",
     "koa-onerror": "^4.1.0",
@@ -20,6 +23,8 @@
     "koa-views": "^6.1.4",
     "koa-xml-parser": "^0.1.0",
     "log4js": "^3.0.6",
-    "shelljs": "^0.8.2"
+    "shelljs": "^0.8.2",
+    "vue": "^2.5.17",
+    "vue-server-renderer": "^2.5.17"
   }
 }
