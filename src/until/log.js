@@ -1,12 +1,12 @@
 'use strict'
 
 const log4js = require('log4js')
-
+const filename = __dirname + '/log/cheese.log'
 log4js.configure({
-  appenders: { cheese: { type: 'file', filename: 'cheese.log' } },
+  appenders: { cheese: { type: 'file', filename } },
   categories: { default: { appenders: ['cheese'], level: 'debug' } }
 })
 
-const logger = log4js.getLogger(__dirname + '/log/log'+ (new Date().getTime()))
+const logger = log4js.getLogger(filename)
 
 module.exports = logger
