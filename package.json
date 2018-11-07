@@ -25,6 +25,7 @@
     "log4js": "^3.0.6",
     "shelljs": "^0.8.2",
     "vue": "^2.5.17",
-    "vue-server-renderer": "^2.5.17"
+    "vue-server-renderer": "^2.5.17",
+    "webpack": "^4.25.1"
   }
 }

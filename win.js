@@ -4,8 +4,8 @@ let mainWindow
 function createWindow () {
   mainWindow = new BrowserWindow({width: 800, height: 600})
   // mainWindow.loadFile('index.html')
-  mainWindow.loadURL('http://www.163.com')
-  // mainWindow.webContents.openDevTools()
+  mainWindow.loadURL('http://localhost:3000/admin')
+  mainWindow.webContents.openDevTools()
   mainWindow.on('closed', function () {
     mainWindow = null
   })
