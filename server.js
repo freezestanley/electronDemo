@@ -11,6 +11,10 @@ const    Koa = require('koa'),
 
 onerror(app)
 
+let aa = path.join(__dirname, './src/static')
+console.log('aa=' + aa)
+app.use(koaStatic(aa))
+
 // logger
 app.use(async (ctx, next) => {
   await next();
@@ -46,7 +50,7 @@ app.use(xmlParser({
 }))
 
 app.use(views(path.resolve(__dirname, './src/application')))
-app.use(koaStatic(path.resolve(__dirname, './src/application')))
+
 
 app.use(async (ctx, next) => {
   ctx.set('Access-Control-Allow-Origin', '*')

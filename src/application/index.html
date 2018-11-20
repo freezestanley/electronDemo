@@ -2,10 +2,17 @@
 <head>
   <title>myVue</title>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="./html2canvas.min.js"></script>
 </head>
 <style>
+  *{
+    text-align: left;
+  }
+  div{
+    margin-bottom: 20px;
+  }
   #app {
-    text-align: center;
+    text-align: left;
   }
   .butn {
     border: 1px solid;
@@ -17,12 +24,37 @@
 <body>
   <div id="app">
     <div>
+      <label>
+          姓名:<input type="text" />
+      </label>
+    </div>
+    <div>
+        学校:
+        <label>
+            <select>
+              <option value ="volvo">Volvo</option>
+              <option value ="saab">Saab</option>
+              <option value="opel">Opel</option>
+              <option value="audi">Audi</option>
+            </select>
+        </label>
+    </div>
+    <div id="edittext">0000000000000</div>
+    <div onclick="clickEdit()">编辑</div>
+    <div>
       <Botton class="butn" onclick="clickhandler()">按钮</Botton>
     </div>
+    <div>
+        <Botton class="butn" onclick="clickSubmit()">提交</Botton>
+        <Botton class="butn" onclick="clickCreate()">生成</Botton>
+      </div>
+      <div id="list"></div>
   </div>
+  
 </body>
 
 <script>
+  var i = 0
   function clickhandler () {
     alert('clickhandler')
     axios.get('./test', {
@@ -33,7 +65,66 @@
       console.log(error);
     })
   }
-  
+  var imglist = []
+  function ob () {
+    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver
+    // 选择目标节点
+    var target = document.getElementById('app'); 
+    // 创建观察者对象
+    var observer = new MutationObserver(function(mutations) { 
+      console.dir(mutations)
+      mutations.forEach(function(mutation) { 
+        console.log('******************')
+        console.log(mutation.type); 
+        console.log('******************')
+      }); 
+      
+      html2canvas(document.body).then(function(canvas) {
+          // document.getElementById('list').appendChild(canvas);
+          var imgData = canvas.toDataURL("image/png")
+          imglist.push(imgData)
+      });
+    }); 
+    // 配置观察选项:
+    var config = { attributes: true, childList: true, characterData: true, subtree: true, attributeOldValue: true, characterDataOldValue: true } 
+    // 传入目标节点和观察选项
+    observer.observe(target, config); 
+    // 随后,你还可以停止观察
+    // observer.disconnect();
+  }
+  window.onload = function () {
+    ob()
+  }
+  function clickSubmit () {
+    axios({
+      method: 'post',
+      url: '/images',
+      headers: {
+        "Content-Type": "text/plain"
+      },
+      data: imglist.join(' ')
+    }).then(function (response) {
+      console.log(response.data)
+    }).catch(function (error) {
+      console.log(error);
+    });
+  }
+  function clickEdit () {
+    i++
+    var abc = document.getElementById('list')
+    var ee = document.createElement('div')
+    ee.innerHTML = '第' + i + '次'
+    abc.appendChild(ee)
+  }
+  function clickCreate() {
+    axios.get('./create', {
+      code: '11111'
+    }).then(function (response) {
+      console.log(response.data)
+    }).catch(function (error) {
+      console.log(error);
+    })
+  }
 </script>
 
 </html>
