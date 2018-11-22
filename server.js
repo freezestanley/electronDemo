@@ -36,7 +36,9 @@ app.use(async (ctx, next) => {
 // });
 
 app.use(bodyParser({
-  enableTypes:['json', 'form', 'text']
+  enableTypes:['json', 'form', 'text'],
+  formLimit: '50mb',
+  textLimit: '50mb'
 }))
 
 app.use(xmlParser({

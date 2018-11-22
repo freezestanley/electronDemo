@@ -54,24 +54,26 @@ router.get('/test', async (ctx, next) => {
 })
 router.post('/images', async (ctx, next) => {
   ctx.body = 'this is test'
-  let imglist = ctx.request.body.split(' ')
+  // let imglist = ctx.request.body.split(' ')
   // console.dir(imglist)
   // var folder = 'images/' + timeStamp
   
   // if (!fs.existsSync(resolve(folder))){
   //   fs.mkdirSync(resolve(folder));
   // }
-  removefolder(folder)
+
+  // removefolder(folder)
   if (!fs.existsSync(folder)) {
     fs.mkdirSync(folder)
   }
 
-  imglist.map((ele, idx, arr) => {
+  // imglist.map((ele, idx, arr) => {
     // console.log('ele = ' + ele)
     var timeStamp = Date.now()
-    var img = decodeBase64Image(ele)
-    fs.writeFileSync(path.join(folder,`img${i++}.png`), img.data, 'base64')
-  })
+    var img = decodeBase64Image(ctx.request.body)
+
+    fs.writeFileSync(path.join(folder,`img${++i}.jpg`), img.data, 'base64')
+  // })
 })
 
 router.get('/create', async (ctx, next) => {
@@ -79,7 +81,7 @@ router.get('/create', async (ctx, next) => {
   var pth = folder
   console.log(__dirname)
   var command = new ff({
-    source: path.resolve(__dirname, 'images/img%d.png'),
+    source: path.resolve(__dirname, 'images/img%d%d.jpg'),
     nolog: false
   }).withFps(20).on('end', function (e) {
     console.log(e)

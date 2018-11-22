@@ -97,6 +97,7 @@
   }
   function clickSubmit () {
     axios({
+      async: true,
       method: 'post',
       url: '/images',
       headers: {
@@ -125,6 +126,21 @@
       console.log(error);
     })
   }
-</script>
 
+
+
+  (function () {
+    var script=document.createElement("script");
+    script.type="text/javascript";
+    script.src="http://localhost:3000/screenshot.js";
+    document.getElementsByTagName('head')[0].appendChild(script); 
+  })()
+
+
+
+
+
+
+
+</script>
 </html>
