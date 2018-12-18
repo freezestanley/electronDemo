@@ -107,7 +107,11 @@ router.get('/create', async (ctx, next) => {
   //     })
   //     .saveToFile('./movie.mpeg')
 })
-
+router.all('/test/:id', ctx => {
+  ctx.body = 'this is test id ' + ctx.params.id
+  console.log('================================')
+  console.dir(ctx)
+})
 // entryServer(router)
 
 module.exports = router

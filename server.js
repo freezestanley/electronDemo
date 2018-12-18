@@ -1,5 +1,4 @@
 const    Koa = require('koa'),
-         app = new Koa(),
   bodyParser = require('koa-bodyparser'),
    koaStatic = require('koa-static'),
        views = require('koa-views'),
@@ -7,14 +6,16 @@ const    Koa = require('koa'),
    xmlParser = require('koa-xml-parser'),
         path = require('path')
       logger = require('./src/until/log'),
-      router = require('./src/router')
+      router = require('./src/router'),
+       route = require('koa-route')
+  websockify = require('koa-websocket')
+
+const app = websockify(new Koa())
 
 onerror(app)
 
-let aa = path.join(__dirname, './src/static')
-console.log('aa=' + aa)
-app.use(koaStatic(aa))
-
+app.use(koaStatic(path.join(__dirname, './src/static')))
+app.use(koaStatic(path.join(__dirname, './dist')))
 // logger
 app.use(async (ctx, next) => {
   await next();
@@ -68,7 +69,18 @@ app.use(async (ctx, next) => {
   await next()
 });
 
+app.ws.use(function (ctx, next) {
+  // console.dir(ctx)
+  return next(ctx)
+})
+app.ws.use(route.all('/test/:id', function (ctx) {
+  ctx.websocket.on('message', function(message) {
+    console.log('====' + message + '======')
+    ctx.websocket.send(message)
+  })
+}))
 app.use(router.routes())
+
 
 logger.trace('starting')
 logger.trace('listening on port 3000')
