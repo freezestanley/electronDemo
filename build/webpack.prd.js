@@ -2,12 +2,13 @@ const path = require('path')
 module.exports = {
   mode: 'production',
   entry: {
-    main: './page/index.js'
+    st: './page/index.js',
+    eye: './page/eye.js'
   },
   output: {
-    filename: 'st.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, '../dist'),
-    library: 'st',
+    library: '[name]',
     libraryTarget: 'window'
   },
   module: {

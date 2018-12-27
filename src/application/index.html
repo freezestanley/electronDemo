@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <head>
   <title>myVue</title>
+  <meta name="viewport" content="target-densitydpi=device-dpi,width=750,user-scalable=no,initial-scale=0">
   <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
-  <script src="./html2canvas.min.js"></script>
+  <!-- <script src="./html2canvas.min.js"></script> -->
   <!-- <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script> -->
   <!-- <script
   src="http://code.jquery.com/jquery-3.3.1.js"
   crossorigin="anonymous"></script> -->
-
 </head>
 <style>
   *{
@@ -132,40 +132,24 @@
       <Botton class="butn" id="create">生成</Botton>
     </div>
   </div>
-  1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
-        1<br/>2<br/>3<br/>4<br/>5<br/>
+  
+
+
+
+
+  <div onclick="getAjax()">ajax get</div>
+
+  <div onclick="getPost()">ajax post</div>
+
+
 </body>
 
 <script>
+
+
+
   var i = 0
   function clickhandler () {
-    alert('clickhandler')
     axios.get('./test', {
       code: '11111'
     }).then(function (response) {
@@ -249,6 +233,9 @@
     document.getElementsByTagName('head')[0].appendChild(script); 
   })()
 
+  
+
+  
   window.onload = function () {
     var edittext = document.getElementById('edittext')
     edittext.addEventListener('click', function(){
@@ -260,21 +247,52 @@
     edittext.addEventListener('click', function(){
       console.log('3')
     })
-
-    for(var i = 0; i< 2000; i++){
-      var input = document.createElement('input')
-      input.type = 'text'
-      var abc = document.getElementById('list')
-      abc.appendChild(input)
-    }
-    
-    
-
   }
 
 
 
+  
 
+
+  function getAjax () {
+    Ajax.get('/test/123', function (rsp) {
+      console.log(rsp)
+    })
+  }
+  function getPost () {
+    Ajax.post('/test/123', function (rsp) {
+      console.log(rsp)
+    })
+  }
+
+    var Ajax={
+      get: function(url, fn) {
+        // XMLHttpRequest对象用于在后台与服务器交换数据   
+        var xhr = new XMLHttpRequest();            
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = function() {
+          // readyState == 4说明请求已完成
+          if (xhr.readyState == 4 && xhr.status == 200 || xhr.status == 304) { 
+            // 从服务器获得数据 
+            fn.call(this, xhr.responseText);  
+          }
+        };
+        xhr.send();
+      },
+      // datat应为'a=a1&b=b1'这种字符串格式，在jq里如果data为对象会自动将对象转成这种字符串格式
+      post: function (url, fn, data) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", url, true);
+        // 添加http头，发送信息至服务器时内容编码类型
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");  
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState == 4 && (xhr.status == 200 || xhr.status == 304)) {
+            fn.call(this, xhr.responseText);
+          }
+        };
+        xhr.send(data);
+      }
+    }
 
 </script>
 </html>

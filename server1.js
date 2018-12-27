@@ -10,16 +10,7 @@ const    Koa = require('koa'),
        route = require('koa-route')
   websockify = require('koa-websocket');
 
-const webpack = require("webpack"),
-webpackconfig = require('./build/webpack.hotdev'),
-devMiddleware = require('./build/devMiddleware'),
-hotMiddleware = require('./build/hotMiddleware'),
-     compiler = webpack(webpackconfig),
-           fs = require('fs')
-
 const app = websockify(new Koa())
-app.use(devMiddleware(compiler))
-app.use(hotMiddleware(compiler))
 
 onerror(app)
 
@@ -94,5 +85,4 @@ app.use(router.routes())
 logger.trace('starting')
 logger.trace('listening on port 3000')
 logger.error('error')
-
 app.listen(3000);

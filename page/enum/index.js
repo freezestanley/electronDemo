@@ -24,3 +24,7 @@ export const ACTION_COOKIE = "sc";
 export const ACTION_SCROLL = "scr";
 // select
 export const ACTION_SELECT = "s";
+// 打开页面
+export const ACTION_OPEN  = "o";
+// 窗口大小
+export const WINDOW_SIZE  = "ws";

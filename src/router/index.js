@@ -45,7 +45,10 @@ router.get('/', async (ctx, next) => {
   await ctx.render('index')
   await next()
 })
-
+router.get('/p/:id', async (ctx, next) => {
+  await ctx.render('index')
+  await next()
+})
 router.get('/test', async (ctx, next) => {
   ctx.body = 'this is test'
   // shell.exec('npm run build')

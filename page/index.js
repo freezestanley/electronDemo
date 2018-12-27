@@ -4,9 +4,12 @@ import * as plant from './plant'
 import {readXPath, selectNodes} from './xpath'
 import * as eventType from './enum'
 import domObserver from './observer'
+import Finger from './finger'
+import cookie from './cookie'
+import AjaxHook, { CreateXMLHttp } from './xmlhttprequest'
 
-const wspath = process.env.NODE_ENV === 'production' ? 'wss://pkufi-test.zhongan.io/websocket/ed/events' : 'ws://127.0.0.1:3000/test/123'
-const delay = 800
+const wspath = process.env.NODE_ENV === 'production' ? 'wss://isee-test.zhongan.io/sapi/ed/events' : 'ws://127.0.0.1:3000/test/123'
+const delay = 300
 export default class camera {
   constructor (ws = wspath) {
     this.wsSocket = new Wsocket(ws)
@@ -23,14 +26,20 @@ export default class camera {
     let evt = obj.evt,
     param = {
       "t": +new Date(),
-      "i": "1232321",
-      "a": plant.IsMobile() ? eventType.AGENT_PC : eventType.AGENT_MOBILE,
+      "i": cookie.getCookie('iseebiz'),
+      "a": plant.IsPc() ? eventType.AGENT_PC : eventType.AGENT_MOBILE,
       "u": window.location.href
     }
 
     let event = null
     param.r = `${+new Date()}${eventType.SPLIT_DATA}`
     switch(obj.type) {
+      case 'openpage':
+      // event = eventType.ACTION_OPEN
+      // param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
+        param.ws = `${document.body.clientWidth}x${document.body.clientHeight}`
+        this.pushData(param)
+        break;
       case 'click':
         const link = plant.FindANode(evt.target, 'a')
         if (link && link.target === '_blank') {
@@ -38,11 +47,15 @@ export default class camera {
         } else {
           param.r = `${param.r}${eventType.ACTION_CLICK}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
         }
-        
+        this.pushData(param)
       break;
       case 'mouseover':
-        event = eventType.ACTION_HOVER
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
+        let tagName = evt.target.tagName.toLowerCase()
+        if (tagName === 'li' || tagName === 'a') {
+          event = eventType.ACTION_HOVER
+          param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
+          this.pushData(param)
+        }
       break;
       case 'unload':
         // param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
@@ -51,10 +64,12 @@ export default class camera {
       case 'inputChange':
         event = eventType.ACTION_INPUT
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        this.pushData(param)
       break;
       case 'select':
         event = eventType.ACTION_SELECT
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        this.pushData(param)
       break;
       case 'mousedown':
         // console.log(evt)
@@ -70,26 +85,27 @@ export default class camera {
           scroll = evt.target.scrollTop
         }
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        this.pushData(param)
       break;
       case 'visibilitychange':
         event = eventType.ACTION_SWITCH
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${location.href}${eventType.SPLIT_LINE}`
+        this.pushData(param)
+      break;
+      case 'fingermove':
       break;
     }
-    console.log('click: ' + JSON.stringify(param))
-    this.pushData(param)
+    // console.log(obj.type + ': ' + JSON.stringify(param))
   }
   pushData (obj) {
     this.wsSocket.send(JSON.stringify(obj))
   }
   // input textarea select 添加onchange 监听
   inputChangEvent (ev) {
-    console.dir(ev)
     this.observer({type:'inputChange', evt: ev})
   }
   // select 添加onchange 监听
   selectChangEvent (ev) {
-    console.dir(ev)
     this.observer({type:'select', evt: ev})
   }
   /**
@@ -169,7 +185,76 @@ export default class camera {
         }
       }
     }, delay)
-    document.body.addEventListener('mousedown', (ev) => this.observer({type:'mousedown', evt: ev}))
+    document.body.addEventListener('mousedown', (ev) => this.observer({type:'click', evt: ev}))    
+  }
+
+  // AjaxListener () {
+  //   AjaxHook()
+  //   hookAjax(
+  //     {
+  //       onreadystatechange: function (xhr) {
+  //         console.log("onreadystatechange called: %O", xhr)
+  //       },
+  //       onload: function (xhr) {
+  //         console.log("onload called: %O", xhr)
+  //         xhr.responseText = "hook" + xhr.responseText;
+  //       },
+  //       open: function (arg, xhr) {
+  //         console.log("open called: method:%s,url:%s,async:%s", arg[0], arg[1], arg[2], xhr)
+  //         arg[1] += "?hook_tag=1";
+  //       },
+  //       send: function (arg, xhr) {
+  //         console.log("send called: %O", arg[0])
+  //         xhr.setRequestHeader("_custom_header_", "ajaxhook")
+  //       },
+  //       setRequestHeader: function (arg, xhr) {
+  //         console.log("setRequestHeader called!", arg)
+  //       },
+  //       timeout: {
+  //         setter: function (v, xhr) {
+  //           return Math.max(v, 1000);
+  //         }
+  //       }
+  //     }
+  //   )
+  // }
+
+  addFinger () {
+    // debugger
+    let windowFinger = new Finger(window)
+    windowFinger.addEventListener('touchtap', debounce((ev) => {
+      this.observer({type:'click', evt: ev})
+    }, delay))
+    windowFinger.addEventListener('touchstart', debounce((ev) => {
+      const scrolltarget = plant.FindScrollNode(ev.target)
+      if (scrolltarget) {
+        const targetXpath = readXPath(scrolltarget)
+        const isListener = this.scrollList.find(ele => {
+          return ele === targetXpath
+        })
+        if (!isListener) {
+          this.scrollList.push(targetXpath)
+          const domScroll = debounce((ev) => {
+            this.observer({type:'scroll', evt: ev})
+                }, delay)
+
+          scrolltarget.addEventListener('touchstart', () => {
+            scrolltarget.addEventListener('scroll', domScroll)
+          })
+
+          scrolltarget.addEventListener('touchend ', () => {
+            scrolltarget.removeEventListener('scroll', domScroll)
+          })
+        }
+      }
+    }, delay))
+    windowFinger.addEventListener('touchmove', debounce((ev) => {
+      // console.log(this)
+      this.observer({type:'fingermove', evt: ev})
+    }, delay))
+  }
+
+  addBaseEvent() {
     /** 
      * tab switch
      * */
@@ -181,7 +266,12 @@ export default class camera {
     /** 
      * 退出
      * */
-    window.addEventListener('beforeunload', (ev) => this.observer({type:'unload', evt: ev}))
+    window.addEventListener('beforeunload', (ev) => {
+      this.observer({type:'unload', evt: ev})
+      var xhr = new CreateXMLHttp();
+      xhr.open('GET', 'https://www.zhongan.com/', false); 
+      xhr.send(null);
+    })
     /** 
      * 页面滚动
      * */
@@ -191,27 +281,45 @@ export default class camera {
    * init 初始化
    */
   init () {
-    this.eventAgent()
+    this.addBaseEvent()
     this.addDomObserver()
+    plant.IsPc() ?  this.eventAgent() : this.addFinger()
+    // this.eventAgent()
+    // this.AjaxListener()
   }
 }
-
 /**
  * 自执行 
  * */
 (function () {
-  const wcamera = new camera()
-  wcamera.wsSocket.onopen = function (evt) {
-    wcamera.wsSocket.send("第一条数据")
+  var iseebiz = cookie.getCookie('iseebiz')
+  if (iseebiz) {
+    const wcamera = window.wcamera = new camera()
+    wcamera.wsSocket.onopen = function (evt) {
+      console.log("Connection start.")
+      wcamera.observer({type:'openpage', evt: evt})
+    }
+    wcamera.wsSocket.onmessage = function (evt) {
+      // console.log("server:" + evt.data)
+    }
+    wcamera.wsSocket.onclose = function (evt) {
+      console.log("Connection closed.")
+    }
+    wcamera.wsSocket.onerror = function (evt) {
+      console.log(evt)
+    }
+    wcamera.init()
   }
-  wcamera.wsSocket.onmessage = function (evt) {
-    console.log("服务端说" + evt.data)
-  }
-  wcamera.wsSocket.onclose = function (evt) {
-    console.log("Connection closed.")
-  }
-  wcamera.wsSocket.onerror = function (evt) {
-    console.log(evt)
-  }
-  wcamera.init()
 })()
+
+
+// window.addEventListener('beforeunload', function(evt){
+//   debugger
+//   var request = new XMLHttpRequest();
+//   request.open('GET', 'http://www.mozilla.org/', false); 
+//   request.timeout = 3000
+//   request.send(null);
+//   if (request.status === 200) {
+//     console.log(request.responseText);
+//   }
+// })

@@ -6,7 +6,10 @@ function wsocket (urlValue) {
 function Wsocket (url) {
   this.url = url
   this.skt = wsocket(url)
-  this.skt.onopen = this.onopen
+  this.skt.onopen = (ev) => {
+    console.log('open')
+    this.onopen(ev)
+  }
   this.skt.onmessage = this.onmessage
   this.skt.onclose = this.onclose
   this.skt.onerror = this.onerror
@@ -29,7 +32,10 @@ Wsocket.prototype.close = function () {
 }
 Wsocket.prototype.reconnect = function () {
   this.skt = wsocket(this.url)
-  this.skt.onopen = this.onopen
+  this.skt.onopen = (ev) => {
+    console.log('open')
+    this.onopen(ev)
+  }
   this.skt.onmessage = this.onmessage
   this.skt.onclose = this.onclose
   this.skt.onerror = this.onerror

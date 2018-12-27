@@ -13,6 +13,7 @@ export const IsPc = () => {
   return flag
 }
 
+
 export const IsMobile = () => {
   var u = navigator.userAgent;
   if (u.indexOf('Android') > -1 || u.indexOf('Linux') > -1) {
