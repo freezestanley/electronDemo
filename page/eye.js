@@ -5,7 +5,7 @@ import cookie from './cookie'
   var end = '/dm/open/cashier/cashier_pay_return.do'
 
   if (location.pathname.indexOf(start) === 0) {
-    var cookieName = "__utrace",
+    var cookieName = "isee_utrace",
     iseeCookieName = "iseebiz",
     dependCookie = window.ck.getCookie(cookieName);
     window.ck.setCookie(iseeCookieName, dependCookie + +new Date());

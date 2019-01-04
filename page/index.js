@@ -77,14 +77,16 @@ export default class camera {
         // console.log('mousedown: ' + JSON.stringify(param))
       break;
       case 'scroll':
+      debugger
         event = eventType.ACTION_SCROLL
-        let scroll
+        let scroll,target = evt.target
         if (evt.target.nodeName.toLowerCase() === '#document' || evt.target.nodeName.toLowerCase() === 'body' || evt.target.nodeName.toLowerCase() === 'html') {
           scroll = document.documentElement.scrollTop || document.body.scrollTop
+          target = document.body
         } else {
           scroll = evt.target.scrollTop
         }
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(target)}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         this.pushData(param)
       break;
       case 'visibilitychange':
@@ -267,10 +269,10 @@ export default class camera {
      * 退出
      * */
     window.addEventListener('beforeunload', (ev) => {
-      this.observer({type:'unload', evt: ev})
       var xhr = new CreateXMLHttp();
       xhr.open('GET', 'https://www.zhongan.com/', false); 
       xhr.send(null);
+      this.observer({type:'unload', evt: ev})
     })
     /** 
      * 页面滚动
