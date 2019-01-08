@@ -8,8 +8,8 @@
     "start": "node .",
     "dev": "nodemon .",
     "win": "electron win.js",
-    "build": "cross-env NODE_ENV=production webpack --config=build/webpack.prd.js --display-error-details  --color",
-    "mdev": "cross-env NODE_ENV=development webpack --config=build/webpack.dev.js --progress --display-error-details",
+    "build": "cross-env NODE_ENV=production CK_ENV=ISEE_BIZ webpack --config=build/webpack.prd.js --display-error-details  --color",
+    "mdev": "cross-env NODE_ENV=development CK_ENV=ISEE_BIZ webpack --config=build/webpack.dev.js --progress --display-error-details",
     "start:dev": "webpack-dev-server --devtool eval --progress --colors --hot --content-base build"
   },
   "keywords": [],

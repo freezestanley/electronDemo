@@ -7,7 +7,7 @@ const TOUCH_DRAGTAP = 'dragtap'
 export class fingerType {
   constructor (state) {
     this._prePoint = null
-    this._nextPoint = null  
+    this._nextPoint = null
   }
   start (evt) {
     evt.time = +new Date
@@ -49,11 +49,13 @@ export default class finger {
     this._touchmove = null
     this._touchend = null
     this._touchtap = null
+    this._touchdrag = null
+    this._startPoint = null
     node.addEventListener('touchstart', (ev)=>{
       // ev.preventDefault()
       this.finger = new fingerType()
       this.finger.start(ev)
-      
+      this._startPoint = ev
       if(this._touchstart)
         this._touchstart(ev)
 
@@ -61,23 +63,26 @@ export default class finger {
 
     node.addEventListener('touchend', (ev) => {
       // ev.preventDefault()
-      
       const type = this.finger.end(ev)
       if (type === TOUCH_TAP && this._touchtap) {
         this._touchtap(ev)
       }
 
+      if (type === TOUCH_DRAGTAP && this._touchdrag) {
+        ev._startPoint = this._startPoint
+        this._touchdrag(ev)
+      }
+
       if (this._touchend)
         this._touchend(ev)
 
+      this._startPoint = null
     }, { passive: false })
 
     node.addEventListener('touchmove', (ev) => {
       this.finger.move(ev)
-
       if (this._touchmove)
         this._touchmove(ev) 
-
     }, { passive: false })
   }
   get ontouchstart (){
@@ -104,6 +109,12 @@ export default class finger {
   set ontouchtap (param) {
     this._touchtap = param
   }
+  get ontouchdrag (){
+    return this._touchdrag
+  }
+  set ontouchdrag (param) {
+    this._touchdrag = param
+  }
 
   addEventListener (eventType, callback) {
     switch (eventType) {
@@ -111,13 +122,16 @@ export default class finger {
         this.ontouchstart = callback
         break;
       case 'touchend':
-        this.ontouchmove = callback
+        this.ontouchend = callback
         break;
       case 'touchmove':
         this.ontouchmove = callback
         break;
       case 'touchtap':
         this.ontouchtap = callback
+        break;
+      case 'touchdrag':
+        this.ontouchdrag = callback
         break;
     }
   }
@@ -127,13 +141,16 @@ export default class finger {
         this.ontouchstart = null
         break;
       case 'touchend':
-        this.ontouchmove = null
+        this.ontouchend = null
         break;
       case 'touchmove':
         this.ontouchmove = null
         break;
       case 'touchtap':
         this.ontouchtap = null
+        break;
+      case 'touchdrag':
+        this.ontouchdrag = null
         break;
     }
   }

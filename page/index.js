@@ -26,7 +26,7 @@ export default class camera {
     let evt = obj.evt,
     param = {
       "t": +new Date(),
-      "i": cookie.getCookie('iseebiz'),
+      "i": cookie.getCookie('ISEE_BIZ'),
       "a": plant.IsPc() ? eventType.AGENT_PC : eventType.AGENT_MOBILE,
       "u": window.location.href
     }
@@ -77,7 +77,6 @@ export default class camera {
         // console.log('mousedown: ' + JSON.stringify(param))
       break;
       case 'scroll':
-      debugger
         event = eventType.ACTION_SCROLL
         let scroll,target = evt.target
         if (evt.target.nodeName.toLowerCase() === '#document' || evt.target.nodeName.toLowerCase() === 'body' || evt.target.nodeName.toLowerCase() === 'html') {
@@ -95,6 +94,11 @@ export default class camera {
         this.pushData(param)
       break;
       case 'fingermove':
+      break;
+      case 'touchdrag':
+        event = eventType.ACTION_DRAG
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}E:${evt._startPoint.changedTouches[0].screenX}-${evt._startPoint.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        this.pushData(param)
       break;
     }
     // console.log(obj.type + ': ' + JSON.stringify(param))
@@ -254,6 +258,9 @@ export default class camera {
       // console.log(this)
       this.observer({type:'fingermove', evt: ev})
     }, delay))
+    windowFinger.addEventListener('touchdrag', debounce((ev) => {
+      this.observer({type:'touchdrag', evt: ev})
+    }, delay))
   }
 
   addBaseEvent() {
@@ -294,7 +301,8 @@ export default class camera {
  * 自执行 
  * */
 (function () {
-  var iseebiz = cookie.getCookie('iseebiz')
+  
+  var iseebiz = cookie.getCookie('ISEE_BIZ')
   if (iseebiz) {
     const wcamera = window.wcamera = new camera()
     wcamera.wsSocket.onopen = function (evt) {
@@ -325,3 +333,41 @@ export default class camera {
 //     console.log(request.responseText);
 //   }
 // })
+
+// function getEvent (){
+//   debugger
+//   window.addListenerEvent = window.addEventListener
+//   Object.defineProperty(window, 'addEventListener', {
+//     get : function(...arg){
+//       debugger
+//       return function (...args) {
+//         debugger
+//         window.addListenerEvent(args[0], args[1])
+//       }
+//     },
+//     set : function(newValue){
+//       debugger
+//     }
+//   })
+// }
+
+
+// window.addEventListener('click', (e) => {
+//   alert('fff')
+// })
+// getEvent()
+
+// window.addEventListener('click', (e) => {
+//   alert('bbb')
+// })
+
+// function add (a) {
+//   function sum(b) {
+//     a = a+b
+//     return sum
+//   }
+//   sum.toString = function () {
+//     return a 
+//   }
+//   return sum
+// }

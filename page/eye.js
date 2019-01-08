@@ -6,11 +6,12 @@ import cookie from './cookie'
 
   if (location.pathname.indexOf(start) === 0) {
     var cookieName = "isee_utrace",
-    iseeCookieName = "iseebiz",
+    iseeCookieName = "ISEE_BIZ",
     dependCookie = window.ck.getCookie(cookieName);
     window.ck.setCookie(iseeCookieName, dependCookie + +new Date());
   } 
   if (location.pathname.indexOf(end) === 0) {
-    window.ck.delCookie('iseebiz')
+    window.ck.delCookie('ISEE_BIZ')
   }
+  
 })();

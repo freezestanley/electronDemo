@@ -28,3 +28,9 @@ export const ACTION_SELECT = "s";
 export const ACTION_OPEN  = "o";
 // 窗口大小
 export const WINDOW_SIZE  = "ws";
+// 拖拽
+// drag 事件 
+// 1546848451334ÃdragÃS:281.6328125-499.4609375ÃE:270.28515625-601.01171875ÃØ
+// 时间 Ã 事件 Ã S(拖拽开始的点):拖拽开始点在屏幕X坐标 -(分割) 拖拽开始点在屏幕Y坐标 E(拖拽结束点)：拖拽结束点在屏幕X坐标 -(分割) 拖拽结束点在屏幕Y坐标
+// ps 只记录开始和结束点，表示直线拖拽
+export const ACTION_DRAG  = "drag"
