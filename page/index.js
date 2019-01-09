@@ -15,6 +15,7 @@ export default class camera {
     this.wsSocket = new Wsocket(ws)
     this.scrollList = []
     this.hasListener = []
+    this.mousedownPoint = null
   }
   static selectNode (xpath) {
     return selectNodes(xpath)
@@ -41,6 +42,7 @@ export default class camera {
         this.pushData(param)
         break;
       case 'click':
+        console.log('this is click')
         const link = plant.FindANode(evt.target, 'a')
         if (link && link.target === '_blank') {
           param.r = `${param.r}${eventType.ACTION_TAB}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
@@ -72,9 +74,13 @@ export default class camera {
         this.pushData(param)
       break;
       case 'mousedown':
+          console.log('mousedown')
         // console.log(evt)
         // param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
         // console.log('mousedown: ' + JSON.stringify(param))
+      break;
+      case 'mousemove':
+        console.log('mousemove')
       break;
       case 'scroll':
         event = eventType.ACTION_SCROLL
@@ -95,6 +101,8 @@ export default class camera {
       break;
       case 'fingermove':
       break;
+      case 'visibilityblur':
+      break;
       case 'touchdrag':
         event = eventType.ACTION_DRAG
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}E:${evt._startPoint.changedTouches[0].screenX}-${evt._startPoint.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
@@ -104,7 +112,9 @@ export default class camera {
     // console.log(obj.type + ': ' + JSON.stringify(param))
   }
   pushData (obj) {
-    this.wsSocket.send(JSON.stringify(obj))
+    debounce(() => {
+      this.wsSocket.send(JSON.stringify(obj))
+    }, 50)()
   }
   // input textarea select 添加onchange 监听
   inputChangEvent (ev) {
@@ -158,9 +168,7 @@ export default class camera {
    * 全局代理事件
    */
   eventAgent () {
-    document.body.addEventListener('click', (ev) => {
-      this.observer({type:'click', evt: ev})
-    })
+    
     /** 
      * dom element scroll evnent 
      * mouseenter mouserleave 模拟div 内部滚动
@@ -191,7 +199,24 @@ export default class camera {
         }
       }
     }, delay)
-    document.body.addEventListener('mousedown', (ev) => this.observer({type:'click', evt: ev}))    
+
+    document.body.addEventListener('click', (ev) => {
+      // this.observer({type:'click', evt: ev})
+    })
+
+    document.body.addEventListener('mousedown', (ev) => {
+      // this.observer({type:'click', evt: ev})
+      this.mousedownPoint = ev
+    })
+    document.body.addEventListener('mouseup', (ev) => {
+      // this.observer({type:'click', evt: ev})
+      if (this.mousedownPoint.clientX === ev.clientX && this.mousedownPoint.clientY === ev.clientY) {
+        this.observer({type:'click', evt: ev})
+      } else {
+        this.observer({type:'mousemove', evt: ev})
+      }
+    })
+  
   }
 
   // AjaxListener () {
@@ -268,9 +293,19 @@ export default class camera {
      * tab switch
      * */
     document.addEventListener('visibilitychange', (ev) => {
-      if (!document.hide) {
+      console.log(document.hidden)
+      console.log(typeof document.hidden)
+      // if (typeof document.hidden !== "undefined") {
+      //   if (!document.hide) {
+      //     this.observer({type:'visibilitychange', evt: ev})
+      //   }
+      // }
+      if (typeof document.hidden === 'boolean' && document.hidden === false) {
         this.observer({type:'visibilitychange', evt: ev})
+      } else {
+        this.observer({type:'visibilityblur', evt: ev})
       }
+    
     })
     /** 
      * 退出
