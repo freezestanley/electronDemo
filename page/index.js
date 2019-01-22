@@ -38,7 +38,7 @@ export default class camera {
       case 'openpage':
       // event = eventType.ACTION_OPEN
       // param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
-        param.ws = `${document.body.clientWidth}x${document.body.clientHeight}`
+        param.wh = `${document.body.clientWidth}x${document.body.clientHeight}`
         this.pushData(param)
         break;
       case 'click':
