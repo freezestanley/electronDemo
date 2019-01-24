@@ -10,7 +10,14 @@ import AjaxHook, { CreateXMLHttp } from './xmlhttprequest'
 
 const wspath = process.env.NODE_ENV === 'production' ? 'wss://isee-test.zhongan.io/sapi/ed/events' : 'ws://127.0.0.1:3000/test/123'
 const delay = 300
+/**
+ *
+ *
+ * @export
+ * @class camera
+ */
 export default class camera {
+
   constructor (ws = wspath) {
     this.wsSocket = new Wsocket(ws)
     this.scrollList = []
@@ -23,6 +30,7 @@ export default class camera {
   static getXpath (node) {
     return readXPath(node)
   }
+  
   observer (obj) {
     let evt = obj.evt,
     param = {
@@ -42,7 +50,7 @@ export default class camera {
         this.pushData(param)
         break;
       case 'click':
-        console.log('this is click')
+        // console.log('this is click')
         const link = plant.FindANode(evt.target, 'a')
         if (link && link.target === '_blank') {
           param.r = `${param.r}${eventType.ACTION_TAB}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
@@ -336,13 +344,28 @@ export default class camera {
  * 自执行 
  * */
 (function () {
-  
   var iseebiz = cookie.getCookie('ISEE_BIZ')
+  var ISEE_RE = cookie.getCookie('ISEE_RE')
+  
+  if (ISEE_RE) return
+
   if (iseebiz) {
     const wcamera = window.wcamera = new camera()
     wcamera.wsSocket.onopen = function (evt) {
-      // console.log("Connection start.")
+      console.log("Connection start.")
       wcamera.observer({type:'openpage', evt: evt})
+      
+      if (window.st_conf.end && window.st_conf.type) {
+        if (window.st_conf.type === 'history') {
+          if (location.pathname.indexOf(window.st_conf.end) === 0) {
+            cookie.delCookie('ISEE_BIZ')
+          }
+        } else {
+          if (location.hash === window.st_conf.end) {
+            cookie.delCookie('ISEE_BIZ')
+          }
+        }
+      }
     }
     wcamera.wsSocket.onmessage = function (evt) {
       // console.log("server:" + evt.data)
@@ -355,6 +378,9 @@ export default class camera {
     }
     wcamera.init()
   }
+  
+  
+  
 })()
 
 

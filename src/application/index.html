@@ -386,6 +386,10 @@
 
 
   (function () {
+    window.st_conf = {
+      end: '/dm/open/cashier/cashier_pay_return.do',
+      type: 'history'
+    }
     var script=document.createElement("script");
     script.type="text/javascript";
     script.src = "http://localhost:3000/st.js?v=" + (+new Date())
