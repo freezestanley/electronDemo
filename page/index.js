@@ -341,7 +341,7 @@ export default class camera {
   if (iseebiz) {
     const wcamera = window.wcamera = new camera()
     wcamera.wsSocket.onopen = function (evt) {
-      console.log("Connection start.")
+      // console.log("Connection start.")
       wcamera.observer({type:'openpage', evt: evt})
     }
     wcamera.wsSocket.onmessage = function (evt) {
