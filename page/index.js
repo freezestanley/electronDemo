@@ -184,7 +184,6 @@ export default class camera {
    * 全局代理事件
    */
   eventAgent () {
-    
     /** 
      * dom element scroll evnent 
      * mouseenter mouserleave 模拟div 内部滚动
@@ -232,39 +231,7 @@ export default class camera {
         this.observer({type:'mousemove', evt: ev})
       }
     })
-  
   }
-
-  // AjaxListener () {
-  //   AjaxHook()
-  //   hookAjax(
-  //     {
-  //       onreadystatechange: function (xhr) {
-  //         console.log("onreadystatechange called: %O", xhr)
-  //       },
-  //       onload: function (xhr) {
-  //         console.log("onload called: %O", xhr)
-  //         xhr.responseText = "hook" + xhr.responseText;
-  //       },
-  //       open: function (arg, xhr) {
-  //         console.log("open called: method:%s,url:%s,async:%s", arg[0], arg[1], arg[2], xhr)
-  //         arg[1] += "?hook_tag=1";
-  //       },
-  //       send: function (arg, xhr) {
-  //         console.log("send called: %O", arg[0])
-  //         xhr.setRequestHeader("_custom_header_", "ajaxhook")
-  //       },
-  //       setRequestHeader: function (arg, xhr) {
-  //         console.log("setRequestHeader called!", arg)
-  //       },
-  //       timeout: {
-  //         setter: function (v, xhr) {
-  //           return Math.max(v, 1000);
-  //         }
-  //       }
-  //     }
-  //   )
-  // }
 
   addFinger () {
     // debugger
@@ -349,18 +316,46 @@ export default class camera {
      * */
     window.addEventListener('scroll', debounce((ev) => this.observer({type:'scroll', evt: ev}), delay))
   }
+
+  proxyAddEventListener (callback = null) {
+    debugger
+    let pry = HTMLElement.prototype
+    pry['__proxy']  = {__addEvent: HTMLElement.prototype.addEventListener }
+    Object.defineProperty(HTMLElement.prototype, 'addEventListener', {
+      get : function(){
+        return function (type, listener, options, useCapture) {
+          let _this = this
+          this.__proxy.__addEvent.call(this, type, (e) => {
+            callback ? callback.call(_this, e) : null
+            listener.call(_this, e)
+          }, options, useCapture)
+        }
+      },
+      enumerable : true,
+      configurable : true
+    })
+  }
+
+
   /**
    * init 初始化
    */
   init () {
     this.addBaseEvent()
     this.addDomObserver()
+    this.proxyAddEventListener(function (event) {
+      // event.preventDefault()
+      console.log('=============proxyAddEventListener=================')
+    })
     plant.IsPc() ?  this.eventAgent() : this.addFinger()
     // this.eventAgent()
     // this.AjaxListener()
   }
 }
-/**
+
+
+document.addEventListener("DOMContentLoaded", function(event) {
+  /**
  * 自执行 
  * */
 (function () {
@@ -427,7 +422,9 @@ export default class camera {
       }
       wcamera.init()
   }
-})()
+  })()
+})
+
 
 
 // window.addEventListener('beforeunload', function(evt){

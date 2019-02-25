@@ -2,66 +2,174 @@
 <html>
   <header></header>
   <body>
-      <a id="foo" href="http://www.163.com">click me!</a>
+      <a id="foo">click me!</a>
+      <canvas id="mycanvas" ></canvas>
   </body>
   <script>
+
+
+function ProxyArray (target, callback) {
+  return new Proxy(target, {
+    set(target, prop, value) {
+      console.log(`Setting: ${value} ${prop}`);
+      Reflect.set(target, prop, value);
+      // if(prop === 'length') 
+        callback(value)
+      return true;
+    },
+    get (obj, prop) {
+      console.log(`getting: ${prop}`);
+      return Reflect.get(obj, prop)
+    } 
+  })
+}
     const bb = HTMLElement.prototype
     const bbprt = new Proxy(bb, {
-      set() {
+      set(target, prop, value) {
         console.log(`Setting: ${value}`);
         Reflect.set(target, prop, value);
         return true
       },
-      get() {
-
+      get(obj, prop) {
+        console.log(`getting: ${prop}`);
+        return Reflect.get(obj, prop)
       }
     })
+    HTMLElement.prototype = bbprt
     
-
-    const aa = HTMLElement.prototype.addEventListener 
-
-    HTMLElement.prototype.addEventListener = function (type, listener, options, useCapture) {
-      console.log('132123123')
-      return aa(type, listener, options, useCapture)
+    
+    // Object.defineProperty(HTMLElement.prototype, "onclick", {
+    //   get : function(){
+    //     debugger
+    //     console.log(this)
+    //     return bValue;
+    //   },
+    //   set : function(newValue){
+    //     debugger
+    //     console.log(newValue)
+    //   },
+    //   enumerable : true,
+    //   configurable : true
+    // });
+    
+    function test (e) {
+      alert('test')
     }
-    function AdaptedEvent(ev) {
-      const initialEvent = ev;
-      let newTarget = 'your new target';
+    function init () {
+      let pry = HTMLElement.prototype
+      pry['__proxy']  = {__addEvent: HTMLElement.prototype.addEventListener }
+      for (let i in pry) {
+        if (i.indexOf('on') === 0) {
+            Object.defineProperty(HTMLElement.prototype, i, {
+              get : function(){
+                debugger
+                return this.__proxy && this.__proxy[`__${i}`] ? this.__proxy[`__${i}`] : null;
+              },
+              set : function(newValue){
+                debugger
+                this.__proxy = this.__proxy ? this.__proxy : {}
+                this.__proxy[`__${i}`] = newValue
+              },
+              enumerable : true,
+              configurable : true
+            })
 
-      return {
-        get: (target, prop) => {
-          if (Object.prototype.toString.call(target[prop]) === '[object Function]') {
-            return target[prop].bind(initialEvent);
-          }
-          else if (prop === 'target') {
-            return newTarget ? newTarget : initialEvent.target;
-          }
-          return target[prop];
         }
-      };
-    }
+      }
+      
+      Object.defineProperty(HTMLElement.prototype, 'addEventListener', {
+        get : function(){
+          return function (type, listener, options, useCapture) {
+            debugger
+            let _this = this
+            this.__proxy.__addEvent.call(this, type, (e) => {
+              test.call(_this, e)
+              listener.call(_this, e)
+            }, options, useCapture)
+          }
+          // return function (type, listener, options, useCapture) {
+          //   // let bb = this.__proxy.__addEvent(type, listener, options, useCapture)
+          //   debugger
 
-    function handleClick(event) {
-      console.log(event.target);
-      console.log(event.which);
+          // }
+          // return this.__proxy.__addEvent
+          // return function (type, listener, options, useCapture)
+          // return function (type, listener, options, useCapture) {
+          //   debugger
+          //   return this.__proxy.__addEvent
+          // }
+          // debugger
+          // return function (type, listener, options, useCapture) {
+          //   debugger
+          //   return this.__proxy.__addEvent(type, listener, options, useCapture)
+          //   // return this.__proxy.__addEvent()
+          //   // _this.__proxy.__addEvent(type, (e) => {
+          //   //   test(e)
+          //   //   listener(e)
+          //   // }, options, useCapture)
+          // }
+
+
+        },
+        enumerable : true,
+        configurable : true
+      })
+      // const aa = HTMLElement.prototype.addEventListener 
+      // HTMLElement.prototype.addEventListener = function (type, listener, options, useCapture) {
+      //   console.log('132123123')
+      //   return aa(type, listener, options, useCapture)
+      // }
+
     }
+    init()
+
+    // const aa = HTMLElement.prototype.addEventListener 
+
+    // HTMLElement.prototype.addEventListener = function (type, listener, options, useCapture) {
+    //   console.log('132123123')
+    //   return aa(type, listener, options, useCapture)
+    // }
+    // function AdaptedEvent(ev) {
+    //   const initialEvent = ev;
+    //   let newTarget = 'your new target';
+
+    //   return {
+    //     get: (target, prop) => {
+    //       if (Object.prototype.toString.call(target[prop]) === '[object Function]') {
+    //         return target[prop].bind(initialEvent);
+    //       }
+    //       else if (prop === 'target') {
+    //         return newTarget ? newTarget : initialEvent.target;
+    //       }
+    //       return target[prop];
+    //     }
+    //   };
+    // }
+
+    // function handleClick(event) {
+    //   console.log(event.target);
+    //   console.log(event.which);
+    // }
     
-    var myEventTarget = new EventTarget();
+    // var myEventTarget = new EventTarget();
 
 
     window.onload = function () {
       // binding click event.
       document.querySelector('#foo').onclick = function (e) {
-        alert('1323')
+        console.log('1323')
+        console.log(this)
       }
-      document.querySelector('#foo').addEventListener('click', e => {
-        alert('22223')
-      })
-      document.querySelector('#foo').addEventListener('click', e => handleClick(new Proxy(e, new AdaptedEvent(e))));
-      document.querySelector('#foo').addEventListener('click', e => {
-        console.log(window.getEventListeners(e.target))
-        alert('333')
-      })
+      // document.querySelector('#foo').addEventListener('click', e => {
+      //   console.log('22223')
+      //   console.log(this)
+      // })
+      // // document.querySelector('#foo').addEventListener('click', e => handleClick(new Proxy(e, new AdaptedEvent(e))));
+      // document.querySelector('#foo').addEventListener('click', function (e) {
+      //   // console.log(window.getEventListeners(e.target))
+      //   console.log('333')
+      //   console.log(this)
+      // })
     } 
   </script>
 </html>
