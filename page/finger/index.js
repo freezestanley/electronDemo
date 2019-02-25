@@ -44,13 +44,22 @@ export class fingerType {
 }
 
 export default class finger {
-  constructor(node = window){
+  constructor(node = window, ev){
     this._touchstart = null
     this._touchmove = null
     this._touchend = null
     this._touchtap = null
     this._touchdrag = null
     this._startPoint = null
+
+    if (ev) {
+      this.finger = new fingerType()
+      this.finger.start(ev)
+      this._startPoint = ev
+      if(this._touchstart)
+        this._touchstart(ev)
+    }
+    
     node.addEventListener('touchstart', (ev)=>{
       // ev.preventDefault()
       this.finger = new fingerType()

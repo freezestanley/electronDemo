@@ -101,7 +101,6 @@ Until.prototype.selectNodes = function selectNodes(context, expression, namespac
   }
 
   function unload(ev) {
-    debugger
     console.log(ev)
   }
 

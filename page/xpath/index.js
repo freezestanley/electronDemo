@@ -1,4 +1,5 @@
 const getAttribute = (el, attr) => {
+  
   if (!el || !el.getAttribute) {
     return ''
   }

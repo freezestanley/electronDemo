@@ -17,10 +17,10 @@ const delay = 300
  * @class camera
  */
 export default class camera {
-
   constructor (ws = wspath) {
     this.wsSocket = new Wsocket(ws)
     this.scrollList = []
+    this.canvasList = []
     this.hasListener = []
     this.mousedownPoint = null
   }
@@ -116,6 +116,11 @@ export default class camera {
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}E:${evt._startPoint.changedTouches[0].screenX}-${evt._startPoint.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         this.pushData(param)
       break;
+      case 'paint':
+        event = eventType.PAINT_START
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        this.wsSocket.send(JSON.stringify(param))
+      break;
     }
     // console.log(obj.type + ': ' + JSON.stringify(param))
   }
@@ -144,7 +149,7 @@ export default class camera {
       attributeOldValue: true, 
       characterDataOldValue: true 
     }
-    let mutationEventCallback = (ele) => {
+    let mutationEventCallback = (ele, itself) => {
       const _this = this
       // hasListener.map((ele) => {
       //   ele.removeEventListener('change', _this.inputChangEvent.bind(_this))
@@ -153,7 +158,10 @@ export default class camera {
       const currentNode = [
         ...document.querySelectorAll('input[type=text]'),
         ...document.querySelectorAll('textarea'),
-        ...document.querySelectorAll('select')
+        ...document.querySelectorAll('select'),
+        ...document.querySelectorAll('input[type=tel]'),
+        ...document.querySelectorAll('input[type=password]'),
+        ...document.querySelectorAll('input[type=email]')
       ]
       currentNode.map((ele, index, array) => {
         let hadEvent = this.hasListener.find((e, i, a) => {
@@ -262,8 +270,24 @@ export default class camera {
     // debugger
     let windowFinger = new Finger(window)
     windowFinger.addEventListener('touchtap', debounce((ev) => {
+      // this.lazy()
       this.observer({type:'click', evt: ev})
     }, delay))
+    window.addEventListener('touchstart', (ev) => {
+      if (ev.target.tagName.toLowerCase() === 'canvas') {
+        let ele = ev.target
+        const targetXpath = readXPath(ele)
+        const isListener = this.canvasList.find(ele => {
+          return ele === targetXpath
+        })
+        if (!isListener) {
+          ele.addEventListener('touchmove', (ev) => {
+            this.observer({type:'paint', evt: ev})
+          }, delay)
+          this.canvasList.push(targetXpath)
+        }
+      }
+    })
     windowFinger.addEventListener('touchstart', debounce((ev) => {
       const scrolltarget = plant.FindScrollNode(ev.target)
       if (scrolltarget) {
@@ -295,19 +319,17 @@ export default class camera {
       this.observer({type:'touchdrag', evt: ev})
     }, delay))
   }
-
+  lazy () {
+    var xhr = new CreateXMLHttp();
+      xhr.open('GET', `https://static.zhongan.com/upload/mobile/material/1480043510064.png'/?v=${Math.random()}`, false); 
+      xhr.send(null);
+  }
   addBaseEvent() {
     /** 
      * tab switch
      * */
     document.addEventListener('visibilitychange', (ev) => {
-      console.log(document.hidden)
-      console.log(typeof document.hidden)
-      // if (typeof document.hidden !== "undefined") {
-      //   if (!document.hide) {
-      //     this.observer({type:'visibilitychange', evt: ev})
-      //   }
-      // }
+
       if (typeof document.hidden === 'boolean' && document.hidden === false) {
         this.observer({type:'visibilitychange', evt: ev})
       } else {
@@ -319,9 +341,7 @@ export default class camera {
      * 退出
      * */
     window.addEventListener('beforeunload', (ev) => {
-      var xhr = new CreateXMLHttp();
-      xhr.open('GET', 'https://www.zhongan.com/', false); 
-      xhr.send(null);
+      this.lazy()
       this.observer({type:'unload', evt: ev})
     })
     /** 
@@ -347,40 +367,66 @@ export default class camera {
   var iseebiz = cookie.getCookie('ISEE_BIZ')
   var ISEE_RE = cookie.getCookie('ISEE_RE')
   
-  if (ISEE_RE) return
-
-  if (iseebiz) {
-    const wcamera = window.wcamera = new camera()
-    wcamera.wsSocket.onopen = function (evt) {
-      console.log("Connection start.")
-      wcamera.observer({type:'openpage', evt: evt})
-      
-      if (window.st_conf.end && window.st_conf.type) {
-        if (window.st_conf.type === 'history') {
-          if (location.pathname.indexOf(window.st_conf.end) === 0) {
-            cookie.delCookie('ISEE_BIZ')
-          }
-        } else {
-          if (location.hash === window.st_conf.end) {
-            cookie.delCookie('ISEE_BIZ')
+  if(process.env.NODE_ENV === 'production') {
+    if (ISEE_RE) return
+    if (iseebiz) {
+      const wcamera = window.wcamera = new camera()
+      wcamera.wsSocket.onopen = function (evt) {
+        console.log("Connection start.")
+        wcamera.observer({type:'openpage', evt: evt})
+        
+        if (window.st_conf.end && window.st_conf.type) {
+          if (window.st_conf.type === 'history') {
+            if (location.pathname.indexOf(window.st_conf.end) === 0) {
+              cookie.delCookie('ISEE_BIZ')
+            }
+          } else {
+            if (location.hash === window.st_conf.end) {
+              cookie.delCookie('ISEE_BIZ')
+            }
           }
         }
       }
+      wcamera.wsSocket.onmessage = function (evt) {
+        // console.log("server:" + evt.data)
+      }
+      wcamera.wsSocket.onclose = function (evt) {
+        console.log("Connection closed.")
+      }
+      wcamera.wsSocket.onerror = function (evt) {
+        console.log(evt)
+      }
+      wcamera.init()
     }
-    wcamera.wsSocket.onmessage = function (evt) {
-      // console.log("server:" + evt.data)
-    }
-    wcamera.wsSocket.onclose = function (evt) {
-      console.log("Connection closed.")
-    }
-    wcamera.wsSocket.onerror = function (evt) {
-      console.log(evt)
-    }
-    wcamera.init()
+  } else {
+    const wcamera = window.wcamera = new camera()
+      wcamera.wsSocket.onopen = function (evt) {
+        console.log("Connection start.")
+        wcamera.observer({type:'openpage', evt: evt})
+        
+        if (window.st_conf.end && window.st_conf.type) {
+          if (window.st_conf.type === 'history') {
+            if (location.pathname.indexOf(window.st_conf.end) === 0) {
+              cookie.delCookie('ISEE_BIZ')
+            }
+          } else {
+            if (location.hash === window.st_conf.end) {
+              cookie.delCookie('ISEE_BIZ')
+            }
+          }
+        }
+      }
+      wcamera.wsSocket.onmessage = function (evt) {
+        // console.log("server:" + evt.data)
+      }
+      wcamera.wsSocket.onclose = function (evt) {
+        console.log("Connection closed.")
+      }
+      wcamera.wsSocket.onerror = function (evt) {
+        console.log(evt)
+      }
+      wcamera.init()
   }
-  
-  
-  
 })()
 
 

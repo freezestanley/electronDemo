@@ -46,11 +46,9 @@ export default Wsocket = Wsocket
 export const debounce = function (method, delay) {
   let timer = null
   return function () {
-    debugger
     let context = this, args = arguments
     clearTimeout(timer)
     timer = setTimeout(function(){
-      debugger
       method.apply(context,args); 
     }, delay)
   }

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <header></header>
+  <body>
+      <a id="foo" href="http://www.163.com">click me!</a>
+  </body>
+  <script>
+    const bb = HTMLElement.prototype
+    const bbprt = new Proxy(bb, {
+      set() {
+        console.log(`Setting: ${value}`);
+        Reflect.set(target, prop, value);
+        return true
+      },
+      get() {
+
+      }
+    })
+    
+
+    const aa = HTMLElement.prototype.addEventListener 
+
+    HTMLElement.prototype.addEventListener = function (type, listener, options, useCapture) {
+      console.log('132123123')
+      return aa(type, listener, options, useCapture)
+    }
+    function AdaptedEvent(ev) {
+      const initialEvent = ev;
+      let newTarget = 'your new target';
+
+      return {
+        get: (target, prop) => {
+          if (Object.prototype.toString.call(target[prop]) === '[object Function]') {
+            return target[prop].bind(initialEvent);
+          }
+          else if (prop === 'target') {
+            return newTarget ? newTarget : initialEvent.target;
+          }
+          return target[prop];
+        }
+      };
+    }
+
+    function handleClick(event) {
+      console.log(event.target);
+      console.log(event.which);
+    }
+    
+    var myEventTarget = new EventTarget();
+
+
+    window.onload = function () {
+      // binding click event.
+      document.querySelector('#foo').onclick = function (e) {
+        alert('1323')
+      }
+      document.querySelector('#foo').addEventListener('click', e => {
+        alert('22223')
+      })
+      document.querySelector('#foo').addEventListener('click', e => handleClick(new Proxy(e, new AdaptedEvent(e))));
+      document.querySelector('#foo').addEventListener('click', e => {
+        console.log(window.getEventListeners(e.target))
+        alert('333')
+      })
+    } 
+  </script>
+</html>

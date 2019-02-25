@@ -49,6 +49,18 @@
 </style>
 <body>
   <div id="app">
+
+
+    <div onclick="aa()">butt1ee2</div>
+    <div id="test">
+        <a href="http://www.163.com" onclick= "bb()">butt1</a><br/>
+        
+    </div>
+
+
+
+
+
     <div>
       <label>
           姓名:<input type="text" />
@@ -148,12 +160,18 @@
 
   <div onclick="getPost()">ajax post</div>
 
-
+  <a id="foo" href="www.google.com">click me!</a>
   <div style="border:1px solid" id="canvas"></div>
 </body>
 
 <script>
-
+  function  aa () {
+   
+  }
+  function bb () {
+    alert('ff')
+    document.getElementById('test').innerHTML = ''
+  }
 
 
   var i = 0
@@ -257,28 +275,7 @@
   
 
   
-  window.onload = function () {
-    var a = document.getElementById('ttt')
-    var c = window.getComputedStyle(
-      a, ':before'
-    )
-    
-    a.style.setProperty('color', '#7F583F');
-    var edittext = document.getElementById('edittext')
-    edittext.addEventListener('click', function(){
-      console.log('1')
-    })
-    edittext.addEventListener('click', function(){
-      console.log('2')
-    })
-    edittext.addEventListener('click', function(){
-      console.log('3')
-    })
-
-    new lineCanvas({
-      el: document.getElementById("canvas"),//绘制canvas的父级div
-    });
-  }
+  
 
 
 
@@ -325,7 +322,6 @@
       }
     }
 function lineCanvas(obj) {
-  debugger
     this.linewidth = 1;
     this.color = "#000000";
     this.background = "#ffffff";
@@ -366,5 +362,61 @@ function lineCanvas(obj) {
     //     console.log(imgBase64);
     // }.bind(this), false);
 };
+
+
+
+window.onload = function () {
+    var a = document.getElementById('ttt')
+    var c = window.getComputedStyle(
+      a, ':before'
+    )
+    
+    a.style.setProperty('color', '#7F583F');
+    var edittext = document.getElementById('edittext')
+    edittext.addEventListener('click', function(){
+      console.log('1')
+    })
+    edittext.addEventListener('click', function(){
+      console.log('2')
+    })
+    edittext.addEventListener('click', function(){
+      console.log('3')
+    })
+
+    new lineCanvas({
+      el: document.getElementById("canvas"),//绘制canvas的父级div
+    });
+
+
+
+    function AdaptedEvent(ev) {
+      const initialEvent = ev;
+      let newTarget = 'your new target';
+
+      return {
+        get: (target, prop) => {
+          if (Object.prototype.toString.call(target[prop]) === '[object Function]') {
+            return target[prop].bind(initialEvent);
+          }
+          else if (prop === 'target') {
+            return newTarget ? newTarget : initialEvent.target;
+          }
+          return target[prop];
+        }
+      };
+    }
+
+  function handleClick(event) {
+    event.preventDefault();
+    console.log(event.target);
+    console.log(event.which);
+  }
+
+  // binding click event.
+  document.querySelector('#foo').addEventListener('click', e => handleClick(new Proxy(e, new AdaptedEvent(e))));
+
+  }
+
+  
 </script>
 </html>

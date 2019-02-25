@@ -56,7 +56,6 @@ function snap() {
       },
       data: canvas.toDataURL("image/jpeg",0.1)
     }).then(function (response) {
-      debugger
       console.log(response.data)
     }).catch(function (error) {
       console.log(error);

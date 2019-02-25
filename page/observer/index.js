@@ -5,9 +5,13 @@ function domObserver (node = document.body, config, mutation) {
     this.node = n
     this.config = c
     let MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver
-    this.observer = new MutationObserver(debounce((obj) => {
-      mutation(obj)
-    }, 500))
+    // this.observer = new MutationObserver(debounce((obj) => {
+    //   mutation(obj)
+    // }, 500))
+    this.observer = new MutationObserver((obj, itself) => {
+      mutation(obj, itself)
+    }, 500)
+    
     this.start = () => {
       this.observer.observe(this.node, this.config)
     }
