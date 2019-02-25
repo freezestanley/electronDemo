@@ -10,6 +10,30 @@ import AjaxHook, { CreateXMLHttp } from './xmlhttprequest'
 
 const wspath = process.env.NODE_ENV === 'production' ? 'wss://isee-test.zhongan.io/sapi/ed/events' : 'ws://127.0.0.1:3000/test/123'
 const delay = 300
+
+function proxyAddEventListener (callback = null) {
+  debugger
+  let pry = HTMLElement.prototype
+  pry['__proxy']  = {__addEvent: HTMLElement.prototype.addEventListener }
+  Object.defineProperty(HTMLElement.prototype, 'addEventListener', {
+    get : function(){
+      return function (type, listener, options, useCapture) {
+        let _this = this
+        this.__proxy.__addEvent.call(this, type, (e) => {
+          callback ? callback.call(_this, e) : null
+          listener.call(_this, e)
+        }, options, useCapture)
+      }
+    },
+    enumerable : true,
+    configurable : true
+  })
+}
+proxyAddEventListener(function (event) {
+  // event.preventDefault()
+  console.log('=============proxyAddEventListener=================')
+})
+
 /**
  *
  *
@@ -317,24 +341,7 @@ export default class camera {
     window.addEventListener('scroll', debounce((ev) => this.observer({type:'scroll', evt: ev}), delay))
   }
 
-  proxyAddEventListener (callback = null) {
-    debugger
-    let pry = HTMLElement.prototype
-    pry['__proxy']  = {__addEvent: HTMLElement.prototype.addEventListener }
-    Object.defineProperty(HTMLElement.prototype, 'addEventListener', {
-      get : function(){
-        return function (type, listener, options, useCapture) {
-          let _this = this
-          this.__proxy.__addEvent.call(this, type, (e) => {
-            callback ? callback.call(_this, e) : null
-            listener.call(_this, e)
-          }, options, useCapture)
-        }
-      },
-      enumerable : true,
-      configurable : true
-    })
-  }
+  
 
 
   /**
@@ -343,10 +350,10 @@ export default class camera {
   init () {
     this.addBaseEvent()
     this.addDomObserver()
-    this.proxyAddEventListener(function (event) {
-      // event.preventDefault()
-      console.log('=============proxyAddEventListener=================')
-    })
+    // this.proxyAddEventListener(function (event) {
+    //   // event.preventDefault()
+    //   console.log('=============proxyAddEventListener=================')
+    // })
     plant.IsPc() ?  this.eventAgent() : this.addFinger()
     // this.eventAgent()
     // this.AjaxListener()
