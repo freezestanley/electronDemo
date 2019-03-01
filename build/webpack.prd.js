@@ -2,8 +2,8 @@ const path = require('path')
 module.exports = {
   mode: 'production',
   entry: {
-    st: './page/index.js',
-    eye: './page/eye.js'
+    st: './page/eye.js',
+    eye: './page/index.js'
   },
   output: {
     filename: '[name].js',

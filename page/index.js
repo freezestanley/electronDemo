@@ -7,32 +7,18 @@ import domObserver from './observer'
 import Finger from './finger'
 import cookie from './cookie'
 import AjaxHook, { CreateXMLHttp } from './xmlhttprequest'
+import ProxyEvent from './proxyEvent'
+import Checkhover from './checkhover'
 
 const wspath = process.env.NODE_ENV === 'production' ? 'wss://isee-test.zhongan.io/sapi/ed/events' : 'ws://127.0.0.1:3000/test/123'
 const delay = 300
-
-function proxyAddEventListener (callback = null) {
+const proxyEvent = new ProxyEvent()
+proxyEvent.callback = function (ev) {
   debugger
-  let pry = HTMLElement.prototype
-  pry['__proxy']  = {__addEvent: HTMLElement.prototype.addEventListener }
-  Object.defineProperty(HTMLElement.prototype, 'addEventListener', {
-    get : function(){
-      return function (type, listener, options, useCapture) {
-        let _this = this
-        this.__proxy.__addEvent.call(this, type, (e) => {
-          callback ? callback.call(_this, e) : null
-          listener.call(_this, e)
-        }, options, useCapture)
-      }
-    },
-    enumerable : true,
-    configurable : true
-  })
+  console.log('==============ev==================')
+  // console.log(this)
+  // console.log(ev)
 }
-proxyAddEventListener(function (event) {
-  // event.preventDefault()
-  console.log('=============proxyAddEventListener=================')
-})
 
 /**
  *
@@ -74,7 +60,7 @@ export default class camera {
         this.pushData(param)
         break;
       case 'click':
-        // console.log('this is click')
+        debugger
         const link = plant.FindANode(evt.target, 'a')
         if (link && link.target === '_blank') {
           param.r = `${param.r}${eventType.ACTION_TAB}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
@@ -85,7 +71,8 @@ export default class camera {
       break;
       case 'mouseover':
         let tagName = evt.target.tagName.toLowerCase()
-        if (tagName === 'li' || tagName === 'a') {
+        let check = Checkhover(evt.target, ':hover')
+        if (tagName === 'li' || tagName === 'a' || check || evt.target.onmouseover || (evt.__eventOrginList && evt.__eventOrginList.length > 0)) {
           event = eventType.ACTION_HOVER
           param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
           this.pushData(param)
@@ -98,7 +85,7 @@ export default class camera {
       case 'inputChange':
         event = eventType.ACTION_INPUT
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
-        this.pushData(param)
+        this.pushData(param, 0)
       break;
       case 'select':
         event = eventType.ACTION_SELECT
@@ -138,20 +125,28 @@ export default class camera {
       case 'touchdrag':
         event = eventType.ACTION_DRAG
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}E:${evt._startPoint.changedTouches[0].screenX}-${evt._startPoint.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        this.pushData(param)
+        this.pushData(param, 10)
       break;
       case 'paint':
         event = eventType.PAINT_START
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        this.wsSocket.send(JSON.stringify(param))
+        this.wsSocket.send(JSON.stringify(param, 10))
       break;
     }
     // console.log(obj.type + ': ' + JSON.stringify(param))
   }
-  pushData (obj) {
-    debounce(() => {
+  pushData (obj, time = 100) {
+    if (time) {
+      debounce(() => {
+        this.wsSocket.send(JSON.stringify(obj))
+      }, time)()
+    } else {
       this.wsSocket.send(JSON.stringify(obj))
-    }, 50)()
+    }
+    
+    // debClass.debounce(() => {
+    //   this.wsSocket.send(JSON.stringify(obj))
+    // }, time)()
   }
   // input textarea select 添加onchange 监听
   inputChangEvent (ev) {
@@ -194,6 +189,8 @@ export default class camera {
         if (!hadEvent) {
           if (ele.type === 'select') {
             ele.addEventListener('change', _this.selectChangEvent.bind(_this))
+          } else if (ele.type === 'text' || ele.type === 'tel' || ele.type === 'password' || ele.type === 'email' || ele.type === 'textarea') {
+            ele.addEventListener('input', _this.inputChangEvent.bind(_this))
           } else {
             ele.addEventListener('change', _this.inputChangEvent.bind(_this))
           }
@@ -212,7 +209,7 @@ export default class camera {
      * dom element scroll evnent 
      * mouseenter mouserleave 模拟div 内部滚动
      * */
-    document.body.addEventListener('mouseover', (ev) => {
+    document.body.addEventListener('mouseover', debounce((ev) => {
       this.observer({type:'mouseover', evt: ev})
 
       const scrolltarget = plant.FindScrollNode(ev.target)
@@ -237,7 +234,7 @@ export default class camera {
           })
         }
       }
-    }, delay)
+    }, delay))
 
     document.body.addEventListener('click', (ev) => {
       // this.observer({type:'click', evt: ev})
@@ -258,12 +255,11 @@ export default class camera {
   }
 
   addFinger () {
-    // debugger
+    debugger
     let windowFinger = new Finger(window)
-    windowFinger.addEventListener('touchtap', debounce((ev) => {
-      // this.lazy()
+    windowFinger.addEventListener('touchtap', (ev) => {
       this.observer({type:'click', evt: ev})
-    }, delay))
+    })
     window.addEventListener('touchstart', (ev) => {
       if (ev.target.tagName.toLowerCase() === 'canvas') {
         let ele = ev.target

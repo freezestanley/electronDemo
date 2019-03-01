@@ -53,6 +53,32 @@ export const debounce = function (method, delay) {
     }, delay)
   }
 }
+
+// class debounceClass {
+//   constructor() {
+//     this._time = 100
+//   }
+//   get time () {
+//     return this._time
+//   }
+//   set time (param) {
+//     this._time = param
+//   }
+//   debounce (method, delay) {
+//     let _this = this
+//     return function () {
+//       let context = this, args = arguments
+//       clearTimeout(_this.time)
+//       _this.timer = setTimeout(function(){
+//         method.apply(context,args); 
+//       }, delay)
+//     }
+//   }
+// }
+// export const debClass = new debounceClass()
+
+
+
 export const throttle = function (method, delay, time) {
   let timeout, startTime = +new Date()
   return function() {
