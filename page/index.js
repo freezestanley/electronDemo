@@ -54,18 +54,21 @@ export default class camera {
     param.r = `${+new Date()}${eventType.SPLIT_DATA}`
     switch(obj.type) {
       case 'openpage':
-      // event = eventType.ACTION_OPEN
-      // param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
         param.wh = `${document.documentElement.clientWidth}x${document.documentElement.clientHeight}`
         this.pushData(param)
         break;
       case 'click':
-        debugger
+        let point=''
+        if (evt instanceof TouchEvent) {
+          point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}`
+        } else if (evt instanceof MouseEvent){
+          point = `${eventType.SPLIT_DATA}${evt.screenX}-${evt.screenY}${eventType.SPLIT_DATA}`
+        }
         const link = plant.FindANode(evt.target, 'a')
         if (link && link.target === '_blank') {
-          param.r = `${param.r}${eventType.ACTION_TAB}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
+          param.r = `${param.r}${eventType.ACTION_TAB}${eventType.SPLIT_DATA}${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
         } else {
-          param.r = `${param.r}${eventType.ACTION_CLICK}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
+          param.r = `${param.r}${eventType.ACTION_CLICK}${eventType.SPLIT_DATA}${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
         }
         this.pushData(param)
       break;
@@ -124,13 +127,23 @@ export default class camera {
       break;
       case 'touchdrag':
         event = eventType.ACTION_DRAG
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}E:${evt._startPoint.changedTouches[0].screenX}-${evt._startPoint.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}E:${evt._startPoint.changedTouches[0].screenX}-${evt._startPoint.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         this.pushData(param, 10)
       break;
       case 'paint':
         event = eventType.PAINT_START
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         this.wsSocket.send(JSON.stringify(param, 10))
+      break;
+      case 'popstate':
+        event = eventType.POP_STATE
+        param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
+        this.wsSocket.send(JSON.stringify(param, 0))
+      break;
+      case 'hashchange':
+        event = eventType.HASH_CHANGE
+        param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
+        this.wsSocket.send(JSON.stringify(param, 0))
       break;
     }
     // console.log(obj.type + ': ' + JSON.stringify(param))
@@ -255,7 +268,6 @@ export default class camera {
   }
 
   addFinger () {
-    debugger
     let windowFinger = new Finger(window)
     windowFinger.addEventListener('touchtap', (ev) => {
       this.observer({type:'click', evt: ev})
@@ -324,6 +336,12 @@ export default class camera {
       }
     
     })
+    window.addEventListener('popstate', (ev) => {
+      this.observer({type:'popstate', evt: ev})
+    })
+    window.addEventListener('hashchange',(ev) => {
+      this.observer({type:'hashchange', evt: ev})
+    });
     /** 
      * 退出
      * */

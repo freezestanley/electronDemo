@@ -40,3 +40,7 @@ export const PAINT_START = "paintstart"
 export const PAINT_MOVE = "paintmove"
 
 export const PAINT_END = "paintend"
+
+export const POP_STATE = "pt"
+
+export const HASH_CHANGE = "hc"
