@@ -14,10 +14,7 @@ const wspath = process.env.NODE_ENV === 'production' ? 'wss://isee-test.zhongan.
 const delay = 300
 const proxyEvent = new ProxyEvent()
 proxyEvent.callback = function (ev) {
-  debugger
   console.log('==============ev==================')
-  // console.log(this)
-  // console.log(ev)
 }
 
 /**
@@ -445,3 +442,54 @@ document.addEventListener("DOMContentLoaded", function(event) {
   }
   })()
 })
+
+
+
+// window.addEventListener('beforeunload', function(evt){
+//   debugger
+//   var request = new XMLHttpRequest();
+//   request.open('GET', 'http://www.mozilla.org/', false); 
+//   request.timeout = 3000
+//   request.send(null);
+//   if (request.status === 200) {
+//     console.log(request.responseText);
+//   }
+// })
+
+// function getEvent (){
+//   debugger
+//   window.addListenerEvent = window.addEventListener
+//   Object.defineProperty(window, 'addEventListener', {
+//     get : function(...arg){
+//       debugger
+//       return function (...args) {
+//         debugger
+//         window.addListenerEvent(args[0], args[1])
+//       }
+//     },
+//     set : function(newValue){
+//       debugger
+//     }
+//   })
+// }
+
+
+// window.addEventListener('click', (e) => {
+//   alert('fff')
+// })
+// getEvent()
+
+// window.addEventListener('click', (e) => {
+//   alert('bbb')
+// })
+
+// function add (a) {
+//   function sum(b) {
+//     a = a+b
+//     return sum
+//   }
+//   sum.toString = function () {
+//     return a 
+//   }
+//   return sum
+// }

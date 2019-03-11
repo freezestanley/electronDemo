@@ -1,15 +1,21 @@
-/*
- * options
- *  - callback
- *  - includeWindows default false    false / true
- *  - once  true  开始前只执行一次  false 每次都执行
- *  - getEventListenerList(type) 获取事件列队
- */
-export default class proxyEvent {
+<!DOCTYPE html>
+<html>
+  <header>
+    <meta
+      name="viewport"
+      content="target-densitydpi=device-dpi,width=750,user-scalable=no,initial-scale=0"
+    />
+    <script>
+      /*
+       * options
+       *  - callback
+       *  - includeWindows default false    false / true
+       */
+      class proxyEvent {
   constructor(options = null) {
     let _self = this;
     this._callback = options ? options.callback || null : null;
-    this._includeWindows = options ? options.includeWindows || false : false;
+    this._includeWindows = options ? options.includeWindows || false : false
     if (this._includeWindows) {
       this.initEventproxy(window);
     }
@@ -29,21 +35,22 @@ export default class proxyEvent {
     target["__proxy"] = {
       __addEvent: target.addEventListener,
       __removeEvent: target.removeEventListener,
-      __run: true
+      __run: false
     };
-    // noShadow
+    // noShadow 
     // once
-    target.getEventListenerList = function(e) {
-      return this.__eventOrginList[e];
-    };
-
+    target.getEventListenerList = function (e) {
+      return this.__eventOrginList[e]
+    }
+    
     Object.defineProperty(target, "__once", {
       get: function() {
-        return this.__proxy.__run;
+        return this.__proxy.__run
       },
-      set: function(val) {
-        this.__proxy.__run = val;
-        let _self = this;
+      set: function (val) {
+        
+        this.__proxy.__run = val
+        let _self = this
         for (var i in this.__eventList) {
           this.__eventList[i].map((e, idx, arr) => {
             _self.__proxy.__removeEvent.call(
@@ -52,75 +59,75 @@ export default class proxyEvent {
               e.listener,
               e.options
             );
-          });
+          })
         }
-        this.__eventList = {};
-        const origin = Object.assign(this.__eventOrginList);
-        this.__eventOrginList = {};
+        this.__eventList = {}
+        const origin = Object.assign(this.__eventOrginList)
+        this.__eventOrginList = {}
         for (var i in origin) {
           origin[i].map((e, idx, arr) => {
-            this.addEventListener(e.type, e.listener, e.options);
-          });
+            this.addEventListener(e.type, e.listener, e.options)
+          })
         }
+        
       },
       enumerable: true,
       configurable: true
-    });
+    })
 
     Object.defineProperty(target, "addEventListener", {
       get: function() {
         return function(type, listener, options, useCapture) {
           let _this = this;
-
+      
           this.__eventList = this.__eventList || {};
           this.__eventOrginList = this.__eventOrginList || {};
           this.__eventList[type] = this.__eventList[type] || [];
-          this.__eventOrginList[type] = this.__eventOrginList[type] || [];
+          this.__eventOrginList[type] = this.__eventOrginList[type] ||  [];
 
-          let listenerCallback;
+          let listenerCallback
 
           if (this.__once) {
-            if (this.__eventList[type].length === 0) {
-              listenerCallback = e => {
-                _self._callback && _self._callback.call(_this, e);
-              };
 
-              this.__proxy.__addEvent.call(this, type, listenerCallback);
-              this.__eventList[type].push({
+            if (this.__eventList[type].length === 0 ) {
+              listenerCallback = e => {
+                _self._callback && _self._callback.call(_this, e)
+              }
+
+              this.__proxy.__addEvent.call(
+                this,
                 type,
-                listener: listenerCallback,
-                options: null
-              });
-            }
+                listenerCallback
+              );
+              this.__eventList[type].push({ type, listener: listenerCallback, options: null });
+            } 
 
             listenerCallback = e => {
               listener.call(_this, e);
-            };
+            }
             this.__proxy.__addEvent.call(
               this,
               type,
               listenerCallback,
               options,
               useCapture
-            );
-            this.__eventList[type].push({
-              type,
-              listener: listenerCallback,
-              options
-            });
+            )
+            this.__eventList[type].push({ type, listener: listenerCallback, options });
             this.__eventOrginList[type].push({ type, listener });
+            
           } else {
+            
             if (typeof options === "object") {
-              if (options.noShadow) {
+              if (options.noShadow) { 
                 listenerCallback = e => {
                   listener.call(_this, e);
                 };
               }
             } else {
               listenerCallback = e => {
-                _self._callback && _self._callback.call(_this, e);
+                _self._callback && _self._callback.call(_this, e)
                 listener.call(_this, e);
-              };
+              }
             }
 
             this.__proxy.__addEvent.call(
@@ -131,13 +138,11 @@ export default class proxyEvent {
               useCapture
             );
 
-            this.__eventList[type].push({
-              type,
-              listener: listenerCallback,
-              options
-            });
+            this.__eventList[type].push({ type, listener: listenerCallback, options });
             this.__eventOrginList[type].push({ type, listener });
           }
+
+
         };
       },
       enumerable: true,
@@ -151,13 +156,13 @@ export default class proxyEvent {
 
           if (!this.__eventOrginList || !this.__eventOrginList[type]) return;
 
-          this.__eventOrginList = this.__eventOrginList || {};
+          this.__eventOrginList = this.__eventOrginList || {}
 
           let index = this.__eventOrginList[type].findIndex((ele, idx, arr) => {
             return ele.listener === listener;
           });
           if (index >= 0) {
-            let num = this.__once ? index + 1 : index;
+            let num = this.__once ? index + 1 : index
             let event = this.__eventList[type][num].listener;
             this.__proxy.__removeEvent.call(
               this,
@@ -169,8 +174,8 @@ export default class proxyEvent {
             this.__eventOrginList[type].splice(index, 1);
             this.__eventList[type].splice(num, 1);
             if (this.__eventOrginList[type].length === 0) {
-              this.__eventList[type] = [];
-            }
+              this.__eventList[type] = []
+            } 
           }
         };
       },
@@ -205,4 +210,71 @@ export default class proxyEvent {
     }
   }
 }
-// module.exports = proxyEvent
+    </script>
+
+    <script>
+      let pe = new proxyEvent({
+        includeWindows: true,
+        callback: function(e) {
+          debugger
+          console.log(`=======:${e}==================`);
+        }
+      });
+    </script>
+  </header>
+  <body>
+    <a id="foo">click me!</a><br />
+    <a id="foor">click me111111!</a>
+    <canvas id="canvas" width="300" height="300">
+      Sorry, your browser doesn't support the &lt;canvas&gt; element.
+    </canvas>
+  </body>
+
+  <script>
+    function aa (e) {
+      console.log('aa')
+    }
+    function bb (e) {
+      console.log('bb')
+    }
+    function cc (e) {
+      console.log('cc')
+    }
+    function dd (e) {
+      console.log('dd')
+    }
+    // window.onload = function () {
+    //   console.log('onload')
+    // }
+    window.addEventListener('load', function(e) {
+      console.log("onload");
+      document.getElementById('foo').addEventListener('click', aa)
+      document.getElementById('foo').addEventListener('click', bb)
+      document.getElementById('foo').addEventListener('click', cc)
+      document.getElementById('foo').addEventListener('click', dd)
+      debugger
+      document.getElementById('foo').removeEventListener('click', aa)
+      document.getElementById('foo').removeEventListener('click', bb)
+      document.getElementById('foo').removeEventListener('click', cc)
+      document.getElementById('foo').removeEventListener('click', dd)
+
+    }, {noShadow: true});
+    // function reqListener () {
+    //   console.log(this.responseText);
+    // }
+
+    // var oReq = new XMLHttpRequest();
+    // oReq.addEventListener("load", reqListener);
+    // oReq.open("GET", "http://www.example.org/example.txt");
+    // oReq.send();
+
+    // window.onload = function (e) {
+    //   console.log('onload')
+    // }{ passive: false }
+
+   
+    
+
+
+  </script>
+</html>
