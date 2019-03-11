@@ -15,7 +15,7 @@ const delay = 300
 const proxyEvent = new ProxyEvent()
 proxyEvent.callback = function (ev) {
   debugger
-  console.log('==============ev==================')
+  console.log(`===${ev.type}===${ev.target}`)
   // console.log(this)
   // console.log(ev)
 }
@@ -87,6 +87,13 @@ export default class camera {
       break;
       case 'inputChange':
         event = eventType.ACTION_INPUT
+        if (evt.target.type ===  'password') {
+          let length = evt.target.value.length
+          evt.target.value = ''
+          for (var i = 0; i<length;i++){
+            evt.target.value += '*'
+          }
+        }
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         this.pushData(param, 0)
       break;
