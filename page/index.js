@@ -14,10 +14,7 @@ const wspath = process.env.NODE_ENV === 'production' ? 'wss://isee-test.zhongan.
 const delay = 300
 const proxyEvent = new ProxyEvent()
 proxyEvent.callback = function (ev) {
-  debugger
   console.log(`===${ev.type}===${ev.target}`)
-  // console.log(this)
-  // console.log(ev)
 }
 
 /**
@@ -152,6 +149,16 @@ export default class camera {
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
         this.wsSocket.send(JSON.stringify(param, 0))
       break;
+      case 'inputBlur':
+        event = eventType.INPUT_BLUR
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        this.pushData(param, 0)
+      break;
+      case 'inputFocus':
+        event = eventType.INPUT_FOCUS
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        this.pushData(param, 0)
+      break;
     }
     // console.log(obj.type + ': ' + JSON.stringify(param))
   }
@@ -175,6 +182,14 @@ export default class camera {
   // select 添加onchange 监听
   selectChangEvent (ev) {
     this.observer({type:'select', evt: ev})
+  }
+  // blur
+  inputBlurEvent (ev) {
+    this.observer({type:'inputBlur', evt: ev})
+  }
+  // select 添加onchange 监听
+  inputFocusEvent (ev) {
+    this.observer({type:'inputFocus', evt: ev})
   }
   /**
    * 添加dom变化监听 对动态插入的input textarea select 添加监听
@@ -211,6 +226,8 @@ export default class camera {
             ele.addEventListener('change', _this.selectChangEvent.bind(_this))
           } else if (ele.type === 'text' || ele.type === 'tel' || ele.type === 'password' || ele.type === 'email' || ele.type === 'textarea') {
             ele.addEventListener('input', _this.inputChangEvent.bind(_this))
+            ele.addEventListener('blur', _this.inputBlurEvent.bind(_this))
+            ele.addEventListener('focus', _this.inputFocusEvent.bind(_this))
           } else {
             ele.addEventListener('change', _this.inputChangEvent.bind(_this))
           }
