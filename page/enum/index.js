@@ -44,3 +44,7 @@ export const PAINT_END = "paintend"
 export const POP_STATE = "pt"
 
 export const HASH_CHANGE = "hc"
+
+export const INPUT_FOCUS = 'ic'
+
+export const INPUT_BLUR = 'ib'
