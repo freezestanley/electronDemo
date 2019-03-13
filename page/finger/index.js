@@ -68,7 +68,7 @@ export default class finger {
       if(this._touchstart)
         this._touchstart(ev)
 
-    }, { passive: false })
+    }, { passive: false, noShadow: true })
 
     node.addEventListener('touchend', (ev) => {
       // ev.preventDefault()
@@ -86,13 +86,13 @@ export default class finger {
         this._touchend(ev)
 
       this._startPoint = null
-    }, { passive: false })
+    }, { passive: false, noShadow: true })
 
     node.addEventListener('touchmove', (ev) => {
       this.finger.move(ev)
       if (this._touchmove)
         this._touchmove(ev) 
-    }, { passive: false })
+    }, { passive: false, noShadow: true })
   }
   get ontouchstart (){
     return this._touchstart

@@ -1,19 +1,22 @@
 /*
  * options
- *  - callback
+ *  - callback  守卫
  *  - includeWindows default false    false / true
- *  - once  true  开始前只执行一次  false 每次都执行
+ *  - mode  once  开始前只执行一次  every 每次都执行  
+ *    once  noShadow 当列队内都保持不要守卫则守卫不执行
+ *    every noShadow 当前事件被执行但是守卫不会被执行
  *  - getEventListenerList(type) 获取事件列队
  */
 export default class proxyEvent {
   constructor(options = null) {
     let _self = this;
     this._callback = options ? options.callback || null : null;
-    this._includeWindows = options ? options.includeWindows || false : false;
+    this._includeWindows = options ? options.includeWindows || true : true;
     if (this._includeWindows) {
       this.initEventproxy(window);
     }
     this.initEventproxy(HTMLElement.prototype);
+    this.initEventproxy(document);
   }
 
   get callback() {
@@ -29,7 +32,7 @@ export default class proxyEvent {
     target["__proxy"] = {
       __addEvent: target.addEventListener,
       __removeEvent: target.removeEventListener,
-      __run: true
+      __run: 'once'
     };
     // noShadow
     // once
@@ -37,7 +40,7 @@ export default class proxyEvent {
       return this.__eventOrginList[e];
     };
 
-    Object.defineProperty(target, "__once", {
+    Object.defineProperty(target, "mode", {
       get: function() {
         return this.__proxy.__run;
       },
@@ -71,7 +74,7 @@ export default class proxyEvent {
       get: function() {
         return function(type, listener, options, useCapture) {
           let _this = this;
-
+          
           this.__eventList = this.__eventList || {};
           this.__eventOrginList = this.__eventOrginList || {};
           this.__eventList[type] = this.__eventList[type] || [];
@@ -79,18 +82,25 @@ export default class proxyEvent {
 
           let listenerCallback;
 
-          if (this.__once) {
-            if (this.__eventList[type].length === 0) {
-              listenerCallback = e => {
-                _self._callback && _self._callback.call(_this, e);
-              };
+          if (this.mode === 'once') {
 
-              this.__proxy.__addEvent.call(this, type, listenerCallback);
-              this.__eventList[type].push({
-                type,
-                listener: listenerCallback,
-                options: null
-              });
+            if (typeof options === "object" && options.noShadow) {
+                listenerCallback = e => {
+                  listener.call(_this, e);
+                };
+            } else {
+              if (this.__eventList[type].length ===  this.__eventOrginList[type].length) {
+                listenerCallback = e => {
+                  _self._callback && _self._callback.call(_this, e);
+                };
+  
+                this.__proxy.__addEvent.call(this, type, listenerCallback);
+                this.__eventList[type].unshift({
+                  type,
+                  listener: listenerCallback,
+                  options: null
+                });
+              }
             }
 
             listenerCallback = e => {
@@ -157,7 +167,7 @@ export default class proxyEvent {
             return ele.listener === listener;
           });
           if (index >= 0) {
-            let num = this.__once ? index + 1 : index;
+            let num = this.mode === 'once' ? index + 1 : index;
             let event = this.__eventList[type][num].listener;
             this.__proxy.__removeEvent.call(
               this,
