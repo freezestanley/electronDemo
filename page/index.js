@@ -22,12 +22,14 @@ proxyEvent.callback = function(ev) {
   console.log(`===${ev.type}===${ev.target}`);
 };
 let mousedownPoint;
+
 export default class clairvoyant {
   constructor(ws = wspath) {
     this.wsSocket = new Wsocket(ws)
     this.proxyEvent = proxyEvent;
     this.plant = plant.IsPc();
     this.scrollList = [];
+    this.messageList = []
   }
 
   static selectNode(xpath) {
@@ -81,7 +83,7 @@ export default class clairvoyant {
 
     window.addEventListener(
       "scroll",
-      debounce(ev => this.observer({ type: "scroll", evt: ev })),
+      debounce(ev => this.observer({ type: "scroll", evt: ev }), delay),
       { noShadow: true }
     );
   }
@@ -383,7 +385,7 @@ export default class clairvoyant {
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
           evt.target
         )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`;
-        _self.pushData(param, 0);
+        _self.pushData(param);
       },
       select: function() {
         debugger
@@ -437,7 +439,7 @@ export default class clairvoyant {
         }-${evt._startPoint.changedTouches[0].screenY}${eventType.SPLIT_DATA}${
           eventType.SPLIT_LINE
         }`;
-        _self.pushData(param, 10);
+        _self.pushData(param, 100);
       },
       paint: function() {
         event = eventType.PAINT_START;
@@ -446,43 +448,51 @@ export default class clairvoyant {
         }-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}${
           eventType.SPLIT_DATA
         }${eventType.SPLIT_LINE}`;
-        _self.wsSocket.send(JSON.stringify(param, 10));
+        _self.wsSocket.send(JSON.stringify(param, 100));
       },
       popstate: function() {
         event = eventType.POP_STATE;
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`;
-        _self.wsSocket.send(JSON.stringify(param, 0));
+        _self.wsSocket.send(JSON.stringify(param));
       },
       hashchange: function() {
         event = eventType.HASH_CHANGE;
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`;
-        _self.wsSocket.send(JSON.stringify(param, 0));
+        _self.wsSocket.send(JSON.stringify(param));
       },
       inputBlur: function() {
         event = eventType.INPUT_BLUR;
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
           evt.target
         )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`;
-        _self.pushData(param, 0);
+        _self.pushData(param);
       },
       inputFocus: function() {
         event = eventType.INPUT_FOCUS;
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
           evt.target
         )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`;
-        _self.pushData(param, 0);
+        _self.pushData(param);
       }
     };
     target[obj.type]();
   }
-  pushData (obj, time = 100) {
-    console.log(JSON.stringify(obj))
-    if (time) {
-      debounce(() => {
+  pushData (obj, time = 0) {
+    let pushMode = window.st_conf.pushMode || 'once'
+    if (pushMode === 'once') {
+      if (time) {
+        debounce(() => {
+          this.wsSocket.send(JSON.stringify(obj))
+        }, time)()
+      } else {
         this.wsSocket.send(JSON.stringify(obj))
-      }, time)()
+      }
     } else {
-      this.wsSocket.send(JSON.stringify(obj))
+      this.messageList.push(obj)
+      if (this.messageList.length >= 30) {
+        this.wsSocket.send(JSON.stringify(this.messageList))
+        this.messageList = []
+      }
     }
   }
 }
