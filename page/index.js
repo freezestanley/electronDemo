@@ -75,7 +75,7 @@ export default class camera {
         if (tagName === 'li' || tagName === 'a' || check || evt.target.onmouseover || (evt.__eventOrginList && evt.__eventOrginList.length > 0)) {
           event = eventType.ACTION_HOVER
           param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
-          this.pushData(param)
+          this.pushData(param, 100)
         }
       break;
       case 'unload':
@@ -92,7 +92,7 @@ export default class camera {
           }
         }
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
-        this.pushData(param, 0)
+        this.pushData(param, 100)
       break;
       case 'select':
         event = eventType.ACTION_SELECT
@@ -118,7 +118,7 @@ export default class camera {
           scroll = evt.target.scrollTop
         }
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(target)}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        this.pushData(param)
+        this.pushData(param, 100)
       break;
       case 'visibilitychange':
         event = eventType.ACTION_SWITCH
@@ -142,27 +142,27 @@ export default class camera {
       case 'popstate':
         event = eventType.POP_STATE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        this.wsSocket.send(JSON.stringify(param, 0))
+        this.wsSocket.send(JSON.stringify(param))
       break;
       case 'hashchange':
         event = eventType.HASH_CHANGE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        this.wsSocket.send(JSON.stringify(param, 0))
+        this.wsSocket.send(JSON.stringify(param))
       break;
       case 'inputBlur':
         event = eventType.INPUT_BLUR
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
-        this.pushData(param, 0)
+        this.pushData(param)
       break;
       case 'inputFocus':
         event = eventType.INPUT_FOCUS
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
-        this.pushData(param, 0)
+        this.pushData(param)
       break;
     }
     // console.log(obj.type + ': ' + JSON.stringify(param))
   }
-  pushData (obj, time = 100) {
+  pushData (obj, time = 0) {
     if (time) {
       debounce(() => {
         this.wsSocket.send(JSON.stringify(obj))
