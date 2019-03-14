@@ -43,16 +43,33 @@ Wsocket.prototype.reconnect = function () {
 
 export default Wsocket = Wsocket
 
-export const debounce = function (method, delay) {
-  let timer = null
-  return function () {
-    let context = this, args = arguments
-    clearTimeout(timer)
-    timer = setTimeout(function(){
-      method.apply(context,args); 
+// export const debounce = function (method, delay) {
+//   let timer = null
+//   return function () {
+//     let context = this, args = arguments
+//     clearTimeout(timer)
+//     timer = setTimeout(function(){
+//       method.apply(context,args); 
+//     }, delay)
+//   }
+// }
+
+export const debounce = function(method, delay) {
+  return function() {
+    let context = this,
+      args = arguments
+    if (debounce.timer !== null) {
+      clearTimeout(debounce.timer)
+      debounce.timer = null
+    }
+    debounce.timer = setTimeout(function() {
+      method.apply(context, args)
+      clearTimeout(debounce.timer)
+      debounce.timer = null
     }, delay)
   }
 }
+debounce.timer = null
 
 // class debounceClass {
 //   constructor() {

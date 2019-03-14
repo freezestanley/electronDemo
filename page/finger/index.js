@@ -125,7 +125,7 @@ export default class finger {
     this._touchdrag = param
   }
 
-  addEventListener (eventType, callback) {
+  addEventListener (eventType, callback, options) {
     switch (eventType) {
       case 'touchstart':
         this.ontouchstart = callback
@@ -144,7 +144,7 @@ export default class finger {
         break;
     }
   }
-  removeEventListener (eventType, callback) {
+  removeEventListener (eventType, callback, options) {
     switch (eventType) {
       case 'touchstart':
         this.ontouchstart = null

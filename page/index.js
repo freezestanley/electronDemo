@@ -1,241 +1,557 @@
 // import axios from 'axios'
-import Wsocket, {throttle, debounce} from './socket'
-import * as plant from './plant'
-import {readXPath, selectNodes} from './xpath'
-import * as eventType from './enum'
-import domObserver from './observer'
-import Finger from './finger'
-import cookie from './cookie'
-import AjaxHook, { CreateXMLHttp } from './xmlhttprequest'
-import ProxyEvent from './proxyEvent'
-import Checkhover from './checkhover'
+import Wsocket, { throttle, debounce } from "./socket";
+import * as plant from "./plant";
+import { readXPath, selectNodes } from "./xpath";
+import * as eventType from "./enum";
+import domObserver from "./observer";
+import Finger from "./finger";
+import cookie from "./cookie";
+import AjaxHook, { CreateXMLHttp } from "./xmlhttprequest";
+import ProxyEvent from "./proxyEvent";
+import Checkhover from "./checkhover";
 
-const wspath = process.env.NODE_ENV === 'production' ? 'wss://isee-test.zhongan.io/sapi/ed/events' : 'ws://127.0.0.1:3000/test/123'
-const delay = 300
-const lazyPath = 'https://www.zhongan.com/open/member/login_screen/get_sso_uni_form_domain_url.json'
-const proxyEvent = new ProxyEvent()
-proxyEvent.callback = function (ev) {
-  console.log(`===${ev.type}===${ev.target}`)
-}
-let mousedownPoint
+const wspath =
+  process.env.NODE_ENV === "production"
+    ? "wss://isee-test.zhongan.io/sapi/ed/events"
+    : "ws://127.0.0.1:3000/test/123";
+const delay = 300;
+const lazyPath =
+  "https://www.zhongan.com/open/member/login_screen/get_sso_uni_form_domain_url.json";
+const proxyEvent = new ProxyEvent();
+proxyEvent.callback = function(ev) {
+  console.log(`===${ev.type}===${ev.target}`);
+};
+let mousedownPoint;
 export default class clairvoyant {
-  constructor (ws = wspath) {
-    // this.wsSocket = new Wsocket(ws)
-    this.proxyEvent = proxyEvent
-    this.plant = plant.IsPc()
-    this.scrollList = []
+  constructor(ws = wspath) {
+    this.wsSocket = new Wsocket(ws)
+    this.proxyEvent = proxyEvent;
+    this.plant = plant.IsPc();
+    this.scrollList = [];
   }
 
-  static selectNode (xpath) {
-    return selectNodes(xpath)
-  } 
-  static getXpath (node) {
-    return readXPath(node)
+  static selectNode(xpath) {
+    return selectNodes(xpath);
+  }
+  static getXpath(node) {
+    return readXPath(node);
   }
 
-  init () {
-    this.addBaseEvent() 
-    this.mutationWatch()
-    this.plant ? this.deskWatch() : this.mobileWatch()
+  init() {
+    this.addBaseEvent();
+    this.mutationWatch();
+    this.plant ? this.deskWatch() : this.mobileWatch();
   }
-  addBaseEvent () { // 添加全局基础事件 
-    document.addEventListener('visibilitychange', (ev) => {
-      (typeof document.hidden) === 'boolean' && document.hidden === false ?
-        this.observer({type:'visibilitychange', evt: ev}) :
-        this.observer({type:'visibilityblur', evt: ev})
-    }, {noShadow: true})
+  addBaseEvent() {
+    // 添加全局基础事件
+    document.addEventListener(
+      "visibilitychange",
+      ev => {
+        typeof document.hidden === "boolean" && document.hidden === false
+          ? this.observer({ type: "visibilitychange", evt: ev })
+          : this.observer({ type: "visibilityblur", evt: ev });
+      },
+      { noShadow: true }
+    );
 
-    window.addEventListener('popstate', (ev) => {
-      this.observer({type:'popstate', evt: ev})
-    }, {noShadow: true})
+    window.addEventListener(
+      "popstate",
+      ev => {
+        this.observer({ type: "popstate", evt: ev });
+      },
+      { noShadow: true }
+    );
 
-    window.addEventListener('hashchange',(ev) => {
-      this.observer({type:'hashchange', evt: ev})
-    }, {noShadow: true})
+    window.addEventListener(
+      "hashchange",
+      ev => {
+        this.observer({ type: "hashchange", evt: ev });
+      },
+      { noShadow: true }
+    );
 
-    window.addEventListener('beforeunload', (ev) => {
-      this.observer({type:'unload', evt: ev})
-      this.lazy()
-    }, {noShadow: true})
+    window.addEventListener(
+      "beforeunload",
+      ev => {
+        this.observer({ type: "unload", evt: ev });
+        this.lazy();
+      },
+      { noShadow: true }
+    );
 
-    window.addEventListener('scroll', debounce((ev) => 
-      this.observer({type:'scroll', evt: ev})), 
-    {noShadow: true})
+    window.addEventListener(
+      "scroll",
+      debounce(ev => this.observer({ type: "scroll", evt: ev })),
+      { noShadow: true }
+    );
   }
-  
-  mutationWatch () {
-    let config = { 
-      attributes: false, 
-      childList: true, 
-      characterData: false, 
-      subtree: true, 
-      attributeOldValue: false, 
-      characterDataOldValue: false 
-    }
+
+  mutationWatch() {
+    let config = {
+      attributes: false,
+      childList: true,
+      characterData: false,
+      subtree: true,
+      attributeOldValue: false,
+      characterDataOldValue: false
+    };
     let mutationEventCallback = (ele, itself) => {
-      const _this = this
-      let currentNode = []
+      const _this = this;
+      let currentNode = [];
       ele.map((e, idx, arr) => {
-        if (e.type === 'childList') {
+        if (e.type === "childList") {
           for (let i = 0; i < e.addedNodes.length; i++) {
-            let ne = e.addedNodes[i]
-            let netagname = ne.tagName.toLocaleLowerCase()
-            if (netagname === 'input' || netagname === 'select' || netagname === 'textarea') {
-              currentNode.push(ne)
+            let ne = e.addedNodes[i];
+            if (ne.nodeType != 1) continue 
+            let netagname = ne.tagName && ne.tagName.toLocaleLowerCase();
+            if (
+              netagname === "input" ||
+              netagname === "select" ||
+              netagname === "textarea"
+            ) {
+              currentNode.push(ne);
             }
             let query = [
-              ...ne.querySelectorAll('input[type=text]'),
-              ...ne.querySelectorAll('textarea'),
-              ...ne.querySelectorAll('select'),
-              ...ne.querySelectorAll('input[type=tel]'),
-              ...ne.querySelectorAll('input[type=password]'),
-              ...ne.querySelectorAll('input[type=email]'),
-              ...ne.querySelectorAll('input[type=radio]'),
-              ...ne.querySelectorAll('input[type=checkbox]'),
-              ...ne.querySelectorAll('input[type=number]')
-            ]
-            currentNode = currentNode.concat(query)
+              ...ne.querySelectorAll("input[type=text]"),
+              ...ne.querySelectorAll("textarea"),
+              ...ne.querySelectorAll("select"),
+              ...ne.querySelectorAll("input[type=tel]"),
+              ...ne.querySelectorAll("input[type=password]"),
+              ...ne.querySelectorAll("input[type=email]"),
+              ...ne.querySelectorAll("input[type=radio]"),
+              ...ne.querySelectorAll("input[type=checkbox]"),
+              ...ne.querySelectorAll("input[type=number]")
+            ];
+            currentNode = currentNode.concat(query);
+
           }
         }
-      })
+      });
 
       currentNode.map((cNode, index, array) => {
-        if (cNode.type === 'select') {
-          cNode.addEventListener('change', _this.selectChangEvent.bind(_this), {noShadow: true})
-        } else if (cNode.type === 'text' || cNode.type === 'tel' || cNode.type === 'password' || cNode.type === 'email' || cNode.type === 'textarea' || cNode.type === 'number') {
-          cNode.addEventListener('input', _this.inputChangEvent.bind(_this), {noShadow: true})
+        if (cNode.type === "select") {
+          cNode.addEventListener("change", _this.selectChangEvent.bind(_this), {
+            noShadow: true
+          });
+        } else if (
+          cNode.type === "text" ||
+          cNode.type === "tel" ||
+          cNode.type === "password" ||
+          cNode.type === "email" ||
+          cNode.type === "textarea" ||
+          cNode.type === "number"
+        ) {
+          cNode.addEventListener("input", _this.inputChangEvent.bind(_this), {
+            noShadow: true
+          });
         } else {
-          cNode.addEventListener('change', _this.inputChangEvent.bind(_this), {noShadow: true})
+          cNode.addEventListener("change", _this.inputChangEvent.bind(_this), {
+            noShadow: true
+          });
         }
-      })
-
-    }
-    this.domObserver = new domObserver(document.body, config, mutationEventCallback)
-    this.domObserver.start()
+      });
+    };
+    this.domObserver = new domObserver(
+      document.body,
+      config,
+      mutationEventCallback
+    );
+    this.domObserver.start();
   }
-  inputChangEvent (ev) {
-    this.observer({type:'inputChange', evt: ev})
+  inputChangEvent(ev) {
+    this.observer({ type: "inputChange", evt: ev });
   }
   // select 添加onchange 监听
-  selectChangEvent (ev) {
-    this.observer({type:'select', evt: ev})
+  selectChangEvent(ev) {
+    this.observer({ type: "select", evt: ev });
   }
 
-  lazy () {
+  lazy() {
     var xhr = new CreateXMLHttp();
-    xhr.open('GET', `${lazyPath}`, false); 
+    xhr.open("GET", `${lazyPath}`, false);
     xhr.send(null);
   }
 
-  deskWatch () {
+  deskWatch() {
     // div 内滚动
-    document.body.addEventListener('mouseover', debounce((ev) => {
-      this.observer({type: 'mouseover', evt: ev})
-      const scrollNode = plant.FindScrollNode(ev.target)
-      if (scrollNode) {
-        const targetXpath = readXPath(scrollNode)
-        const isListener = this.scrollList.find(ele => {
-          return ele === targetXpath
-        })
-        if (!isListener) {
-          this.scrollList.push(targetXpath)
-          const domScroll = debounce((ev) => {
-            this.observer({type:'scroll', evt: ev})
-                }, delay)
+    document.body.addEventListener(
+      "mouseover",
+      debounce(ev => {
+        this.observer({ type: "mouseover", evt: ev });
+        const scrollNode = plant.FindScrollNode(ev.target);
+        if (scrollNode) {
+          const targetXpath = readXPath(scrollNode);
+          const isListener = this.scrollList.find(ele => {
+            return ele === targetXpath;
+          });
+          if (!isListener) {
+            this.scrollList.push(targetXpath);
+            const domScroll = debounce(ev => {
+              this.observer({ type: "scroll", evt: ev });
+            }, delay);
 
-          scrolltarget.addEventListener('mouseenter', () => {
-            scrolltarget.addEventListener('scroll', domScroll, {noShadow: true})
-          }, {noShadow: true})
+            scrolltarget.addEventListener(
+              "mouseenter",
+              () => {
+                scrolltarget.addEventListener("scroll", domScroll, {
+                  noShadow: true
+                });
+              },
+              { noShadow: true }
+            );
 
-          scrolltarget.addEventListener('mouseleave ', () => {
-            scrolltarget.removeEventListener('scroll', domScroll, {noShadow: true})
-          }, {noShadow: true})
+            scrolltarget.addEventListener(
+              "mouseleave ",
+              () => {
+                scrolltarget.removeEventListener("scroll", domScroll, {
+                  noShadow: true
+                });
+              },
+              { noShadow: true }
+            );
+          }
         }
-      }
-    }), {noShadow: true})
+      }, delay),
+      { noShadow: true }
+    );
 
     // 页面点击
-    document.body.addEventListener('mousedown', (ev) => {
-      mousedownPoint = ev
-    }, {noShadow: true})
-    document.body.addEventListener('mouseup', (ev) => {
-      if (mousedownPoint.clientX === ev.clientX && mousedownPoint.clientY === ev.clientY) {
-        this.observer({type:'click', evt: ev})
-      } else {
-        this.observer({type:'mousemove', evt: ev})
-      }
-    }, {noShadow: true})
-
-
+    document.body.addEventListener(
+      "mousedown",
+      ev => {
+        mousedownPoint = ev;
+      },
+      { noShadow: true }
+    );
+    document.body.addEventListener(
+      "mouseup",
+      ev => {
+        if (
+          mousedownPoint.clientX === ev.clientX &&
+          mousedownPoint.clientY === ev.clientY
+        ) {
+          this.observer({ type: "click", evt: ev });
+        } else {
+          this.observer({ type: "mousemove", evt: ev });
+        }
+      },
+      { noShadow: true }
+    );
   }
 
-  mobileWatch () {
-    let windowFinger = new Finger(window)
+  mobileWatch() {
+    let windowFinger = new Finger(window);
     // 页面点击
-    windowFinger.addEventListener('touchtap', (ev) => {
-      this.observer({type:'click', evt: ev})
-    })
+    windowFinger.addEventListener("touchtap", ev => {
+      this.observer({ type: "click", evt: ev });
+    });
 
     // canvas 画图
-    window.addEventListener('touchstart', (ev) => {
-      if (ev.target.tagName.toLowerCase() === 'canvas') {
-        let ele = ev.target
-        const targetXpath = readXPath(ele)
+    window.addEventListener("touchstart", ev => {
+      if (ev.target.tagName.toLowerCase() === "canvas") {
+        let ele = ev.target;
+        const targetXpath = readXPath(ele);
         const isListener = this.canvasList.find(ele => {
-          return ele === targetXpath
-        })
+          return ele === targetXpath;
+        });
         if (!isListener) {
-          ele.addEventListener('touchmove', (ev) => {
-            this.observer({type:'paint', evt: ev})
-          }, delay)
-          this.canvasList.push(targetXpath)
+          ele.addEventListener(
+            "touchmove",
+            ev => {
+              this.observer({ type: "paint", evt: ev });
+            },
+            delay
+          );
+          this.canvasList.push(targetXpath);
         }
       }
-    })
+    });
 
     // div 内滚动
-    windowFinger.addEventListener('touchstart', debounce((ev) => {
-      const scrolltarget = plant.FindScrollNode(ev.target)
-      if (scrolltarget) {
-        const targetXpath = readXPath(scrolltarget)
-        const isListener = this.scrollList.find(ele => {
-          return ele === targetXpath
-        })
-        if (!isListener) {
-          this.scrollList.push(targetXpath)
-          const domScroll = debounce((ev) => {
-            this.observer({type:'scroll', evt: ev})
-                }, delay)
+    windowFinger.addEventListener(
+      "touchstart",
+      ev => {
+        const scrolltarget = plant.FindScrollNode(ev.target);
+        if (scrolltarget) {
+          const targetXpath = readXPath(scrolltarget);
+          const isListener = this.scrollList.find(ele => {
+            return ele === targetXpath;
+          });
+          if (!isListener) {
+            this.scrollList.push(targetXpath);
+            const domScroll = debounce(ev => {
+              this.observer({ type: "scroll", evt: ev });
+            }, delay);
 
-          scrolltarget.addEventListener('touchstart', () => {
-            scrolltarget.addEventListener('scroll', domScroll)
-          })
+            scrolltarget.addEventListener("touchstart", () => {
+              scrolltarget.addEventListener("scroll", domScroll);
+            });
 
-          scrolltarget.addEventListener('touchend ', () => {
-            scrolltarget.removeEventListener('scroll', domScroll)
-          })
+            scrolltarget.addEventListener("touchend ", () => {
+              scrolltarget.removeEventListener("scroll", domScroll);
+            });
+          }
         }
       }
-    }, delay))
+    );
 
-    //
-    windowFinger.addEventListener('touchmove', debounce((ev) => {
-      this.observer({type:'fingermove', evt: ev})
-    }, delay))
+    windowFinger.addEventListener(
+      "touchmove",
+      debounce(ev => {
+        this.observer({ type: "fingermove", evt: ev });
+      }, delay)
+    );
 
-    //
-    windowFinger.addEventListener('touchdrag', debounce((ev) => {
-      this.observer({type:'touchdrag', evt: ev})
-    }, delay))
+    windowFinger.addEventListener(
+      "touchdrag",
+      debounce(ev => {
+        this.observer({ type: "touchdrag", evt: ev });
+      }, delay)
+    );
   }
 
-  observer (obj) {
-    console.log(obj.type)
-    console.log(obj.evt)
+  observer(obj) {
+    let evt = obj.evt,
+      param = {
+        t: +new Date(),
+        i: cookie.getCookie("ISEE_BIZ"),
+        a: this.plant ? eventType.AGENT_PC : eventType.AGENT_MOBILE,
+        u: window.location.href
+      },
+      event = null,
+      _self = this;
+    param.r = `${+new Date()}${eventType.SPLIT_DATA}`;
+    const target = {
+      openpage: function() {
+        param.wh = `${document.documentElement.clientWidth}x${
+          document.documentElement.clientHeight
+        }`;
+        _self.pushData(param);
+      },
+      click: function() {
+        let point = "";
+        if (evt instanceof TouchEvent) {
+          point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].screenX}-${
+            evt.changedTouches[0].screenY
+          }${eventType.SPLIT_DATA}`;
+        } else if (evt instanceof MouseEvent) {
+          point = `${eventType.SPLIT_DATA}${evt.screenX}-${evt.screenY}${
+            eventType.SPLIT_DATA
+          }`;
+        }
+        const link = plant.FindANode(evt.target, "a");
+        if (link && link.target === "_blank") {
+          param.r = `${param.r}${eventType.ACTION_TAB}${
+            eventType.SPLIT_DATA
+          }${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`;
+        } else {
+          param.r = `${param.r}${eventType.ACTION_CLICK}${
+            eventType.SPLIT_DATA
+          }${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`;
+        }
+        _self.pushData(param);
+      },
+      mouseover: function() {
+        let tagName = evt.target.tagName.toLowerCase();
+        let check = Checkhover(evt.target, ":hover");
+        if (
+          tagName === "li" ||
+          tagName === "a" ||
+          check ||
+          evt.target.onmouseover ||
+          (evt.__eventOrginList && evt.__eventOrginList.length > 0)
+        ) {
+          event = eventType.ACTION_HOVER;
+          param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+            evt.target
+          )}${eventType.SPLIT_LINE}`;
+          _self.pushData(param);
+        }
+      },
+      unload: function() {
+        _self.wsSocket.close();
+      },
+      inputChange: function() {
+        event = eventType.ACTION_INPUT;
+        if (evt.target.type === "password") {
+          let length = evt.target.value.length;
+          evt.target.value = "";
+          for (var i = 0; i < length; i++) {
+            evt.target.value += "*";
+          }
+        }
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          evt.target
+        )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`;
+        _self.pushData(param, 0);
+      },
+      select: function() {
+        debugger
+        event = eventType.ACTION_SELECT;
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          evt.target
+        )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`;
+        _self.pushData(param);
+      },
+      mousedown: function() {},
+      mousemove: function() {},
+      scroll: function() {
+        event = eventType.ACTION_SCROLL;
+        let scroll,
+          target = evt.target;
+        if (
+          evt.target.nodeName.toLowerCase() === "#document" ||
+          evt.target.nodeName.toLowerCase() === "body" ||
+          evt.target.nodeName.toLowerCase() === "html"
+        ) {
+          scroll =
+            document.documentElement.scrollTop || document.body.scrollTop;
+          target = document.body;
+        } else {
+          scroll = evt.target.scrollTop;
+        }
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          target
+        )}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${
+          eventType.SPLIT_LINE
+        }`;
+        _self.pushData(param);
+      },
+      visibilitychange: function() {
+        event = eventType.ACTION_SWITCH;
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${location.href}${
+          eventType.SPLIT_LINE
+        }`;
+        _self.pushData(param);
+      },
+      fingermove: function() {},
+      visibilityblur: function() {},
+      touchdrag: function() {
+        event = eventType.ACTION_DRAG;
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          evt.target
+        )}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${
+          evt.changedTouches[0].screenY
+        }${eventType.SPLIT_DATA}E:${
+          evt._startPoint.changedTouches[0].screenX
+        }-${evt._startPoint.changedTouches[0].screenY}${eventType.SPLIT_DATA}${
+          eventType.SPLIT_LINE
+        }`;
+        _self.pushData(param, 10);
+      },
+      paint: function() {
+        event = eventType.PAINT_START;
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${
+          evt.changedTouches[0].screenX
+        }-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}${
+          eventType.SPLIT_DATA
+        }${eventType.SPLIT_LINE}`;
+        _self.wsSocket.send(JSON.stringify(param, 10));
+      },
+      popstate: function() {
+        event = eventType.POP_STATE;
+        param.r = `${param.r}${event}${eventType.SPLIT_LINE}`;
+        _self.wsSocket.send(JSON.stringify(param, 0));
+      },
+      hashchange: function() {
+        event = eventType.HASH_CHANGE;
+        param.r = `${param.r}${event}${eventType.SPLIT_LINE}`;
+        _self.wsSocket.send(JSON.stringify(param, 0));
+      },
+      inputBlur: function() {
+        event = eventType.INPUT_BLUR;
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          evt.target
+        )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`;
+        _self.pushData(param, 0);
+      },
+      inputFocus: function() {
+        event = eventType.INPUT_FOCUS;
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          evt.target
+        )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`;
+        _self.pushData(param, 0);
+      }
+    };
+    target[obj.type]();
+  }
+  pushData (obj, time = 100) {
+    console.log(JSON.stringify(obj))
+    if (time) {
+      debounce(() => {
+        this.wsSocket.send(JSON.stringify(obj))
+      }, time)()
+    } else {
+      this.wsSocket.send(JSON.stringify(obj))
+    }
   }
 }
 
-document.addEventListener("DOMContentLoaded", function(event) {
-  const Clairvoyant = new clairvoyant()
-  Clairvoyant.init()
-}, {noShadow: true})
+document.addEventListener(
+  "DOMContentLoaded",
+  function(event) {
+    var iseebiz = cookie.getCookie("ISEE_BIZ");
+    var ISEE_RE = cookie.getCookie("ISEE_RE");
+    if (process.env.NODE_ENV === "production") {
+      if (ISEE_RE) return;
+      if (iseebiz) {
+        const Clairvoyant = (window.clairvoyant = new clairvoyant());
+        Clairvoyant.wsSocket.onopen = function(evt) {
+          console.log("Connection start.");
+          Clairvoyant.observer({ type: "openpage", evt: evt });
+
+          if (window.st_conf.end && window.st_conf.type) {
+            if (window.st_conf.type === "history") {
+              if (location.pathname.indexOf(window.st_conf.end) === 0) {
+                cookie.delCookie("ISEE_BIZ");
+              }
+            } else {
+              if (location.hash === window.st_conf.end) {
+                cookie.delCookie("ISEE_BIZ");
+              }
+            }
+          }
+        };
+        Clairvoyant.wsSocket.onmessage = function(evt) {
+          // console.log("server:" + evt.data)
+        };
+        Clairvoyant.wsSocket.onclose = function(evt) {
+          console.log("Connection closed.");
+        };
+        Clairvoyant.wsSocket.onerror = function(evt) {
+          console.log(evt);
+        };
+        Clairvoyant.init();
+      }
+    } else {
+      const Clairvoyant = (window.clairvoyant = new clairvoyant());
+      Clairvoyant.wsSocket.onopen = function(evt) {
+        console.log("Connection start.");
+        Clairvoyant.observer({ type: "openpage", evt: evt });
+
+        if (window.st_conf.end && window.st_conf.type) {
+          if (window.st_conf.type === "history") {
+            if (location.pathname.indexOf(window.st_conf.end) === 0) {
+              cookie.delCookie("ISEE_BIZ");
+            }
+          } else {
+            if (location.hash === window.st_conf.end) {
+              cookie.delCookie("ISEE_BIZ");
+            }
+          }
+        }
+      };
+      Clairvoyant.wsSocket.onmessage = function(evt) {
+        // console.log("server:" + evt.data)
+      };
+      Clairvoyant.wsSocket.onclose = function(evt) {
+        console.log("Connection closed.");
+      };
+      Clairvoyant.wsSocket.onerror = function(evt) {
+        console.log(evt);
+      };
+      Clairvoyant.init();
+    }
+  },
+  { noShadow: true }
+);
