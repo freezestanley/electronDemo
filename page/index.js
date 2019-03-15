@@ -166,14 +166,19 @@ export default class camera {
     // console.log(obj.type + ': ' + JSON.stringify(param))
   }
   pushData(obj, time = 0) {
-    if (time) {
-      debounce(() => {
-        this.wsSocket.send(JSON.stringify(obj))
-      }, time)()
-    } else {
-      this.wsSocket.send(JSON.stringify(obj))
-    }
-
+    console.log(JSON.stringify(obj))
+    // if (time) {
+    //   let aa = debounce(() => {
+    //     debugger
+    //     this.wsSocket.send(JSON.stringify(obj))
+    //   }, time)
+    //   console.log(aa)
+    //   aa()
+    // } else {
+    //   this.wsSocket.send(JSON.stringify(obj))
+    // }
+    this.wsSocket.send(JSON.stringify(obj))
+    
     // debClass.debounce(() => {
     //   this.wsSocket.send(JSON.stringify(obj))
     // }, time)()
@@ -417,7 +422,6 @@ document.addEventListener('DOMContentLoaded', function(event) {
   /**
    * 自执行
    * */
-  ;(function() {
     var iseebiz = cookie.getCookie('ISEE_BIZ')
     var ISEE_RE = cookie.getCookie('ISEE_RE')
 
@@ -481,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
       }
       wcamera.init()
     }
-  })()
+
 })
 
 // window.addEventListener('beforeunload', function(evt){

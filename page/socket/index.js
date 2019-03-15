@@ -51,6 +51,7 @@ export const debounce = function(method, delay) {
       clearTimeout(debounce.timer)
       debounce.timer = null
     }
+    console.log(delay)
     debounce.timer = setTimeout(function() {
       method.apply(context, args)
       clearTimeout(debounce.timer)
