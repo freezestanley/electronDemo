@@ -10,7 +10,7 @@ import AjaxHook, { CreateXMLHttp } from './xmlhttprequest'
 import ProxyEvent from './proxyEvent'
 import Checkhover from './checkhover'
 
-const wspath = process.env.NODE_ENV === 'production' ? 'wss://isee-test.zhongan.io/sapi/ed/events' : 'ws://127.0.0.1:3000/test/123'
+const wspath = window.st_conf.ws || (process.env.NODE_ENV === 'production' ? 'wss://isee-test.zhongan.io/sapi/ed/events' : 'ws://127.0.0.1:3000/test/123')
 const delay = 300
 const proxyEvent = new ProxyEvent()
 proxyEvent.callback = function (ev) {
