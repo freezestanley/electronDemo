@@ -214,6 +214,7 @@ export default class camera {
 
       const currentNode = [
         ...document.querySelectorAll('input[type=text]'),
+        ...document.querySelectorAll('input'),
         ...document.querySelectorAll('textarea'),
         ...document.querySelectorAll('select'),
         ...document.querySelectorAll('input[type=tel]'),
