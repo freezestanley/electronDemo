@@ -166,7 +166,6 @@ export default class camera {
     // console.log(obj.type + ': ' + JSON.stringify(param))
   }
   pushData(obj, time = 0) {
-    console.log(JSON.stringify(obj))
     // if (time) {
     //   let aa = debounce(() => {
     //     debugger
@@ -178,7 +177,7 @@ export default class camera {
     //   this.wsSocket.send(JSON.stringify(obj))
     // }
     this.wsSocket.send(JSON.stringify(obj))
-    
+
     // debClass.debounce(() => {
     //   this.wsSocket.send(JSON.stringify(obj))
     // }, time)()
