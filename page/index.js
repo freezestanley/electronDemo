@@ -114,6 +114,7 @@ export default class clairvoyant {
               currentNode.push(ne);
             }
             let query = [
+              ...ne.querySelectorAll("input"),
               ...ne.querySelectorAll("input[type=text]"),
               ...ne.querySelectorAll("textarea"),
               ...ne.querySelectorAll("select"),
