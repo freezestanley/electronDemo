@@ -5,12 +5,28 @@ import { readXPath, selectNodes } from "./xpath";
 import * as eventType from "./enum";
 import domObserver from "./observer";
 import Finger from "./finger";
-import cookie from "./cookie";
+import Cookie from "./cookie";
 import AjaxHook, { CreateXMLHttp } from "./xmlhttprequest";
 import ProxyEvent from "./proxyEvent";
 import Checkhover from "./checkhover";
 
-const wspath = (window.st_conf && window.st_conf.ws) || (
+/**
+ * 
+ * @config 
+ * end          结束url
+ * type         路由模式      hash  history
+ * ws           websocket  url
+ * pushMode     推送模式         once      default once 
+ * domain       cookie 的域     default  .zhongan.com
+ * path         cookie path     default  /
+ * exp          cookie 过期事件  default 60 * 60 * 1000
+ */
+
+const getConfig = function (name) {
+  return (window.st_conf && window.st_conf[name]) ? window.st_conf[name] : null
+}
+const cookie = new Cookie(getConfig('domain'), getConfig('path'), getConfig('exp'))
+const wspath = (getConfig('ws')) || (
   process.env.NODE_ENV === "production"
     ? "wss://isee-test.zhongan.io/sapi/ed/events"
     : "ws://127.0.0.1:3000/test/123");
@@ -479,15 +495,9 @@ export default class clairvoyant {
     target[obj.type]();
   }
   pushData (obj, time = 0) {
-    let pushMode = window.st_conf.pushMode || 'once'
+    let pushMode = getConfig('pushMode') || 'once'
     if (pushMode === 'once') {
-      if (time) {
-        debounce(() => {
-          this.wsSocket.send(JSON.stringify(obj))
-        }, time)()
-      } else {
-        this.wsSocket.send(JSON.stringify(obj))
-      }
+      this.wsSocket.send(JSON.stringify(obj))
     } else {
       this.messageList.push(obj)
       if (this.messageList.length >= 30) {
@@ -510,14 +520,15 @@ document.addEventListener(
         Clairvoyant.wsSocket.onopen = function(evt) {
           console.log("Connection start.");
           Clairvoyant.observer({ type: "openpage", evt: evt });
-
-          if (window.st_conf.end && window.st_conf.type) {
-            if (window.st_conf.type === "history") {
-              if (location.pathname.indexOf(window.st_conf.end) === 0) {
+          let end = getConfig('end')
+          let type = getConfig('type')
+          if (end && type) {
+            if (type === "history") {
+              if (location.pathname.indexOf(end) === 0) {
                 cookie.delCookie("ISEE_BIZ");
               }
             } else {
-              if (location.hash === window.st_conf.end) {
+              if (location.hash === end) {
                 cookie.delCookie("ISEE_BIZ");
               }
             }
@@ -540,13 +551,15 @@ document.addEventListener(
         console.log("Connection start.");
         Clairvoyant.observer({ type: "openpage", evt: evt });
 
-        if (window.st_conf.end && window.st_conf.type) {
-          if (window.st_conf.type === "history") {
-            if (location.pathname.indexOf(window.st_conf.end) === 0) {
+        let end = getConfig('end')
+        let type = getConfig('type')
+        if (end && type) {
+          if (type === "history") {
+            if (location.pathname.indexOf(end) === 0) {
               cookie.delCookie("ISEE_BIZ");
             }
           } else {
-            if (location.hash === window.st_conf.end) {
+            if (location.hash === end) {
               cookie.delCookie("ISEE_BIZ");
             }
           }

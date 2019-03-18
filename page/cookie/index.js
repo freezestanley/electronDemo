@@ -1,13 +1,16 @@
 const domain = window.st_conf.domain || '.zhongan.com'
-const cookie = {
-  setCookie: function(name, value) {
-    var Days = 30;
+export default class cookie {
+  constructor (domain = '.zhongan.com', path = '/', exp = 60 * 60 * 1000) {
+    this.domain = domain
+    this.path = path
+    this.exp = exp
+  }
+  setCookie (name, value) {
     var exp = new Date();
-    exp.setTime(exp.getTime() + 60 * 60 * 1000);
-    document.cookie = `${name}=${escape(value)};expires=${exp.toGMTString()};path=/;domain=${domain};`
-      // name + "=" + escape(value) + ";expires=" + exp.toGMTString() + ";path=/;domain="+ domain +";";
-  },
-  getCookie: function(name) {
+    exp.setTime(exp.getTime() + this.exp);
+    document.cookie = `${name}=${escape(value)};expires=${exp.toGMTString()};path=${this.path};domain=${this.domain};`
+  }
+  getCookie (name) {
     var arr,
       reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
     if ((arr = document.cookie.match(reg))) {
@@ -15,14 +18,14 @@ const cookie = {
     } else {
       return null;
     }
-  },
-  delCookie: function(name) {
+  }
+
+  delCookie (name) {
     var exp = new Date();
     exp.setTime(exp.getTime() - 1);
-    var cval = cookie.getCookie(name);
+    var cval = this.getCookie(name);
     if (cval != null) {
       document.cookie = name + "=" + cval + ";expires=" + exp.toGMTString();
     }
   }
-}
-export default cookie
+} 

@@ -22,7 +22,10 @@ export class fingerType {
     if (nextPoint && (prePoint.identifier === curPoint.identifier) && (nextPoint.identifier === prePoint.identifier)) {
       type = TOUCH_DRAGTAP
     } else if (prePoint.identifier === curPoint.identifier ) {
-      if ((prePoint.pageX === curPoint.pageX) && (prePoint.pageY === curPoint.pageY)) {
+
+      if ((curPoint.pageX <= prePoint.pageX + 10 && curPoint.pageX >= prePoint.pageX - 10) && 
+          (curPoint.pageY <= prePoint.pageY + 10 && curPoint.pageY >= prePoint.pageY - 10)) {
+            
         const conTime = (+new Date()) - this._prePoint.time
         if (conTime <= 500) {
           type = TOUCH_TAP
