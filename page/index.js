@@ -117,9 +117,10 @@ export default class clairvoyant {
       const _this = this;
       let currentNode = [];
       ele.map((e, idx, arr) => {
-        if (e.type === "childList") {
+        if (e.type === "childList" && e.addedNodes.length > 0) {
           for (let i = 0; i < e.addedNodes.length; i++) {
             let ne = e.addedNodes[i];
+            
             if (ne.nodeType != 1) continue 
             let netagname = ne.tagName && ne.tagName.toLocaleLowerCase();
             if (
@@ -131,18 +132,14 @@ export default class clairvoyant {
             }
             let query = [
               ...ne.querySelectorAll("input"),
-              ...ne.querySelectorAll("input[type=text]"),
               ...ne.querySelectorAll("textarea"),
-              ...ne.querySelectorAll("select"),
-              ...ne.querySelectorAll("input[type=tel]"),
-              ...ne.querySelectorAll("input[type=password]"),
-              ...ne.querySelectorAll("input[type=email]"),
-              ...ne.querySelectorAll("input[type=radio]"),
-              ...ne.querySelectorAll("input[type=checkbox]"),
-              ...ne.querySelectorAll("input[type=number]")
+              ...ne.querySelectorAll("select")
             ];
             currentNode = currentNode.concat(query);
-
+            if(currentNode.length > 0) {
+              console.log(ne.innerHTML)
+              console.log(currentNode)
+            }
           }
         }
       });
@@ -153,18 +150,14 @@ export default class clairvoyant {
             noShadow: true
           });
         } else if (
-          cNode.type === "text" ||
-          cNode.type === "tel" ||
-          cNode.type === "password" ||
-          cNode.type === "email" ||
-          cNode.type === "textarea" ||
-          cNode.type === "number"
+          cNode.type === "radio" ||
+          cNode.type === "checkbox" 
         ) {
-          cNode.addEventListener("input", _this.inputChangEvent.bind(_this), {
+          cNode.addEventListener("change", _this.inputChangEvent.bind(_this), {
             noShadow: true
           });
         } else {
-          cNode.addEventListener("change", _this.inputChangEvent.bind(_this), {
+          cNode.addEventListener("input", _this.inputChangEvent.bind(_this), {
             noShadow: true
           });
         }
@@ -209,20 +202,20 @@ export default class clairvoyant {
               this.observer({ type: "scroll", evt: ev });
             }, delay);
 
-            scrolltarget.addEventListener(
+            scrollNode.addEventListener(
               "mouseenter",
               () => {
-                scrolltarget.addEventListener("scroll", domScroll, {
+                scrollNode.addEventListener("scroll", domScroll, {
                   noShadow: true
                 });
               },
               { noShadow: true }
             );
 
-            scrolltarget.addEventListener(
+            scrollNode.addEventListener(
               "mouseleave ",
               () => {
-                scrolltarget.removeEventListener("scroll", domScroll, {
+                scrollNode.removeEventListener("scroll", domScroll, {
                   noShadow: true
                 });
               },

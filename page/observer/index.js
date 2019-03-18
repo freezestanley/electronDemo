@@ -10,7 +10,7 @@ function domObserver (node = document.body, config, mutation) {
     // }, 500))
     this.observer = new MutationObserver((obj, itself) => {
       mutation(obj, itself)
-    }, 0)
+    })
     
     this.start = () => {
       this.observer.observe(this.node, this.config)
