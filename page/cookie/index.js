@@ -1,9 +1,9 @@
 const domain = window.st_conf.domain || '.zhongan.com'
 export default class cookie {
-  constructor (domain = '.zhongan.com', path = '/', exp = 60 * 60 * 1000) {
-    this.domain = domain
-    this.path = path
-    this.exp = exp
+  constructor (domain, path, exp) {
+    this.domain = domain || '.zhongan.com'
+    this.path = path || '/'
+    this.exp = exp || 60 * 60 * 1000
   }
   setCookie (name, value) {
     var exp = new Date();

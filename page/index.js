@@ -46,6 +46,7 @@ export default class clairvoyant {
     this.plant = plant.IsPc();
     this.scrollList = [];
     this.messageList = []
+    this.formlist = []
   }
 
   static selectNode(xpath) {
@@ -115,34 +116,36 @@ export default class clairvoyant {
     };
     let mutationEventCallback = (ele, itself) => {
       const _this = this;
-      let currentNode = [];
-      ele.map((e, idx, arr) => {
-        if (e.type === "childList" && e.addedNodes.length > 0) {
-          for (let i = 0; i < e.addedNodes.length; i++) {
-            let ne = e.addedNodes[i];
-            
-            if (ne.nodeType != 1) continue 
-            let netagname = ne.tagName && ne.tagName.toLocaleLowerCase();
-            if (
-              netagname === "input" ||
-              netagname === "select" ||
-              netagname === "textarea"
-            ) {
-              currentNode.push(ne);
-            }
-            let query = [
-              ...ne.querySelectorAll("input"),
-              ...ne.querySelectorAll("textarea"),
-              ...ne.querySelectorAll("select")
-            ];
-            currentNode = currentNode.concat(query);
-            if(currentNode.length > 0) {
-              console.log(ne.innerHTML)
-              console.log(currentNode)
-            }
-          }
-        }
-      });
+      // let currentNode = [];
+      // ele.map((e, idx, arr) => {
+      //   if (e.type === "childList" && e.addedNodes.length > 0) {
+      //     for (let i = 0; i < e.addedNodes.length; i++) {
+      //       let ne = e.addedNodes[i];
+      //       if (ne.nodeType != 1) continue 
+      //       console.log(ne.querySelectorAll("input"))
+      //       let netagname = ne.tagName && ne.tagName.toLocaleLowerCase();
+      //       if (
+      //         netagname === "input" ||
+      //         netagname === "select" ||
+      //         netagname === "textarea"
+      //       ) {
+      //         currentNode.push(ne);
+      //       }
+      //       let query = [
+      //         ...ne.querySelectorAll("input"),
+      //         ...ne.querySelectorAll("textarea"),
+      //         ...ne.querySelectorAll("select")
+      //       ];
+      //       currentNode = currentNode.concat(query);
+      //     }
+      //   }
+      // });
+      let currentNode = [
+        ...document.querySelectorAll("input"),
+        ...document.querySelectorAll("textarea"),
+        ...document.querySelectorAll("select")
+      ]
+      currentNode = currentNode.filter(v =>  _this.formlist.indexOf(v) === -1)
 
       currentNode.map((cNode, index, array) => {
         if (cNode.type === "select") {
@@ -159,10 +162,12 @@ export default class clairvoyant {
         } else {
           cNode.addEventListener("input", _this.inputChangEvent.bind(_this), {
             noShadow: true
-          });
+          })
         }
-      });
-    };
+      })
+      _this.formlist = _this.formlist.concat(currentNode)
+    }
+
     this.domObserver = new domObserver(
       document.body,
       config,
