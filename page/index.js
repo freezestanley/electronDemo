@@ -26,8 +26,6 @@ const getConfig = function (name) {
   return (window.st_conf && window.st_conf[name]) ? window.st_conf[name] : null
 }
 const cookie = new Cookie(getConfig('domain'), getConfig('path'), getConfig('exp'))
-// window.ck = cookie
-// ck.setCookie('ffff', 'asdfasdf')
 
 const wspath = (getConfig('ws')) || (
   process.env.NODE_ENV === "production"
@@ -61,7 +59,7 @@ export default class clairvoyant {
 
   init() {
     this.addBaseEvent();
-    this.mutationWatch();
+    // this.mutationWatch();
     this.plant ? this.deskWatch() : this.mobileWatch();
   }
   addBaseEvent() {
@@ -75,7 +73,20 @@ export default class clairvoyant {
       },
       { noShadow: true }
     );
-
+    window.addEventListener(
+      "input",
+      ev => {
+        let target = ev.target.nodeName.toLocaleLowerCase()
+        if (target === 'textarea') {
+          this.observer({ type: "inputChange", evt: ev });
+        } else if(target === 'select') {
+          this.observer({ type: "select", evt: ev });
+        } else if(target === 'input') {
+          this.observer({ type: "inputChange", evt: ev });
+        }
+      },
+      { noShadow: true }
+    )
     window.addEventListener(
       "popstate",
       ev => {
