@@ -162,6 +162,13 @@ export default class camera {
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         this.pushData(param)
         break
+      case 'pickerchange':
+        const dataStr = evt.data.map(item => `${item.xpath}:${item.value}:${item.scriptTask}`).join(eventType.SPLIT_DATA_SAME)
+        console.log('-----pickerchange data', dataStr)
+        event = eventType.PICKER_CHANGE
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${dataStr}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        this.wsSocket.send(JSON.stringify(param, 0))
+        break
     }
     // console.log(obj.type + ': ' + JSON.stringify(param))
   }
@@ -210,12 +217,29 @@ export default class camera {
       attributeOldValue: true,
       characterDataOldValue: true
     }
-    let mutationEventCallback = (ele, itself) => {
+    let mutationEventCallback = (mutationsList, itself) => {
       const _this = this
       // hasListener.map((ele) => {
       //   ele.removeEventListener('change', _this.inputChangEvent.bind(_this))
       // })
-
+      /** picker 定制化使用开始  */
+      const markedListdom = mutationsList.map(item => item.target).filter(item => item)
+      const targetList = markedListdom.filter(item => item.nodeType === 3 && plant.findNodeByClassName(item, 'eye-custom'))
+      if (targetList.length > 0) {
+        const arr = targetList.map(node => {
+          const className = plant.findNodeByClassName(node, 'eye-custom').className
+          const cbnameMatch = className.match(/eye\-custom\-(\w+)\s/)
+          const cbname = (cbnameMatch && cbnameMatch[1]) || 'noop'
+          console.log('------cbnamme', cbname)
+          let ele = node
+          if (ele.nodeType === 3) {
+            ele = ele.parentElement
+          }
+          return { xpath: readXPath(ele), value: node.data, scriptTask: `window.eyeCbs.${cbname}('${node.data}');` }
+        })
+        this.observer({ type: 'pickerchange', evt: { data: arr } })
+      }
+      /** picker 定制化使用结束  */
       const currentNode = [
         ...document.querySelectorAll('input[type=text]'),
         ...document.querySelectorAll('input'),
@@ -421,41 +445,12 @@ document.addEventListener('DOMContentLoaded', function(event) {
   /**
    * 自执行
    * */
-    var iseebiz = cookie.getCookie('ISEE_BIZ')
-    var ISEE_RE = cookie.getCookie('ISEE_RE')
+  var iseebiz = cookie.getCookie('ISEE_BIZ')
+  var ISEE_RE = cookie.getCookie('ISEE_RE')
 
-    if (process.env.NODE_ENV === 'production') {
-      if (ISEE_RE) return
-      if (iseebiz) {
-        const wcamera = (window.wcamera = new camera())
-        wcamera.wsSocket.onopen = function(evt) {
-          console.log('Connection start.')
-          wcamera.observer({ type: 'openpage', evt: evt })
-
-          if (window.st_conf.end && window.st_conf.type) {
-            if (window.st_conf.type === 'history') {
-              if (location.pathname.indexOf(window.st_conf.end) === 0) {
-                cookie.delCookie('ISEE_BIZ')
-              }
-            } else {
-              if (location.hash === window.st_conf.end) {
-                cookie.delCookie('ISEE_BIZ')
-              }
-            }
-          }
-        }
-        wcamera.wsSocket.onmessage = function(evt) {
-          // console.log("server:" + evt.data)
-        }
-        wcamera.wsSocket.onclose = function(evt) {
-          console.log('Connection closed.')
-        }
-        wcamera.wsSocket.onerror = function(evt) {
-          console.log(evt)
-        }
-        wcamera.init()
-      }
-    } else {
+  if (process.env.NODE_ENV === 'production') {
+    if (ISEE_RE) return
+    if (iseebiz) {
       const wcamera = (window.wcamera = new camera())
       wcamera.wsSocket.onopen = function(evt) {
         console.log('Connection start.')
@@ -484,7 +479,35 @@ document.addEventListener('DOMContentLoaded', function(event) {
       }
       wcamera.init()
     }
+  } else {
+    const wcamera = (window.wcamera = new camera())
+    wcamera.wsSocket.onopen = function(evt) {
+      console.log('Connection start.')
+      wcamera.observer({ type: 'openpage', evt: evt })
 
+      if (window.st_conf.end && window.st_conf.type) {
+        if (window.st_conf.type === 'history') {
+          if (location.pathname.indexOf(window.st_conf.end) === 0) {
+            cookie.delCookie('ISEE_BIZ')
+          }
+        } else {
+          if (location.hash === window.st_conf.end) {
+            cookie.delCookie('ISEE_BIZ')
+          }
+        }
+      }
+    }
+    wcamera.wsSocket.onmessage = function(evt) {
+      // console.log("server:" + evt.data)
+    }
+    wcamera.wsSocket.onclose = function(evt) {
+      console.log('Connection closed.')
+    }
+    wcamera.wsSocket.onerror = function(evt) {
+      console.log(evt)
+    }
+    wcamera.init()
+  }
 })
 
 // window.addEventListener('beforeunload', function(evt){

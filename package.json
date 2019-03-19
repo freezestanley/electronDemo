@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node .",
+    "start:prod": "npm run build && node ./server1.js",
     "dev": "nodemon .",
     "win": "electron win.js",
     "build": "cross-env NODE_ENV=production CK_ENV=ISEE_BIZ webpack --config=build/webpack.prd.js --display-error-details  --color",
