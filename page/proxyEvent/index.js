@@ -7,6 +7,9 @@
  *    every noShadow 当前事件被执行但是守卫不会被执行
  *  - getEventListenerList(type) 获取事件列队
  */
+/**
+ * Object.getOwnPropertyDescriptor(window, 'onLineCallBack')
+ */
 export default class proxyEvent {
   constructor(options = null) {
     let _self = this;
@@ -189,8 +192,12 @@ export default class proxyEvent {
     });
 
     for (let i in target) {
+      
       if (i.indexOf("on") === 0) {
-        let abc;
+        let proty = Object.getOwnPropertyDescriptor(target, i)
+        if (proty && !proty.configurable) {
+          continue
+        }
         Object.defineProperty(target, i, {
           get: function(e) {
             return this.__pro && this.__pro[`__${i}`]
@@ -205,8 +212,7 @@ export default class proxyEvent {
             } else {
               this.removeEventListener(type, this.__pro[`__${i}`]);
             }
-            abc = newValue;
-            this.__pro[`__${i}`] = abc;
+            this.__pro[`__${i}`] = newValue;
           },
           enumerable: true,
           configurable: true

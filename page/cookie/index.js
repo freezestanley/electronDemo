@@ -22,10 +22,11 @@ export default class cookie {
 
   delCookie (name) {
     var exp = new Date();
-    exp.setTime(exp.getTime() - 1);
+    exp.setTime(exp.getTime() - 100 - this.exp);
     var cval = this.getCookie(name);
     if (cval != null) {
-      document.cookie = name + "=" + cval + ";expires=" + exp.toGMTString();
+      // document.cookie = name + "=" + cval + ";expires=" + exp.toGMTString();
+      document.cookie = `${name}=${escape(cval)};expires=${exp.toGMTString()};path=${this.path};domain=${this.domain};`
     }
   }
 } 
