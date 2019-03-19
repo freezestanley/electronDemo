@@ -26,8 +26,9 @@ const getConfig = function (name) {
   return (window.st_conf && window.st_conf[name]) ? window.st_conf[name] : null
 }
 const cookie = new Cookie(getConfig('domain'), getConfig('path'), getConfig('exp'))
-window.ck = cookie
-cookie.delCookie('ffff')
+// window.ck = cookie
+// ck.setCookie('ffff', 'asdfasdf')
+
 const wspath = (getConfig('ws')) || (
   process.env.NODE_ENV === "production"
     ? "wss://isee-test.zhongan.io/sapi/ed/events"
@@ -578,4 +579,4 @@ document.addEventListener(
     }
   },
   { noShadow: true }
-);
+)
