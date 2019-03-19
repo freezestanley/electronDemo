@@ -496,6 +496,7 @@ export default class clairvoyant {
     target[obj.type]();
   }
   pushData (obj, time = 0) {
+    if(!cookie.getCookie("ISEE_BIZ")) return
     let pushMode = getConfig('pushMode') || 'once'
     if (pushMode === 'once') {
       this.wsSocket.send(JSON.stringify(obj))
