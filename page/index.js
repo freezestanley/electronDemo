@@ -326,24 +326,7 @@ export default class clairvoyant {
 
     windowFinger.addEventListener("touchend", ev => {
       if (ev.target.tagName.toLowerCase() === "canvas") {
-        let ele = ev.target;
-        // const targetXpath = readXPath(ele);
-        const isListener = this.canvasList.find(e => {
-          return e === ele;
-        });
-        if (!isListener) {
-          ele.addEventListener(
-            "touchmove",
-            ev => {
-              this.observer({
-                type: "paint",
-                evt: ev
-              });
-            },
-            delay
-          );
-          this.canvasList.push(ele);
-        }
+        this.observer({ type: "paintend", evt: ev });
       }
     });
 
