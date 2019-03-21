@@ -254,23 +254,9 @@ export default class clairvoyant {
       this.observer({ type: "click", evt: ev });
     });
 
-    // canvas 画图
-    window.addEventListener("touchstart", ev => {
+    windowFinger.addEventListener("touchend", ev => {
       if (ev.target.tagName.toLowerCase() === "canvas") {
-        let ele = ev.target;
-        const targetXpath = readXPath(ele);
-        const isListener = this.canvasList.find(ele => {
-          return ele === targetXpath;
-        });
-        if (!isListener) {
-          ele.addEventListener(
-            "touchmove",
-            ev => {
-              this.observer({ type: "paint", evt: ev });
-            }
-          );
-          this.canvasList.push(targetXpath);
-        }
+        this.observer({ type: "paintend", evt: ev });
       }
     });
 
@@ -278,6 +264,25 @@ export default class clairvoyant {
     windowFinger.addEventListener(
       "touchstart",
       ev => {
+        // canvas 画图
+        if (ev.target.tagName.toLowerCase() === "canvas") {
+          let ele = ev.target;
+          const targetXpath = readXPath(ele);
+          const isListener = this.canvasList.find(ele => {
+            return ele === targetXpath;
+          });
+          this.observer({ type: "paintstart", evt: ev });
+          if (!isListener) {
+            ele.addEventListener(
+              "touchmove",
+              ev => {
+                this.observer({ type: "paint", evt: ev });
+              }
+            );
+            this.canvasList.push(targetXpath);
+          }
+        }
+
         const scrolltarget = plant.FindScrollNode(ev.target);
         if (scrolltarget) {
           const targetXpath = readXPath(scrolltarget);
@@ -445,8 +450,26 @@ export default class clairvoyant {
         }`;
         _self.pushData(param, 100);
       },
-      paint: function() {
+      paintstart: function() {
         event = eventType.PAINT_START;
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${
+          evt.changedTouches[0].screenX
+        }-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}${
+          eventType.SPLIT_DATA
+        }${eventType.SPLIT_LINE}`;
+        _self.wsSocket.send(JSON.stringify(param));
+      },
+      paintend: function() {
+        event = eventType.PAINT_END;
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${
+          evt.changedTouches[0].screenX
+        }-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}${
+          eventType.SPLIT_DATA
+        }${eventType.SPLIT_LINE}`;
+        _self.wsSocket.send(JSON.stringify(param));
+      },
+      paint: function() {
+        event = eventType.PAINT_MOVE;
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${
           evt.changedTouches[0].screenX
         }-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}${
