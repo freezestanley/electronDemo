@@ -295,7 +295,7 @@ export default class clairvoyant {
       ev => {
         if (
           mousedownPoint.clientX === ev.clientX &&
-          mousedownPoint.clientY === ev.clientY 
+          mousedownPoint.clientY === ev.clientY
         ) {
           this.observer({
             type: "click",
@@ -325,7 +325,24 @@ export default class clairvoyant {
 
     windowFinger.addEventListener("touchend", ev => {
       if (ev.target.tagName.toLowerCase() === "canvas") {
-        this.observer({ type: "paintend", evt: ev });
+        let ele = ev.target;
+        const targetXpath = readXPath(ele);
+        const isListener = this.canvasList.find(ele => {
+          return ele === targetXpath;
+        });
+        if (!isListener) {
+          ele.addEventListener(
+            "touchmove",
+            ev => {
+              this.observer({
+                type: "paint",
+                evt: ev
+              });
+            },
+            delay
+          );
+          this.canvasList.push(targetXpath);
+        }
       }
     });
 
