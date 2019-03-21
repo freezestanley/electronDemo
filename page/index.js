@@ -240,12 +240,12 @@ export default class clairvoyant {
         });
         const scrollNode = plant.FindScrollNode(ev.target);
         if (scrollNode) {
-          const targetXpath = readXPath(scrollNode);
+          // const targetXpath = readXPath(scrollNode);
           const isListener = this.scrollList.find(ele => {
-            return ele === targetXpath;
+            return ele === scrollNode;
           });
           if (!isListener) {
-            this.scrollList.push(targetXpath);
+            this.scrollList.push(scrollNode);
             const domScroll = debounce(ev => {
               this.observer({
                 type: "scroll",
@@ -295,7 +295,8 @@ export default class clairvoyant {
       ev => {
         if (
           mousedownPoint.clientX === ev.clientX &&
-          mousedownPoint.clientY === ev.clientY
+          mousedownPoint.clientY === ev.clientY &&
+          mousedownPoint.target  === ev.target
         ) {
           this.observer({
             type: "click",
@@ -326,9 +327,9 @@ export default class clairvoyant {
     windowFinger.addEventListener("touchend", ev => {
       if (ev.target.tagName.toLowerCase() === "canvas") {
         let ele = ev.target;
-        const targetXpath = readXPath(ele);
-        const isListener = this.canvasList.find(ele => {
-          return ele === targetXpath;
+        // const targetXpath = readXPath(ele);
+        const isListener = this.canvasList.find(e => {
+          return e === ele;
         });
         if (!isListener) {
           ele.addEventListener(
@@ -341,7 +342,7 @@ export default class clairvoyant {
             },
             delay
           );
-          this.canvasList.push(targetXpath);
+          this.canvasList.push(ele);
         }
       }
     });
@@ -353,9 +354,9 @@ export default class clairvoyant {
         // canvas 画图
         if (ev.target.tagName.toLowerCase() === "canvas") {
           let ele = ev.target;
-          const targetXpath = readXPath(ele);
-          const isListener = this.canvasList.find(ele => {
-            return ele === targetXpath;
+          // const targetXpath = readXPath(ele);
+          const isListener = this.canvasList.find(e => {
+            return ele === e;
           });
           this.observer({ type: "paintstart", evt: ev });
           if (!isListener) {
@@ -365,18 +366,18 @@ export default class clairvoyant {
                 this.observer({ type: "paint", evt: ev });
               }
             );
-            this.canvasList.push(targetXpath);
+            this.canvasList.push(ele);
           }
         }
 
         const scrolltarget = plant.FindScrollNode(ev.target);
         if (scrolltarget) {
-          const targetXpath = readXPath(scrolltarget);
-          const isListener = this.scrollList.find(ele => {
-            return ele === targetXpath;
+          // const targetXpath = readXPath(scrolltarget);
+          const isListener = this.scrollList.find(e => {
+            return ele === e;
           });
           if (!isListener) {
-            this.scrollList.push(targetXpath);
+            this.scrollList.push(ele);
             const domScroll = debounce(ev => {
               this.observer({
                 type: "scroll",
