@@ -377,7 +377,7 @@ export default class clairvoyant {
             return ele === e;
           });
           if (!isListener) {
-            this.scrollList.push(ele);
+            this.scrollList.push(scrolltarget);
             const domScroll = debounce(ev => {
               this.observer({
                 type: "scroll",
