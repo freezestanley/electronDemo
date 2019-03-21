@@ -1,7 +1,10 @@
-import {throttle, debounce} from '../socket'
+import {
+  throttle,
+  debounce
+} from '../socket'
 
-function domObserver (node = document.body, config, mutation) {
-  return ((n, c)=>{
+function domObserver(node = document.body, config, callback) {
+  return ((n, c) => {
     this.node = n
     this.config = c
     let MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver
@@ -9,9 +12,9 @@ function domObserver (node = document.body, config, mutation) {
     //   mutation(obj)
     // }, 500))
     this.observer = new MutationObserver((obj, itself) => {
-      mutation(obj, itself)
+      callback(obj, itself)
     })
-    
+
     this.start = () => {
       this.observer.observe(this.node, this.config)
     }
