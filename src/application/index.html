@@ -2,6 +2,14 @@
 <head>
   <title>myVue</title>
   <meta name="viewport" content="target-densitydpi=device-dpi,width=750,user-scalable=no,initial-scale=0">
+  <script>
+    window.st_conf = {
+      end: '/dm/open/cashier/cashier_pay_return.do',
+      type: 'history',
+      domain: 'localhost'
+    }
+  </script>
+  <script src="http://localhost:3000/st.js?v="></script>
 </head>
 <style>
   *{
@@ -43,7 +51,9 @@
 </style>
 <body>
   <div id="app">
+    <canvas width="800" height="800" style="border: 1px solid;">
 
+    </canvas>
 
     <div onclick="aa()">butt1ee2</div>
     <div id="test">
@@ -245,15 +255,15 @@
 
 
   (function () {
-    window.st_conf = {
-      end: '/dm/open/cashier/cashier_pay_return.do',
-      type: 'history',
-      domain: '.zhongan.com'
-    }
-    var script=document.createElement("script");
-    script.type="text/javascript";
-    script.src = "http://localhost:3000/st.js?v=" + (+new Date())
-    document.getElementsByTagName('head')[0].appendChild(script); 
+    // window.st_conf = {
+    //   end: '/dm/open/cashier/cashier_pay_return.do',
+    //   type: 'history',
+    //   domain: '.zhongan.com'
+    // }
+    // var script=document.createElement("script");
+    // script.type="text/javascript";
+    // script.src = "http://localhost:3000/st.js?v=" + (+new Date())
+    // document.getElementsByTagName('head')[0].appendChild(script); 
   })()
 
   // (function () {
