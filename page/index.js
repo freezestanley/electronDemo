@@ -414,15 +414,15 @@ export default class clairvoyant {
     param.r = `${+new Date()}${eventType.SPLIT_DATA}`;
     const target = {
       openpage: function () {
-        const ck = cookie.getCookie("ISEE_BIZ")
-        const ck_cache = cookie.getCookie("ISEE_BIZ_CACHE")
+        // const ck = cookie.getCookie("ISEE_BIZ")
+        // const ck_cache = cookie.getCookie("ISEE_BIZ_CACHE")
         param.wh = `${document.documentElement.clientWidth}x${
           document.documentElement.clientHeight
         }`;
-        if (!ck_cache || ck_cache !== ck) {
-          cookie.setCookie("ISEE_BIZ_CACHE", ck)
-          param.lc = JSON.stringify(window.localStorage)
-        }
+        // if (!ck_cache || ck_cache !== ck) {
+        //   cookie.setCookie("ISEE_BIZ_CACHE", ck)
+        //   param.lc = JSON.stringify(window.localStorage)
+        // }
         _self.pushData(param);
       },
       click: function () {
