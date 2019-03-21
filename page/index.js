@@ -56,6 +56,7 @@ export default class clairvoyant {
     this.scrollList = [];
     this.messageList = []
     this.formlist = []
+    this.canvasList = []
   }
 
   static selectNode(xpath) {
@@ -405,7 +406,7 @@ export default class clairvoyant {
               scrolltarget.addEventListener("scroll", domScroll);
             });
 
-            scrolltarget.addEventListener("touchend ", () => {
+            scrolltarget.addEventListener("touchend", () => {
               scrolltarget.removeEventListener("scroll", domScroll);
             });
           }
@@ -516,7 +517,6 @@ export default class clairvoyant {
         _self.pushData(param);
       },
       select: function () {
-        debugger
         event = eventType.ACTION_SELECT;
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
           evt.target
@@ -576,7 +576,7 @@ export default class clairvoyant {
         }-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}${
           eventType.SPLIT_DATA
         }${eventType.SPLIT_LINE}`;
-        _self.wsSocket.send(JSON.stringify(param, 100));
+        _self.wsSocket.send(JSON.stringify(param));
       },
       popstate: function () {
         event = eventType.POP_STATE;
