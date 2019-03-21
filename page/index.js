@@ -17,6 +17,7 @@ import AjaxHook, {
 } from "./xmlhttprequest";
 import ProxyEvent from "./proxyEvent";
 import Checkhover from "./checkhover";
+import * as utils from "./utils";
 
 /**
  * 
@@ -57,6 +58,7 @@ export default class clairvoyant {
     this.messageList = []
     this.formlist = []
     this.canvasList = []
+    this.transformList = []
   }
 
   static selectNode(xpath) {
@@ -164,27 +166,28 @@ export default class clairvoyant {
   mutationWatch() {
     let config = {
       attributes: true,
-      // attributeFilter: ["style"],
+      attributeFilter: ["style"],
       childList: true,
       characterData: false,
       subtree: true,
       attributeOldValue: false,
       characterDataOldValue: false
     };
+    let transformList = null
     let mutationEventCallback = (mutationsList, itself) => {
       const _this = this;
       for (let mutation of mutationsList) {
         if (mutation.type == 'attributes') {
-          console.log(mutationsList, itself);
-          //     _this.transformList = mutationsList
-          //       .map(mutation => mutation.target)
-          //       .filter(item => item);
-          //     console.log(
-          //       'The ' + mutation.attributes + ' attribute was modified.',
-          //       _this.transformList
-          //     );
+          transformList = mutationsList
+            .map(mutation => mutation.target)
+            .filter(item => item.style.cssText.indexOf('translate') > -1);
+          // console.log(mutation, transformList)
+          // console.log(mutation.target.getBoundingClientRect())
         }
       }
+      _this.transformList = [...new Set(transformList)];
+
+
       // let currentNode = [];
       // ele.map((e, idx, arr) => {
       //   if (e.type === "childList" && e.addedNodes.length > 0) {
@@ -387,6 +390,7 @@ export default class clairvoyant {
     windowFinger.addEventListener(
       "touchstart",
       ev => {
+        this.transformList = []
         const scrolltarget = plant.FindScrollNode(ev.target);
         if (scrolltarget) {
           const targetXpath = readXPath(scrolltarget);
@@ -427,16 +431,25 @@ export default class clairvoyant {
     windowFinger.addEventListener(
       "touchdrag",
       debounce(ev => {
-        this.observer({
-          type: "touchdrag",
-          evt: ev
-        });
+        this.transformList.forEach(ele => {
+          const transformRect = ele.getBoundingClientRect()
+          const dragRect = ev.target.getBoundingClientRect()
+          if (utils.isOverlap(dragRect, transformRect)) {
+            // console.log(ele.style.cssText, dragRect)
+            this.observer({
+              type: "touchdrag",
+              evt: ev,
+              movement: ele
+            });
+          }
+        })
       }, delay)
     );
   }
 
   observer(obj) {
     let evt = obj.evt,
+      movement = obj.movement,
       param = {
         t: +new Date(),
         i: cookie.getCookie("ISEE_BIZ"),
@@ -567,6 +580,9 @@ export default class clairvoyant {
         }-${evt._startPoint.changedTouches[0].screenY}${eventType.SPLIT_DATA}${
           eventType.SPLIT_LINE
         }`;
+        param.m = `${event}${eventType.SPLIT_DATA}${readXPath(
+          movement
+        )}${eventType.SPLIT_DATA}E:${movement.style.cssText}${eventType.SPLIT_DATA}`
         _self.pushData(param, 100);
       },
       paint: function () {
