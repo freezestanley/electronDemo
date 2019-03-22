@@ -421,9 +421,9 @@ export default class clairvoyant {
       click: function() {
         let point = ''
         if (evt instanceof TouchEvent) {
-          point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}`
+          point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX}-${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}`
         } else if (evt instanceof MouseEvent) {
-          point = `${eventType.SPLIT_DATA}${evt.screenX}-${evt.screenY}${eventType.SPLIT_DATA}`
+          point = `${eventType.SPLIT_DATA}${evt.clientX}-${evt.clientY}${eventType.SPLIT_DATA}`
         }
         const link = plant.FindANode(evt.target, 'a')
         if (link && link.target === '_blank') {
@@ -486,9 +486,9 @@ export default class clairvoyant {
       visibilityblur: function() {},
       touchdrag: function() {
         event = eventType.ACTION_DRAG
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].clientX}-${evt.changedTouches[0].clientY}${
           eventType.SPLIT_DATA
-        }E:${evt._startPoint.changedTouches[0].screenX}-${evt._startPoint.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        }E:${evt._startPoint.changedTouches[0].clientX}-${evt._startPoint.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.pushData(param, 100)
       },
       paint: function() {

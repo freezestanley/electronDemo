@@ -61,9 +61,9 @@ export default class finger {
       this.finger.start(ev)
       this._startPoint = ev
       if(ev.changedTouches[0]) {
-        const screenX = ev.changedTouches[0].screenX + ''
-        const screenY = ev.changedTouches[0].screenY + ''
-        this._movePoint = `${screenX.split('.')[0]},${screenY.split('.')[0]}|`
+        const clientX = ev.changedTouches[0].clientX + ''
+        const clientY = ev.changedTouches[0].clientY + ''
+        this._movePoint = `${clientX.split('.')[0]},${clientY.split('.')[0]}|`
       }
       
       if(this._touchstart)
@@ -76,9 +76,9 @@ export default class finger {
       this.finger.start(ev)
       this._startPoint = ev
       if (ev.target.tagName.toLowerCase() === 'canvas') {
-        const screenX = ev.changedTouches[0].screenX + ''
-        const screenY = ev.changedTouches[0].screenY + ''
-        this._movePoint = `${screenX.split('.')[0]},${screenY.split('.')[0]}|`
+        const clientX = ev.changedTouches[0].clientX + ''
+        const clientY = ev.changedTouches[0].clientY + ''
+        this._movePoint = `${clientX.split('.')[0]},${clientY.split('.')[0]}|`
       } else {
         this._movePoint = null
       }
@@ -116,9 +116,9 @@ export default class finger {
     node.addEventListener('touchmove', (ev) => {
       this.finger.move(ev)
       if (this._movePoint) {
-        const screenX = ev.changedTouches[0].screenX + ''
-        const screenY = ev.changedTouches[0].screenY + ''
-        this._movePoint += `${screenX.split('.')[0]},${screenY.split('.')[0]}|`
+        const clientX = ev.changedTouches[0].clientX + ''
+        const clientY = ev.changedTouches[0].clientY + ''
+        this._movePoint += `${clientX.split('.')[0]},${clientY.split('.')[0]}|`
       }
       if (this._touchmove)
         this._touchmove(ev) 
