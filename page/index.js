@@ -432,14 +432,52 @@ export default class clairvoyant {
       "touchdrag",
       debounce(ev => {
         this.transformList.forEach(ele => {
+          const delta = {}
+          const mcss = ele.style.cssText
+
           const transformRect = ele.getBoundingClientRect()
           const dragRect = ev.target.getBoundingClientRect()
           if (utils.isOverlap(dragRect, transformRect)) {
-            // console.log(ele.style.cssText, dragRect)
+            const translateXIndex = mcss.search(/(?<=translateX\()/i)
+            const translateYIndex = mcss.search(/(?<=translateY\()/i)
+            const translateArr = mcss.match(/(?<=translate(X|Y|3D)?\().*?(?=\))/ig)
+
+            if (translateXIndex !== -1 && translateYIndex !== -1) {
+              if (translateXIndex < translateYIndex) {
+                delta.x = translateArr[0]
+                delta.y = translateArr[1]
+              } else {
+                delta.x = translateArr[1]
+                delta.y = translateArr[0]
+              }
+            } else if (translateXIndex !== -1) {
+              delta.x = translateArr[0]
+            } else if (translateYIndex !== -1) {
+              delta.y = translateArr[0]
+            } else {
+              if (translateArr[0].search(/,/) !== -1) {
+                const arr = translateArr[0].split(',')
+                delta.x = arr[0]
+                delta.y = arr[1]
+              } else if (translateArr[0].trim().search(/\s/) !== -1) {
+                const arr = translateArr[0].split(' ')
+                delta.x = arr[0]
+                delta.y = arr[1]
+              } else {
+                delta.x = translateArr[0]
+                delta.y = translateArr[1]
+              }
+            }
+            // console.log(ele, translateArr, delta, transformRect)
+
             this.observer({
               type: "touchdrag",
               evt: ev,
-              movement: ele
+              movement: {
+                ele,
+                delta,
+                rect: transformRect
+              },
             });
           }
         })
@@ -580,9 +618,14 @@ export default class clairvoyant {
         }-${evt._startPoint.changedTouches[0].screenY}${eventType.SPLIT_DATA}${
           eventType.SPLIT_LINE
         }`;
-        param.m = `${event}${eventType.SPLIT_DATA}${readXPath(
-          movement
-        )}${eventType.SPLIT_DATA}E:${movement.style.cssText}${eventType.SPLIT_DATA}`
+        param.m = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          movement.ele
+        )}${eventType.SPLIT_DATA}W:${movement.rect.width}${
+          eventType.SPLIT_DATA}H:${movement.rect.height}${
+          eventType.SPLIT_DATA}EX:${movement.delta.x.trim()}${
+          eventType.SPLIT_DATA}EY:${movement.delta.y.trim()}${
+          eventType.SPLIT_DATA}${eventType.SPLIT_LINE
+        }`
         _self.pushData(param, 100);
       },
       paint: function () {
