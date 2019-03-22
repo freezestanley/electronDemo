@@ -340,6 +340,7 @@ export default class clairvoyant {
     // div 内滚动
     windowFinger.addEventListener('touchstart', ev => {
       const scrolltarget = plant.FindScrollNode(ev.target)
+      // console.log('-----scrolltarget', scrolltarget)
       if (scrolltarget) {
         // const targetXpath = readXPath(scrolltarget);
         const isListener = this.scrollList.find(id => {
