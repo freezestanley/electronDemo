@@ -54,11 +54,18 @@ export default class finger {
     this._touchtap = null
     this._touchdrag = null
     this._startPoint = null
+    this._movePoint = null
 
     if (ev) {
       this.finger = new fingerType()
       this.finger.start(ev)
       this._startPoint = ev
+      if(ev.changedTouches[0]) {
+        const screenX = ev.changedTouches[0].screenX + ''
+        const screenY = ev.changedTouches[0].screenY + ''
+        this._movePoint = `${screenX.split('.')[0]},${screenY.split('.')[0]}|`
+      }
+      
       if(this._touchstart)
         this._touchstart(ev)
     }
@@ -68,6 +75,13 @@ export default class finger {
       this.finger = new fingerType()
       this.finger.start(ev)
       this._startPoint = ev
+      if (ev.target.tagName.toLowerCase() === 'canvas') {
+        const screenX = ev.changedTouches[0].screenX + ''
+        const screenY = ev.changedTouches[0].screenY + ''
+        this._movePoint = `${screenX.split('.')[0]},${screenY.split('.')[0]}|`
+      } else {
+        this._movePoint = null
+      }
       if(this._touchstart)
         this._touchstart(ev)
 
@@ -80,19 +94,32 @@ export default class finger {
         this._touchtap(ev)
       }
 
-      if (type === TOUCH_DRAGTAP && this._touchdrag) {
-        ev._startPoint = this._startPoint
-        this._touchdrag(ev)
+      if (type === TOUCH_DRAGTAP) {
+        if (this._touchdrag) {
+          ev._startPoint = this._startPoint
+          this._touchdrag(ev)
+        }
+        if (this._touchPaint && ev.target.tagName.toLowerCase() === 'canvas') {
+          const movePoint = this._movePoint.split('|').filter((item,index) => { return item && (index % 2 === 0) })
+          ev._movePoint = movePoint.join('|')
+          this._touchPaint(ev)
+        }
       }
 
       if (this._touchend)
         this._touchend(ev)
 
       this._startPoint = null
+      this._movePoint = null
     }, { passive: false, noShadow: true })
 
     node.addEventListener('touchmove', (ev) => {
       this.finger.move(ev)
+      if (this._movePoint) {
+        const screenX = ev.changedTouches[0].screenX + ''
+        const screenY = ev.changedTouches[0].screenY + ''
+        this._movePoint += `${screenX.split('.')[0]},${screenY.split('.')[0]}|`
+      }
       if (this._touchmove)
         this._touchmove(ev) 
     }, { passive: false, noShadow: true })
@@ -127,6 +154,12 @@ export default class finger {
   set ontouchdrag (param) {
     this._touchdrag = param
   }
+  get ontouchpaint (){
+    return this._touchPaint
+  }
+  set ontouchpaint (param){
+    this._touchPaint = param
+  }
 
   addEventListener (eventType, callback, options) {
     switch (eventType) {
@@ -144,6 +177,9 @@ export default class finger {
         break;
       case 'touchdrag':
         this.ontouchdrag = callback
+        break;
+      case 'touchpaint':
+        this.ontouchpaint = callback
         break;
     }
   }
@@ -163,6 +199,9 @@ export default class finger {
         break;
       case 'touchdrag':
         this.ontouchdrag = null
+        break;
+      case 'touchpaint':
+        this.ontouchpaint = null
         break;
     }
   }
