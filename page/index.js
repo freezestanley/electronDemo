@@ -337,47 +337,8 @@ export default class clairvoyant {
       })
     })
 
-    windowFinger.addEventListener('touchend', ev => {
-      if (ev.target.tagName.toLowerCase() === 'canvas') {
-        let ele = ev.target
-        // const targetXpath = readXPath(ele);
-        const isListener = this.canvasList.find(e => {
-          return e === ele
-        })
-        if (!isListener) {
-          ele.addEventListener(
-            'touchmove',
-            ev => {
-              this.observer({
-                type: 'paint',
-                evt: ev
-              })
-            },
-            delay
-          )
-          this.canvasList.push(ele)
-        }
-      }
-    })
-
     // div 内滚动
     windowFinger.addEventListener('touchstart', ev => {
-      // canvas 画图
-      if (ev.target.tagName.toLowerCase() === 'canvas') {
-        let ele = ev.target
-        // const targetXpath = readXPath(ele);
-        const isListener = this.canvasList.find(e => {
-          return ele === e
-        })
-        this.observer({ type: 'paintstart', evt: ev })
-        if (!isListener) {
-          ele.addEventListener('touchmove', ev => {
-            this.observer({ type: 'paint', evt: ev })
-          })
-          this.canvasList.push(ele)
-        }
-      }
-
       const scrolltarget = plant.FindScrollNode(ev.target)
       if (scrolltarget) {
         // const targetXpath = readXPath(scrolltarget);
@@ -419,6 +380,16 @@ export default class clairvoyant {
       debounce(ev => {
         this.observer({
           type: 'touchdrag',
+          evt: ev
+        })
+      }, delay)
+    )
+
+    windowFinger.addEventListener(
+      'touchpaint',
+      debounce(ev => {
+        this.observer({
+          type: 'paint',
           evt: ev
         })
       }, delay)
@@ -520,19 +491,9 @@ export default class clairvoyant {
         }E:${evt._startPoint.changedTouches[0].screenX}-${evt._startPoint.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.pushData(param, 100)
       },
-      paintstart: function() {
-        event = eventType.PAINT_START
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        _self.wsSocket.send(JSON.stringify(param))
-      },
-      paintend: function() {
-        event = eventType.PAINT_END
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        _self.wsSocket.send(JSON.stringify(param))
-      },
       paint: function() {
         event = eventType.PAINT_MOVE
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].screenX}-${evt.changedTouches[0].screenY}${eventType.SPLIT_DATA}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${evt._movePoint}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.wsSocket.send(JSON.stringify(param))
       },
       popstate: function() {
