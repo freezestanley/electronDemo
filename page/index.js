@@ -181,18 +181,19 @@ export default class clairvoyant {
       currentNode = currentNode.filter(v =>  _this.formlist.indexOf(v) === -1)
 
         currentNode.map((cNode, index, array) => {
-          if (cNode.type === "select") {
-            // cNode.addEventListener("change", _this.selectChangEvent.bind(_this), {
-            //   noShadow: true
-            // });
-          } else if (
-            cNode.type === "radio" ||
-            cNode.type === "checkbox" 
-          ) {
-            // cNode.addEventListener("change", _this.inputChangEvent.bind(_this), {
-            //   noShadow: true
-            // });
-          } else {
+          // if (cNode.type === "select") {
+          //   // cNode.addEventListener("change", _this.selectChangEvent.bind(_this), {
+          //   //   noShadow: true
+          //   // });
+          // } else if (
+          //   cNode.type === "radio" ||
+          //   cNode.type === "checkbox" 
+          // ) {
+          //   // cNode.addEventListener("change", _this.inputChangEvent.bind(_this), {
+          //   //   noShadow: true
+          //   // });
+          // } else 
+          if (cNode.type != "radio" || cNode.type != "checkbox" || cNode.type != "select") {
             cNode.addEventListener("focus", _this.inputFocusEvent.bind(_this), {
               noShadow: true
             })
