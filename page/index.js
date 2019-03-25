@@ -412,7 +412,8 @@ export default class clairvoyant {
       openpage: function() {
         // const ck = cookie.getCookie('ISEE_BIZ')
         // const ck_cache = cookie.getCookie('ISEE_BIZ_CACHE')
-        param.wh = `${document.documentElement.clientWidth}x${document.documentElement.clientHeight}`
+        // pc端取文档的高度和宽度， 手机端取设备屏幕的宽度和高度
+        param.wh = this.plant ? `${document.documentElement.clientWidth}x${document.documentElement.clientHeight}` : `${window.screen.width}x${window.screen.height}`
         // if (!ck_cache || ck_cache !== ck) {
         //   cookie.setCookie('ISEE_BIZ_CACHE', ck)
         //   param.lc = JSON.stringify(window.localStorage)
