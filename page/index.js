@@ -277,7 +277,11 @@ export default class clairvoyant {
       this
         .transformList
         .forEach(ele => {
-          const delta = {}
+          const delta = {
+            x: '0',
+            y: '0',
+            z: '0'
+          }
           const mcss = ele.style.cssText
 
           const transformRect = ele.getBoundingClientRect()
@@ -285,36 +289,50 @@ export default class clairvoyant {
             .target
             .getBoundingClientRect()
           if (utils.isOverlap(dragRect, transformRect)) {
-            const translateXIndex = mcss.search(/(?<=translateX\()/i)
-            const translateYIndex = mcss.search(/(?<=translateY\()/i)
-            const translateArr = mcss.match(/(?<=translate(X|Y|3D)?\().*?(?=\))/ig)
-
-            if (translateXIndex !== -1 && translateYIndex !== -1) {
-              if (translateXIndex < translateYIndex) {
-                delta.x = translateArr[0]
-                delta.y = translateArr[1]
+            const translateArr = mcss
+              .match(/(translate(X|Y|3D)?\().*?(?=\))/ig)
+              .map(attr => attr.replace('translate', '').toLowerCase())
+            translateArr.every((style) => {
+              if (style.indexOf('3d(') > -1) {
+                const arr = style
+                  .replace('3d(', '')
+                  .split(',')
+                delta.x = arr[0].trim()
+                delta.y = arr[1].trim()
+                return false
+              } else if (style.indexOf('x(') > -1) {
+                delta.x = style
+                  .replace('x(', '')
+                  .trim()
+                return true
+              } else if (style.indexOf('y(') > -1) {
+                delta.y = style
+                  .replace('y(', '')
+                  .trim()
+                return true
               } else {
-                delta.x = translateArr[1]
-                delta.y = translateArr[0]
+                const arr = style
+                  .replace('(', '')
+                  .split(',')
+                delta.x = arr[0].trim()
+                delta.y = arr[1].trim()
+                return false
               }
-            } else if (translateXIndex !== -1) {
-              delta.x = translateArr[0]
-            } else if (translateYIndex !== -1) {
-              delta.y = translateArr[0]
-            } else {
-              if (translateArr[0].search(/,/) !== -1) {
-                const arr = translateArr[0].split(',')
-                delta.x = arr[0]
-                delta.y = arr[1]
-              } else if (translateArr[0].trim().search(/\s/) !== -1) {
-                const arr = translateArr[0].split(' ')
-                delta.x = arr[0]
-                delta.y = arr[1]
-              } else {
-                delta.x = translateArr[0]
-                delta.y = translateArr[1]
-              }
-            }
+              return true
+            })
+            // console.log(translateArr); const translateXIndex =
+            // mcss.search(/(?<=translateX\()/i) const translateYIndex =
+            // mcss.search(/(?<=translateY\()/i) const translateArr =
+            // mcss.match(/(?<=translate(X|Y|3D)?\().*?(?=\))/ig) if (translateXIndex !== -1
+            // && translateYIndex !== -1) {   if (translateXIndex < translateYIndex) {
+            // delta.x = translateArr[0]     delta.y = translateArr[1]   } else { delta.x =
+            // translateArr[1]     delta.y = translateArr[0]   } } else if (translateXIndex
+            // !== -1) {   delta.x = translateArr[0] } else if (translateYIndex !== -1) {
+            // delta.y = translateArr[0] } else {   if (translateArr[0].search(/,/) !== -1)
+            // {     const arr = translateArr[0].split(',')     delta.x = arr[0] delta.y =
+            // arr[1]   } else if (translateArr[0].trim().search(/\s/) !== -1) {   const arr
+            // = translateArr[0].split(' ')     delta.x = arr[0]     delta.y = arr[1] }
+            // else {     delta.x = translateArr[0]     delta.y = translateArr[1] } }
             // console.log(ele, translateArr, delta, transformRect)
 
             this.observer({
@@ -435,16 +453,8 @@ export default class clairvoyant {
         eventType.SPLIT_DATA}E:${evt._startPoint.changedTouches[0].clientX}-${evt._startPoint.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         param.m = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(movement.ele)}${eventType.SPLIT_DATA}W:${movement.rect.width}${
         eventType.SPLIT_DATA}H:${movement.rect.height}${
-        eventType
-          .SPLIT_DATA}EX:${movement
-          .delta
-          .x
-          .trim()}${
-        eventType
-          .SPLIT_DATA}EY:${movement
-          .delta
-          .y
-          .trim()}${
+        eventType.SPLIT_DATA}EX:${movement.delta.x}${
+        eventType.SPLIT_DATA}EY:${movement.delta.y}${
         eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.pushData(param, 100);
       },
