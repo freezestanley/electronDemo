@@ -81,9 +81,10 @@ export default class finger {
         .start(ev)
       this._startPoint = ev
       if (ev.target.tagName.toLowerCase() === 'canvas') {
-        const clientX = ev.changedTouches[0].clientX + ''
-        const clientY = ev.changedTouches[0].clientY + ''
-        this._movePoint = `${clientX.split('.')[0]},${clientY.split('.')[0]}|`
+        const canvasEle = ev.changedTouches[0].target
+        const x = ev.changedTouches[0].clientX - canvasEle.getBoundingClientRect().left + ''
+        const y = ev.changedTouches[0].clientY - canvasEle.getBoundingClientRect().top + ''
+        this._movePoint = `${x.split('.')[0]},${y.split('.')[0]}|`
       } else {
         this._movePoint = null
       }
@@ -110,13 +111,23 @@ export default class finger {
           this._touchdrag(ev)
         }
         if (this._touchPaint && ev.target.tagName.toLowerCase() === 'canvas') {
-          const movePoint = this
-            ._movePoint
-            .split('|')
-            .filter((item, index) => {
-              return item && (index % 2 === 0)
-            })
-          ev._movePoint = movePoint.join('|')
+          const allPoints = this._movePoint.split('|').filter(item => !!item)
+          const movePoints = []
+          let prevIndex = 0
+          allPoints.forEach((point, index) => {
+            if (index === 0 || index === allPoints.length - 1) {
+              movePoints.push(point)
+              prevIndex = index
+            } else {
+              const [prev_point_x, prev_point_y] = allPoints[prevIndex].split(',')
+              const [point_x, point_y] = point.split(',')
+              if(Math.abs(point_x - prev_point_x) > 3 || Math.abs(point_y - prev_point_y) > 3) {
+                movePoints.push(point)
+                prevIndex = index
+              }
+            }
+          })
+          ev._movePoint = movePoints.join('|')
           this._touchPaint(ev)
         }
       }
