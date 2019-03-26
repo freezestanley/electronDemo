@@ -66,7 +66,7 @@ export default class finger {
       if (ev.changedTouches[0]) {
         const clientX = ev.changedTouches[0].clientX + ''
         const clientY = ev.changedTouches[0].clientY + ''
-        this._movePoint = `${clientX.split('.')[0]},${clientY.split('.')[0]}|`
+        this._movePoint = `${clientX.split('.')[0]}-${clientY.split('.')[0]}€`
       }
 
       if (this._touchstart) 
@@ -84,7 +84,7 @@ export default class finger {
         const canvasEle = ev.changedTouches[0].target
         const x = ev.changedTouches[0].clientX - canvasEle.getBoundingClientRect().left + ''
         const y = ev.changedTouches[0].clientY - canvasEle.getBoundingClientRect().top + ''
-        this._movePoint = `${x.split('.')[0]},${y.split('.')[0]}|`
+        this._movePoint = `${x.split('.')[0]}-${y.split('.')[0]}€`
       } else {
         this._movePoint = null
       }
@@ -111,7 +111,7 @@ export default class finger {
           this._touchdrag(ev)
         }
         if (this._touchPaint && ev.target.tagName.toLowerCase() === 'canvas') {
-          const allPoints = this._movePoint.split('|').filter(item => !!item)
+          const allPoints = this._movePoint.split('€').filter(item => !!item)
           const movePoints = []
           let prevIndex = 0
           allPoints.forEach((point, index) => {
@@ -119,15 +119,15 @@ export default class finger {
               movePoints.push(point)
               prevIndex = index
             } else {
-              const [prev_point_x, prev_point_y] = allPoints[prevIndex].split(',')
-              const [point_x, point_y] = point.split(',')
+              const [prev_point_x, prev_point_y] = allPoints[prevIndex].split('-')
+              const [point_x, point_y] = point.split('-')
               if(Math.abs(point_x - prev_point_x) > 3 || Math.abs(point_y - prev_point_y) > 3) {
                 movePoints.push(point)
                 prevIndex = index
               }
             }
           })
-          ev._movePoint = movePoints.join('|')
+          ev._movePoint = movePoints.join('€')
           this._touchPaint(ev)
         }
       }
@@ -143,13 +143,12 @@ export default class finger {
     })
 
     node.addEventListener('touchmove', (ev) => {
-      this
-        .finger
-        .move(ev)
+      this.finger.move(ev)
       if (this._movePoint) {
-        const clientX = ev.changedTouches[0].clientX + ''
-        const clientY = ev.changedTouches[0].clientY + ''
-        this._movePoint += `${clientX.split('.')[0]},${clientY.split('.')[0]}|`
+        const canvasEle = ev.changedTouches[0].target
+        const x = ev.changedTouches[0].clientX - canvasEle.getBoundingClientRect().left + ''
+        const y = ev.changedTouches[0].clientY - canvasEle.getBoundingClientRect().top + ''
+        this._movePoint += `${x.split('.')[0]}-${y.split('.')[0]}€`
       }
       if (this._touchmove) 
         this._touchmove(ev)

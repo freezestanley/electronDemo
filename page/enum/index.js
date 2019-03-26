@@ -35,11 +35,11 @@ export const WINDOW_SIZE  = "ws";
 // ps 只记录开始和结束点，表示直线拖拽
 export const ACTION_DRAG  = "drag"
 
-export const PAINT_START = "paintstart"
+export const PAINT_START = "ps"
 
-export const PAINT_MOVE = "paintmove"
+export const PAINT_MOVE = "pm"
 
-export const PAINT_END = "paintend"
+export const PAINT_END = "pe"
 
 export const POP_STATE = "pt"
 
