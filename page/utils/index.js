@@ -16,10 +16,5 @@ export const isOverlap = (rect1, rect2) => {
     x: rect2.x + rect2.width,
     y: rect2.y + rect2.height
   }
-  return !(
-    l1.x > r2.x ||
-    l2.x > r1.x ||
-    l1.y > r2.y ||
-    l2.y > r1.y
-  )
+  return !(l1.x > r2.x || l2.x > r1.x || l1.y > r2.y || l2.y > r1.y)
 }
