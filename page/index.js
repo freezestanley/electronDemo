@@ -1,12 +1,20 @@
 // import axios from 'axios'
-import Wsocket, {throttle, debounce} from "./socket";
+import Wsocket, {
+  throttle,
+  debounce
+} from "./socket";
 import * as plant from "./plant";
-import {readXPath, selectNodes} from "./xpath";
+import {
+  readXPath,
+  selectNodes
+} from "./xpath";
 import * as eventType from "./enum";
 import domObserver from "./observer";
 import Finger from "./finger";
 import Cookie from "./cookie";
-import AjaxHook, {CreateXMLHttp} from "./xmlhttprequest";
+import AjaxHook, {
+  CreateXMLHttp
+} from "./xmlhttprequest";
 import ProxyEvent from "./proxyEvent";
 import Checkhover from "./checkhover";
 import * as utils from "./utils";
@@ -24,23 +32,25 @@ import * as utils from "./utils";
  */
 
 let _eId = 1
+let ls = JSON.stringify(window.localStorage)
+
 function eId(element) {
   return element._eId || (element._eId = _eId++)
 }
 
 const getConfig = function (name) {
-  return window.st_conf && window.st_conf[name]
-    ? window.st_conf[name]
-    : null
+  return window.st_conf && window.st_conf[name] ?
+    window.st_conf[name] :
+    null
 }
 const cookie = new Cookie(getConfig('domain'), getConfig('path'), getConfig('exp'))
 
-const wspath = getConfig('ws') || (process.env.NODE_ENV === 'production'
-  ? 'wss://isee-test.zhongan.io/sapi/ed/events'
-  : 'ws://127.0.0.1:3000/test/123')
+const wspath = getConfig('ws') || (process.env.NODE_ENV === 'production' ?
+  'wss://isee-test.zhongan.io/sapi/ed/events' :
+  'ws://127.0.0.1:3000/test/123')
 const delay = 300
 const lazyPath = 'https://www.zhongan.com/open/member/login_screen/get_sso_uni_form_domain_url.jso' +
-    'n'
+  'n'
 const proxyEvent = new ProxyEvent()
 proxyEvent.callback = function (ev) {
   console.log(`===${ev.type}===${ev.target}`)
@@ -74,44 +84,83 @@ export default class clairvoyant {
   init() {
     this.addBaseEvent()
     this.mutationWatch()
-    this.plant
-      ? this.deskWatch()
-      : this.mobileWatch()
+    this.plant ?
+      this.deskWatch() :
+      this.mobileWatch()
   }
   addBaseEvent() {
     // 添加全局基础事件
     document.addEventListener('visibilitychange', ev => {
-      typeof document.hidden === 'boolean' && document.hidden === false
-        ? this.observer({type: 'visibilitychange', evt: ev})
-        : this.observer({type: 'visibilityblur', evt: ev})
-    }, {noShadow: true})
+      typeof document.hidden === 'boolean' && document.hidden === false ?
+        this.observer({
+          type: 'visibilitychange',
+          evt: ev
+        }) :
+        this.observer({
+          type: 'visibilityblur',
+          evt: ev
+        })
+    }, {
+      noShadow: true
+    })
     window.addEventListener('input', ev => {
       let target = ev
         .target
         .nodeName
         .toLocaleLowerCase()
       if (target === 'textarea') {
-        this.observer({type: 'inputChange', evt: ev})
+        this.observer({
+          type: 'inputChange',
+          evt: ev
+        })
       } else if (target === 'select') {
-        this.observer({type: 'select', evt: ev})
+        this.observer({
+          type: 'select',
+          evt: ev
+        })
       } else if (target === 'input') {
-        this.observer({type: 'inputChange', evt: ev})
+        this.observer({
+          type: 'inputChange',
+          evt: ev
+        })
       }
-    }, {noShadow: true})
+    }, {
+      noShadow: true
+    })
     window.addEventListener('popstate', ev => {
-      this.observer({type: 'popstate', evt: ev})
-    }, {noShadow: true})
+      this.observer({
+        type: 'popstate',
+        evt: ev
+      })
+    }, {
+      noShadow: true
+    })
 
     window.addEventListener('hashchange', ev => {
-      this.observer({type: 'hashchange', evt: ev})
-    }, {noShadow: true})
+      this.observer({
+        type: 'hashchange',
+        evt: ev
+      })
+    }, {
+      noShadow: true
+    })
 
     window.addEventListener('beforeunload', ev => {
-      this.observer({type: 'unload', evt: ev})
+      this.observer({
+        type: 'unload',
+        evt: ev
+      })
       this.lazy()
-    }, {noShadow: true})
+    }, {
+      noShadow: true
+    })
 
-    window.addEventListener('scroll', debounce(ev => this.observer({type: 'scroll', evt: ev}), delay), {noShadow: true})
+    window.addEventListener('scroll', debounce(ev => this.observer({
+      type: 'scroll',
+      evt: ev
+    }), delay), {
+      noShadow: true
+    })
   }
 
   mutationWatch() {
@@ -151,8 +200,12 @@ export default class clairvoyant {
         // cNode.addEventListener("change", _this.inputChangEvent.bind(_this), {   //
         // noShadow: true   // }); } else
         if (cNode.type != 'radio' || cNode.type != 'checkbox' || cNode.type != 'select') {
-          cNode.addEventListener('focus', _this.inputFocusEvent.bind(_this), {noShadow: true})
-          cNode.addEventListener('blur', _this.inputBlurEvent.bind(_this), {noShadow: true})
+          cNode.addEventListener('focus', _this.inputFocusEvent.bind(_this), {
+            noShadow: true
+          })
+          cNode.addEventListener('blur', _this.inputBlurEvent.bind(_this), {
+            noShadow: true
+          })
         }
       })
       _this.formlist = _this
@@ -167,18 +220,30 @@ export default class clairvoyant {
   }
 
   inputChangEvent(ev) {
-    this.observer({type: 'inputChange', evt: ev})
+    this.observer({
+      type: 'inputChange',
+      evt: ev
+    })
   }
 
   inputFocusEvent(ev) {
-    this.observer({type: 'inputFocus', evt: ev})
+    this.observer({
+      type: 'inputFocus',
+      evt: ev
+    })
   }
   inputBlurEvent(ev) {
-    this.observer({type: 'inputBlur', evt: ev})
+    this.observer({
+      type: 'inputBlur',
+      evt: ev
+    })
   }
   // select 添加onchange 监听
   selectChangEvent(ev) {
-    this.observer({type: 'select', evt: ev})
+    this.observer({
+      type: 'select',
+      evt: ev
+    })
   }
 
   lazy() {
@@ -192,7 +257,10 @@ export default class clairvoyant {
     document
       .body
       .addEventListener('mouseover', debounce(ev => {
-        this.observer({type: 'mouseover', evt: ev})
+        this.observer({
+          type: 'mouseover',
+          evt: ev
+        })
         const scrollNode = plant.FindScrollNode(ev.target)
         if (scrollNode) {
           // const targetXpath = readXPath(scrollNode);
@@ -206,42 +274,68 @@ export default class clairvoyant {
               .scrollList
               .push(scrollNode)
             const domScroll = debounce(ev => {
-              this.observer({type: 'scroll', evt: ev})
+              this.observer({
+                type: 'scroll',
+                evt: ev
+              })
             }, delay)
 
             scrollNode.addEventListener('mouseenter', () => {
-              scrollNode.addEventListener('scroll', domScroll, {noShadow: true})
-            }, {noShadow: true})
+              scrollNode.addEventListener('scroll', domScroll, {
+                noShadow: true
+              })
+            }, {
+              noShadow: true
+            })
 
             scrollNode.addEventListener('mouseleave ', () => {
-              scrollNode.removeEventListener('scroll', domScroll, {noShadow: true})
-            }, {noShadow: true})
+              scrollNode.removeEventListener('scroll', domScroll, {
+                noShadow: true
+              })
+            }, {
+              noShadow: true
+            })
           }
         }
-      }, delay), {noShadow: true})
+      }, delay), {
+        noShadow: true
+      })
 
     // 页面点击
     document
       .body
       .addEventListener('mousedown', ev => {
         mousedownPoint = ev
-      }, {noShadow: true})
+      }, {
+        noShadow: true
+      })
     document
       .body
       .addEventListener('mouseup', ev => {
         if (mousedownPoint.clientX === ev.clientX && mousedownPoint.clientY === ev.clientY && mousedownPoint.target === ev.target) {
-          this.observer({type: 'click', evt: ev})
+          this.observer({
+            type: 'click',
+            evt: ev
+          })
         } else {
-          this.observer({type: 'mousemove', evt: ev})
+          this.observer({
+            type: 'mousemove',
+            evt: ev
+          })
         }
-      }, {noShadow: true})
+      }, {
+        noShadow: true
+      })
   }
 
   mobileWatch() {
     let windowFinger = new Finger(window)
     // 页面点击
     windowFinger.addEventListener('touchtap', ev => {
-      this.observer({type: 'click', evt: ev})
+      this.observer({
+        type: 'click',
+        evt: ev
+      })
     })
 
     // div 内滚动
@@ -260,7 +354,10 @@ export default class clairvoyant {
             .scrollList
             .push(eId(scrolltarget))
           const domScroll = throttle(ev => {
-            this.observer({type: 'scroll', evt: ev})
+            this.observer({
+              type: 'scroll',
+              evt: ev
+            })
           }, delay)
 
           scrolltarget.addEventListener('touchstart', () => {
@@ -275,7 +372,10 @@ export default class clairvoyant {
     })
 
     windowFinger.addEventListener('touchmove', debounce(ev => {
-      this.observer({type: 'fingermove', evt: ev})
+      this.observer({
+        type: 'fingermove',
+        evt: ev
+      })
     }, delay))
 
     windowFinger.addEventListener("touchdrag", debounce(ev => {
@@ -354,7 +454,10 @@ export default class clairvoyant {
     }, delay));
 
     windowFinger.addEventListener('touchpaint', debounce(ev => {
-      this.observer({type: 'paint', evt: ev})
+      this.observer({
+        type: 'paint',
+        evt: ev
+      })
     }, delay))
   }
 
@@ -362,18 +465,17 @@ export default class clairvoyant {
     let evt = obj.evt,
       movement = obj.movement,
       param = {
-        t: + new Date(),
+        t: +new Date(),
         i: cookie.getCookie('ISEE_BIZ'),
-        a: this.plant
-          ? eventType.AGENT_PC
-          : eventType.AGENT_MOBILE,
+        a: this.plant ?
+          eventType.AGENT_PC : eventType.AGENT_MOBILE,
         u: window.location.href
       },
       event = null,
       _self = this
     param.r = `${ + new Date()}${eventType.SPLIT_DATA}`
     const target = {
-      openpage: function() {
+      openpage: function () {
         // const ck = cookie.getCookie('ISEE_BIZ')
         // const ck_cache = cookie.getCookie('ISEE_BIZ_CACHE')
         // pc端取文档的高度和宽度， 手机端取设备屏幕的宽度和高度
@@ -382,6 +484,10 @@ export default class clairvoyant {
         //   cookie.setCookie('ISEE_BIZ_CACHE', ck)
         //   param.lc = JSON.stringify(window.localStorage)
         // }
+        _self.pushData(param)
+      },
+      sendLocalstorage: function () {
+        param.ls = ls
         _self.pushData(param)
       },
       click: function () {
@@ -459,7 +565,7 @@ export default class clairvoyant {
         event = eventType.ACTION_DRAG;
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].clientX}-${evt.changedTouches[0].clientY}${
         eventType.SPLIT_DATA}E:${evt._startPoint.changedTouches[0].clientX}-${evt._startPoint.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        param.m = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(movement.ele)}${eventType.SPLIT_DATA}W:${movement.rect.width}${
+        param.m = `${param.m}${event}${eventType.SPLIT_DATA}${readXPath(movement.ele)}${eventType.SPLIT_DATA}W:${movement.rect.width}${
         eventType.SPLIT_DATA}H:${movement.rect.height}${
         eventType.SPLIT_DATA}EX:${movement.delta.x}${
         eventType.SPLIT_DATA}EY:${movement.delta.y}${
@@ -501,7 +607,7 @@ export default class clairvoyant {
     target[obj.type]()
   }
   pushData(obj, time = 0) {
-    if (!cookie.getCookie('ISEE_BIZ')) 
+    if (!cookie.getCookie('ISEE_BIZ'))
       return
     let pushMode = getConfig('pushMode') || 'once'
     if (pushMode === 'once') {
@@ -527,13 +633,16 @@ document
     var iseebiz = cookie.getCookie('ISEE_BIZ')
     var ISEE_RE = cookie.getCookie('ISEE_RE')
     if (process.env.NODE_ENV === 'production') {
-      if (ISEE_RE) 
+      if (ISEE_RE)
         return
       if (iseebiz) {
         const Clairvoyant = (window.clairvoyant = new clairvoyant())
         Clairvoyant.wsSocket.onopen = function (evt) {
           console.log('Connection start.')
-          Clairvoyant.observer({type: 'openpage', evt: evt})
+          Clairvoyant.observer({
+            type: 'openpage',
+            evt: evt
+          })
           let end = getConfig('end')
           let type = getConfig('type')
           if (end && type) {
@@ -549,6 +658,16 @@ document
           }
         }
         Clairvoyant.wsSocket.onmessage = function (evt) {
+          switch (evt.data) {
+            // 需要发送localstorage
+            case 'LS000':
+              Clairvoyant.observer({
+                type: 'sendLocalstorage'
+              })
+              break;
+            default:
+              break;
+          }
           // console.log("server:" + evt.data)
         }
         Clairvoyant.wsSocket.onclose = function (evt) {
@@ -561,11 +680,13 @@ document
       }
     } else {
       const Clairvoyant = (window.clairvoyant = new clairvoyant())
-      console.log('Clairvoyant', Clairvoyant);
 
       Clairvoyant.wsSocket.onopen = function (evt) {
         console.log('Connection start.')
-        Clairvoyant.observer({type: 'openpage', evt: evt})
+        Clairvoyant.observer({
+          type: 'openpage',
+          evt: evt
+        })
 
         let end = getConfig('end')
         let type = getConfig('type')
@@ -582,7 +703,8 @@ document
         }
       }
       Clairvoyant.wsSocket.onmessage = function (evt) {
-        // console.log("server:" + evt.data)
+        debugger
+        console.log("server:" + evt.data)
       }
       Clairvoyant.wsSocket.onclose = function (evt) {
         console.log('Connection closed.')
@@ -592,4 +714,6 @@ document
       }
       Clairvoyant.init()
     }
-  }, {noShadow: true})
+  }, {
+    noShadow: true
+  })

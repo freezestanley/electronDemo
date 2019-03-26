@@ -1,21 +1,27 @@
-function wsocket (urlValue) {
+function wsocket(urlValue) {
   if (window.WebSocket) return (new window.WebSocket(urlValue));
   if (window.MozWebSocket) return new MozWebSocket(urlValue);
   return false
 }
-function Wsocket (url) {
+
+function Wsocket(url) {
   this.url = url
   this.skt = wsocket(url)
   this.skt.onopen = (ev) => {
     console.log('open')
     this.onopen(ev)
   }
-  this.skt.onmessage = this.onmessage
+  this.skt.onmessage = (ev) => {
+    console.log('message')
+    this.onmessage(ev)
+  }
   this.skt.onclose = this.onclose
   this.skt.onerror = this.onerror
 }
 Wsocket.prototype.onopen = function (evt) {}
-Wsocket.prototype.onmessage = function (evt) {}
+Wsocket.prototype.onmessage = function (evt) {
+
+}
 Wsocket.prototype.onclose = function (evt) {}
 Wsocket.prototype.onerror = function (evt) {
   return new Error(evt)
@@ -54,15 +60,15 @@ export default Wsocket = Wsocket
 //   }
 // }
 
-export const debounce = function(method, delay) {
-  return function() {
+export const debounce = function (method, delay) {
+  return function () {
     let context = this,
       args = arguments
     if (debounce.timer !== null) {
       clearTimeout(debounce.timer)
       debounce.timer = null
     }
-    debounce.timer = setTimeout(function() {
+    debounce.timer = setTimeout(function () {
       method.apply(context, args)
       clearTimeout(debounce.timer)
       debounce.timer = null
@@ -105,7 +111,7 @@ export function throttle(fn, threshhold) {
   threshhold || (threshhold = 250)
 
   // 返回的函数，每过 threshhold 毫秒就执行一次 fn 函数
-  return function() {
+  return function () {
     // 保存函数调用时的上下文和参数，传递给 fn
     var context = this
     var args = arguments
@@ -118,7 +124,7 @@ export function throttle(fn, threshhold) {
       clearTimeout(timer)
 
       // 保证在当前时间区间结束后，再执行一次 fn
-      timer = setTimeout(function() {
+      timer = setTimeout(function () {
         last = now
         fn.apply(context, args)
       }, threshhold)
