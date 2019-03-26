@@ -66,6 +66,11 @@ export default class clairvoyant {
     return readXPath(node)
   }
 
+  shouldScroll(scrollerXpath, variable) {
+    const node = selectNodes(scrollerXpath)[0]
+    return node && node.scrollHeight && node.scrollHeight >= variable
+  }
+
   init() {
     this.addBaseEvent()
     this.mutationWatch()
@@ -331,8 +336,8 @@ export default class clairvoyant {
             // delta.y = translateArr[0] } else {   if (translateArr[0].search(/,/) !== -1)
             // {     const arr = translateArr[0].split(',')     delta.x = arr[0] delta.y =
             // arr[1]   } else if (translateArr[0].trim().search(/\s/) !== -1) {   const arr
-            // = translateArr[0].split(' ')     delta.x = arr[0]     delta.y = arr[1] }
-            // else {     delta.x = translateArr[0]     delta.y = translateArr[1] } }
+            // = translateArr[0].split(' ')     delta.x = arr[0]     delta.y = arr[1] } else
+            // {     delta.x = translateArr[0]     delta.y = translateArr[1] } }
             // console.log(ele, translateArr, delta, transformRect)
 
             this.observer({
@@ -556,6 +561,8 @@ document
       }
     } else {
       const Clairvoyant = (window.clairvoyant = new clairvoyant())
+      console.log('Clairvoyant', Clairvoyant);
+
       Clairvoyant.wsSocket.onopen = function (evt) {
         console.log('Connection start.')
         Clairvoyant.observer({type: 'openpage', evt: evt})
