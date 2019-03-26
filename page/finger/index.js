@@ -143,13 +143,12 @@ export default class finger {
     })
 
     node.addEventListener('touchmove', (ev) => {
-      this
-        .finger
-        .move(ev)
+      this.finger.move(ev)
       if (this._movePoint) {
-        const clientX = ev.changedTouches[0].clientX + ''
-        const clientY = ev.changedTouches[0].clientY + ''
-        this._movePoint += `${clientX.split('.')[0]},${clientY.split('.')[0]}|`
+        const canvasEle = ev.changedTouches[0].target
+        const x = ev.changedTouches[0].clientX - canvasEle.getBoundingClientRect().left + ''
+        const y = ev.changedTouches[0].clientY - canvasEle.getBoundingClientRect().top + ''
+        this._movePoint += `${x.split('.')[0]},${y.split('.')[0]}|`
       }
       if (this._touchmove) 
         this._touchmove(ev)
