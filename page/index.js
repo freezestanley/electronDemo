@@ -468,7 +468,7 @@ export default class clairvoyant {
       },
       paint: function () {
         event = eventType.PAINT_MOVE
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${evt._movePoint}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt._movePoint}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self
           .wsSocket
           .send(JSON.stringify(param))
