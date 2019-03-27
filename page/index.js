@@ -173,18 +173,19 @@ export default class clairvoyant {
       attributeOldValue: false,
       characterDataOldValue: false
     }
-    let transformList = null
+    let transformList = []
     let mutationEventCallback = (mutationsList, itself) => {
       const _this = this;
       for (let mutation of mutationsList) {
         if (mutation.type == 'attributes') {
           transformList = mutationsList
             .map(mutation => mutation.target)
-            .filter(item => item.style.cssText.indexOf('translate') > -1);
+            .filter(item => item.style.cssText.indexOf('translate') > -1) || [];
           // console.log(mutation, mutationsList)
           // console.log(mutation.target.getBoundingClientRect())
         }
       }
+      console.log(transformList);
       _this.transformList = [...new Set([..._this.transformList, ...transformList])];
       let currentNode = [
         ...document.querySelectorAll('input'),
@@ -341,7 +342,7 @@ export default class clairvoyant {
     // div 内滚动
     windowFinger.addEventListener('touchstart', ev => {
       const scrolltarget = plant.FindScrollNode(ev.target)
-      // console.log('-----scrolltarget', scrolltarget)
+      console.log('-----scrolltarget', scrolltarget)
       if (scrolltarget) {
         // const targetXpath = readXPath(scrolltarget);
         const isListener = this
@@ -360,13 +361,14 @@ export default class clairvoyant {
             })
           }, delay)
 
-          scrolltarget.addEventListener('touchstart', () => {
-            scrolltarget.addEventListener('scroll', domScroll)
-          })
+          scrolltarget.addEventListener('scroll', domScroll)
+          // scrolltarget.addEventListener('touchstart', () => {
+          // scrolltarget.addEventListener('scroll', domScroll)
+          // })
 
-          scrolltarget.addEventListener('touchend', () => {
-            scrolltarget.removeEventListener('scroll', domScroll)
-          })
+          // scrolltarget.addEventListener('touchend', () => {
+          //   scrolltarget.removeEventListener('scroll', domScroll)
+          // })
         }
       }
     })
@@ -501,6 +503,7 @@ export default class clairvoyant {
           scroll = evt.target.scrollTop
         }
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(target)}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        console.log('scorll')
         _self.pushData(param)
       },
       visibilitychange: function () {
