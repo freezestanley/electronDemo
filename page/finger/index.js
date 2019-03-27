@@ -1,10 +1,10 @@
-import {throttle, debounce} from '../socket'
+// import {throttle, debounce} from '../socket'
 
 const TOUCH_TAP = 'tap'
 const TOUCH_LONGTAP = 'longtap'
 const TOUCH_DRAGTAP = 'dragtap'
 
-export class fingerType {
+export class FingerType {
   constructor(state) {
     this._prePoint = null
     this._nextPoint = null
@@ -15,9 +15,9 @@ export class fingerType {
     this._prePoint = evt
   }
   end(evt) {
-    const prePoint = this._prePoint.targetTouches[0],
-      curPoint = evt.changedTouches[0],
-      nextPoint = this._nextPoint
+    const prePoint = this._prePoint.targetTouches[0]
+    const curPoint = evt.changedTouches[0]
+    const nextPoint = this._nextPoint
         ? this._nextPoint.targetTouches[0]
         : null
     let type = false
@@ -47,7 +47,7 @@ export class fingerType {
   }
 }
 
-export default class finger {
+export default class Finger {
   constructor(node = window, ev) {
     this._touchstart = null
     this._touchmove = null
@@ -58,10 +58,8 @@ export default class finger {
     this._movePoint = null
 
     if (ev) {
-      this.finger = new fingerType()
-      this
-        .finger
-        .start(ev)
+      this.finger = new FingerType()
+      this.finger.start(ev)
       this._startPoint = ev
       if (ev.changedTouches[0]) {
         const clientX = ev.changedTouches[0].clientX + ''
@@ -75,7 +73,7 @@ export default class finger {
 
     node.addEventListener('touchstart', (ev) => {
       // ev.preventDefault()
-      this.finger = new fingerType()
+      this.finger = new FingerType()
       this
         .finger
         .start(ev)
@@ -119,9 +117,9 @@ export default class finger {
               movePoints.push(point)
               prevIndex = index
             } else {
-              const [prev_point_x, prev_point_y] = allPoints[prevIndex].split('-')
-              const [point_x, point_y] = point.split('-')
-              if(Math.abs(point_x - prev_point_x) > 3 || Math.abs(point_y - prev_point_y) > 3) {
+              const [prevPointX, prevPointY] = allPoints[prevIndex].split('-')
+              const [pointX, pointY] = point.split('-')
+              if(Math.abs(pointX - prevPointX) > 3 || Math.abs(pointY - prevPointY) > 3) {
                 movePoints.push(point)
                 prevIndex = index
               }

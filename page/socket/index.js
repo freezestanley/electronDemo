@@ -1,5 +1,6 @@
 function wsocket(urlValue) {
   if (window.WebSocket) return (new window.WebSocket(urlValue));
+  // eslint-disable-next-line no-undef
   if (window.MozWebSocket) return new MozWebSocket(urlValue);
   return false
 }
@@ -47,7 +48,7 @@ Wsocket.prototype.reconnect = function () {
   this.skt.onerror = this.onerror
 }
 
-export default Wsocket = Wsocket
+export default Wsocket
 
 // export const debounce = function (method, delay) {
 //   let timer = null
@@ -62,8 +63,8 @@ export default Wsocket = Wsocket
 
 export const debounce = function (method, delay) {
   return function () {
-    let context = this,
-      args = arguments
+    let context = this;
+      let args = arguments
     if (debounce.timer !== null) {
       clearTimeout(debounce.timer)
       debounce.timer = null

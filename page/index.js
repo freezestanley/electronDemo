@@ -9,10 +9,10 @@ import {
   selectNodes
 } from "./xpath";
 import * as eventType from "./enum";
-import domObserver from "./observer";
+import DomObserver from "./observer";
 import Finger from "./finger";
 import Cookie from "./cookie";
-import AjaxHook, {
+import {
   CreateXMLHttp
 } from "./xmlhttprequest";
 import ProxyEvent from "./proxyEvent";
@@ -57,7 +57,7 @@ proxyEvent.callback = function (ev) {
 }
 let mousedownPoint
 
-export default class clairvoyant {
+export default class Clairvoyant {
   constructor(ws = wspath) {
     this.wsSocket = new Wsocket(ws)
     this.proxyEvent = proxyEvent
@@ -213,7 +213,7 @@ export default class clairvoyant {
         .concat(currentNode)
     }
 
-    this.domObserver = new domObserver(document.body, config, mutationEventCallback)
+    this.domObserver = new DomObserver(document.body, config, mutationEventCallback)
     this
       .domObserver
       .start()
@@ -423,7 +423,6 @@ export default class clairvoyant {
                 delta.y = arr[1].trim()
                 return false
               }
-              return true
             })
             // console.log(translateArr); const translateXIndex =
             // mcss.search(/(?<=translateX\()/i) const translateYIndex =
@@ -462,17 +461,17 @@ export default class clairvoyant {
   }
 
   observer(obj) {
-    let evt = obj.evt,
-      movement = obj.movement,
-      param = {
+    let evt = obj.evt;
+      let movement = obj.movement;
+      let param = {
         t: +new Date(),
         i: cookie.getCookie('ISEE_BIZ'),
         a: this.plant ?
           eventType.AGENT_PC : eventType.AGENT_MOBILE,
         u: window.location.href
-      },
-      event = null,
-      _self = this
+      };
+      let event = null;
+      let _self = this
     param.r = `${ + new Date()}${eventType.SPLIT_DATA}`
     const target = {
       openpage: function () {
@@ -543,8 +542,8 @@ export default class clairvoyant {
       mousemove: function () {},
       scroll: function () {
         event = eventType.ACTION_SCROLL
-        let scroll,
-          target = evt.target
+        let scroll;
+          let target = evt.target
         if (evt.target.nodeName.toLowerCase() === '#document' || evt.target.nodeName.toLowerCase() === 'body' || evt.target.nodeName.toLowerCase() === 'html') {
           scroll = document.documentElement.scrollTop || document.body.scrollTop
           target = document.body
@@ -636,10 +635,10 @@ document
       if (ISEE_RE)
         return
       if (iseebiz) {
-        const Clairvoyant = (window.clairvoyant = new clairvoyant())
-        Clairvoyant.wsSocket.onopen = function (evt) {
+        const clairvoyant = (window.clairvoyant = new Clairvoyant())
+        clairvoyant.wsSocket.onopen = function (evt) {
           console.log('Connection start.')
-          Clairvoyant.observer({
+          clairvoyant.observer({
             type: 'openpage',
             evt: evt
           })
@@ -657,11 +656,11 @@ document
             }
           }
         }
-        Clairvoyant.wsSocket.onmessage = function (evt) {
+        clairvoyant.wsSocket.onmessage = function (evt) {
           switch (evt.data) {
             // 需要发送localstorage
             case 'LS000':
-              Clairvoyant.observer({
+              clairvoyant.observer({
                 type: 'sendLocalstorage'
               })
               break;
@@ -670,20 +669,20 @@ document
           }
           // console.log("server:" + evt.data)
         }
-        Clairvoyant.wsSocket.onclose = function (evt) {
+        clairvoyant.wsSocket.onclose = function (evt) {
           console.log('Connection closed.')
         }
-        Clairvoyant.wsSocket.onerror = function (evt) {
+        clairvoyant.wsSocket.onerror = function (evt) {
           console.log(evt)
         }
-        Clairvoyant.init()
+        clairvoyant.init()
       }
     } else {
-      const Clairvoyant = (window.clairvoyant = new clairvoyant())
+      const clairvoyant = (window.clairvoyant = new Clairvoyant())
 
-      Clairvoyant.wsSocket.onopen = function (evt) {
+      clairvoyant.wsSocket.onopen = function (evt) {
         console.log('Connection start.')
-        Clairvoyant.observer({
+        clairvoyant.observer({
           type: 'openpage',
           evt: evt
         })
@@ -702,17 +701,16 @@ document
           }
         }
       }
-      Clairvoyant.wsSocket.onmessage = function (evt) {
-        debugger
+      clairvoyant.wsSocket.onmessage = function (evt) {
         console.log("server:" + evt.data)
       }
-      Clairvoyant.wsSocket.onclose = function (evt) {
+      clairvoyant.wsSocket.onclose = function (evt) {
         console.log('Connection closed.')
       }
-      Clairvoyant.wsSocket.onerror = function (evt) {
+      clairvoyant.wsSocket.onerror = function (evt) {
         console.log(evt)
       }
-      Clairvoyant.init()
+      clairvoyant.init()
     }
   }, {
     noShadow: true

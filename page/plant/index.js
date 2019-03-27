@@ -1,7 +1,7 @@
 export const IsPc = () => {
-  let userAgentInfo = navigator.userAgent,
-    Agents = ['Android', 'iPhone', 'SymbianOS', 'Windows Phone', 'iPad', 'iPod'],
-    flag = true
+  let userAgentInfo = navigator.userAgent;
+    let Agents = ['Android', 'iPhone', 'SymbianOS', 'Windows Phone', 'iPad', 'iPod'];
+    let flag = true
   for (var v = 0; v < Agents.length; v++) {
     if (userAgentInfo.indexOf(Agents[v]) > 0) {
       flag = false
