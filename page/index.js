@@ -280,21 +280,21 @@ export default class clairvoyant {
               })
             }, delay)
 
-            scrollNode.addEventListener('mouseenter', () => {
-              scrollNode.addEventListener('scroll', domScroll, {
-                noShadow: true
-              })
-            }, {
+            // scrollNode.addEventListener('mouseenter', () => {
+            scrollNode.addEventListener('scroll', domScroll, {
               noShadow: true
             })
+            // }, {
+            //   noShadow: true
+            // })
 
-            scrollNode.addEventListener('mouseleave ', () => {
-              scrollNode.removeEventListener('scroll', domScroll, {
-                noShadow: true
-              })
-            }, {
-              noShadow: true
-            })
+            // scrollNode.addEventListener('mouseleave ', () => {
+            //   scrollNode.removeEventListener('scroll', domScroll, {
+            //     noShadow: true
+            //   })
+            // }, {
+            //   noShadow: true
+            // })
           }
         }
       }, delay), {
@@ -336,6 +336,8 @@ export default class clairvoyant {
         type: 'click',
         evt: ev
       })
+    }, {
+      noShadow: true
     })
 
     // div 内滚动
@@ -359,16 +361,20 @@ export default class clairvoyant {
               evt: ev
             })
           }, delay)
-
-          scrolltarget.addEventListener('touchstart', () => {
-            scrolltarget.addEventListener('scroll', domScroll)
+          scrolltarget.addEventListener('scroll', domScroll, {
+            noShadow: true
           })
+          // scrolltarget.addEventListener('touchstart', () => {
+            // scrolltarget.addEventListener('scroll', domScroll)
+          // })
 
-          scrolltarget.addEventListener('touchend', () => {
-            scrolltarget.removeEventListener('scroll', domScroll)
-          })
+          // scrolltarget.addEventListener('touchend', () => {
+          //   scrolltarget.removeEventListener('scroll', domScroll)
+          // })
         }
       }
+    }, {
+      noShadow: true
     })
 
     windowFinger.addEventListener('touchmove', debounce(ev => {
@@ -376,7 +382,9 @@ export default class clairvoyant {
         type: 'fingermove',
         evt: ev
       })
-    }, delay))
+    }, delay), {
+      noShadow: true
+    })
 
     windowFinger.addEventListener("touchdrag", debounce(ev => {
       this
@@ -400,14 +408,18 @@ export default class clairvoyant {
           }
         })
       this.transformList = []
-    }, delay));
+    }, delay), {
+      noShadow: true
+    });
 
     windowFinger.addEventListener('touchpaint', debounce(ev => {
       this.observer({
         type: 'paint',
         evt: ev
       })
-    }, delay))
+    }, delay), {
+      noShadow: true
+    })
   }
 
   observer(obj) {
