@@ -173,18 +173,19 @@ export default class clairvoyant {
       attributeOldValue: false,
       characterDataOldValue: false
     }
-    let transformList = null
+    let transformList = []
     let mutationEventCallback = (mutationsList, itself) => {
       const _this = this;
       for (let mutation of mutationsList) {
         if (mutation.type == 'attributes') {
           transformList = mutationsList
             .map(mutation => mutation.target)
-            .filter(item => item.style.cssText.indexOf('translate') > -1);
+            .filter(item => item.style.cssText.indexOf('translate') > -1) || [];
           // console.log(mutation, mutationsList)
           // console.log(mutation.target.getBoundingClientRect())
         }
       }
+      console.log(transformList);
       _this.transformList = [...new Set([..._this.transformList, ...transformList])];
       let currentNode = [
         ...document.querySelectorAll('input'),
@@ -273,17 +274,23 @@ export default class clairvoyant {
             this
               .scrollList
               .push(scrollNode)
-            const domScroll = debounce(ev => {
+            const domScroll = throttle(ev => {
+              // console.log('domScroll')
               this.observer({
                 type: 'scroll',
                 evt: ev
               })
             }, delay)
 
-            // scrollNode.addEventListener('mouseenter', () => {
             scrollNode.addEventListener('scroll', domScroll, {
               noShadow: true
             })
+            // console.log('scrollNode', scrollNode)
+
+            // scrollNode.addEventListener('mouseenter', () => {
+            //   scrollNode.addEventListener('scroll', domScroll, {
+            //     noShadow: true
+            //   })
             // }, {
             //   noShadow: true
             // })
@@ -513,6 +520,7 @@ export default class clairvoyant {
           scroll = evt.target.scrollTop
         }
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(target)}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        console.log('scorll')
         _self.pushData(param)
       },
       visibilitychange: function () {
@@ -525,13 +533,12 @@ export default class clairvoyant {
       touchdrag: function () {
         event = eventType.ACTION_DRAG;
         const r = param.r.concat()
-        param.r = `${r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}S:${evt._startPoint.changedTouches[0].clientX}-${evt._startPoint.changedTouches[0].clientY}${
-        eventType.SPLIT_DATA}E:${evt.changedTouches[0].clientX}-${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        param.m = `${r}${event}${eventType.SPLIT_DATA}${readXPath(movement.ele)}${eventType.SPLIT_DATA}W:${movement.rect.width}${
-        eventType.SPLIT_DATA}H:${movement.rect.height}${
-        eventType.SPLIT_DATA}EX:${movement.delta.x}${
-        eventType.SPLIT_DATA}EY:${movement.delta.y}${
-        eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        param.r = `${r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${
+          movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${
+          movement.delta.x},${movement.delta.y}${eventType.SPLIT_DATA}${
+          readXPath(movement.ele)}${eventType.SPLIT_DATA}${
+          evt._startPoint.changedTouches[0].clientX},${evt._startPoint.changedTouches[0].clientY}${eventType.SPLIT_DATA}${
+          evt.changedTouches[0].clientX},${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.pushData(param, 100);
       },
       paint: function () {
