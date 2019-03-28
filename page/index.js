@@ -173,19 +173,20 @@ export default class Clairvoyant {
       attributeOldValue: false,
       characterDataOldValue: false
     }
-    let transformList = null
+    let transformList = []
     let mutationEventCallback = (mutationsList, itself) => {
       const _this = this;
       for (let mutation of mutationsList) {
         if (mutation.type == 'attributes') {
           transformList = mutationsList
             .map(mutation => mutation.target)
-            .filter(item => item.style.cssText.indexOf('translate') > -1);
-          // console.log(mutation, transformList)
+            .filter(item => item.style.cssText.indexOf('translate') > -1) || [];
+          // console.log(mutation, mutationsList)
           // console.log(mutation.target.getBoundingClientRect())
         }
       }
-      _this.transformList = [...new Set(transformList)];
+      console.log(transformList);
+      _this.transformList = [...new Set([..._this.transformList, ...transformList])];
       let currentNode = [
         ...document.querySelectorAll('input'),
         ...document.querySelectorAll('textarea'),
@@ -273,28 +274,34 @@ export default class Clairvoyant {
             this
               .scrollList
               .push(scrollNode)
-            const domScroll = debounce(ev => {
+            const domScroll = throttle(ev => {
+              // console.log('domScroll')
               this.observer({
                 type: 'scroll',
                 evt: ev
               })
             }, delay)
 
-            scrollNode.addEventListener('mouseenter', () => {
-              scrollNode.addEventListener('scroll', domScroll, {
-                noShadow: true
-              })
-            }, {
+            scrollNode.addEventListener('scroll', domScroll, {
               noShadow: true
             })
+            // console.log('scrollNode', scrollNode)
 
-            scrollNode.addEventListener('mouseleave ', () => {
-              scrollNode.removeEventListener('scroll', domScroll, {
-                noShadow: true
-              })
-            }, {
-              noShadow: true
-            })
+            // scrollNode.addEventListener('mouseenter', () => {
+            //   scrollNode.addEventListener('scroll', domScroll, {
+            //     noShadow: true
+            //   })
+            // }, {
+            //   noShadow: true
+            // })
+
+            // scrollNode.addEventListener('mouseleave ', () => {
+            //   scrollNode.removeEventListener('scroll', domScroll, {
+            //     noShadow: true
+            //   })
+            // }, {
+            //   noShadow: true
+            // })
           }
         }
       }, delay), {
@@ -336,6 +343,8 @@ export default class Clairvoyant {
         type: 'click',
         evt: ev
       })
+    }, {
+      noShadow: true
     })
 
     // div 内滚动
@@ -359,16 +368,20 @@ export default class Clairvoyant {
               evt: ev
             })
           }, delay)
-
-          scrolltarget.addEventListener('touchstart', () => {
-            scrolltarget.addEventListener('scroll', domScroll)
+          scrolltarget.addEventListener('scroll', domScroll, {
+            noShadow: true
           })
+          // scrolltarget.addEventListener('touchstart', () => {
+            // scrolltarget.addEventListener('scroll', domScroll)
+          // })
 
-          scrolltarget.addEventListener('touchend', () => {
-            scrolltarget.removeEventListener('scroll', domScroll)
-          })
+          // scrolltarget.addEventListener('touchend', () => {
+          //   scrolltarget.removeEventListener('scroll', domScroll)
+          // })
         }
       }
+    }, {
+      noShadow: true
     })
 
     windowFinger.addEventListener('touchmove', debounce(ev => {
@@ -376,88 +389,44 @@ export default class Clairvoyant {
         type: 'fingermove',
         evt: ev
       })
-    }, delay))
+    }, delay), {
+      noShadow: true
+    })
 
     windowFinger.addEventListener("touchdrag", debounce(ev => {
       this
         .transformList
         .forEach(ele => {
-          const delta = {
-            x: '0',
-            y: '0',
-            z: '0'
-          }
-          const mcss = ele.style.cssText
-
           const transformRect = ele.getBoundingClientRect()
           const dragRect = ev
             .target
             .getBoundingClientRect()
           if (utils.isOverlap(dragRect, transformRect)) {
-            const translateArr = mcss
-              .match(/(translate(X|Y|3D)?\().*?(?=\))/ig)
-              .map(attr => attr.replace('translate', '').toLowerCase())
-            translateArr.every((style) => {
-              if (style.indexOf('3d(') > -1) {
-                const arr = style
-                  .replace('3d(', '')
-                  .split(',')
-                delta.x = arr[0].trim()
-                delta.y = arr[1].trim()
-                return false
-              } else if (style.indexOf('x(') > -1) {
-                delta.x = style
-                  .replace('x(', '')
-                  .trim()
-                return true
-              } else if (style.indexOf('y(') > -1) {
-                delta.y = style
-                  .replace('y(', '')
-                  .trim()
-                return true
-              } else {
-                const arr = style
-                  .replace('(', '')
-                  .split(',')
-                delta.x = arr[0].trim()
-                delta.y = arr[1].trim()
-                return false
-              }
-            })
-            // console.log(translateArr); const translateXIndex =
-            // mcss.search(/(?<=translateX\()/i) const translateYIndex =
-            // mcss.search(/(?<=translateY\()/i) const translateArr =
-            // mcss.match(/(?<=translate(X|Y|3D)?\().*?(?=\))/ig) if (translateXIndex !== -1
-            // && translateYIndex !== -1) {   if (translateXIndex < translateYIndex) {
-            // delta.x = translateArr[0]     delta.y = translateArr[1]   } else { delta.x =
-            // translateArr[1]     delta.y = translateArr[0]   } } else if (translateXIndex
-            // !== -1) {   delta.x = translateArr[0] } else if (translateYIndex !== -1) {
-            // delta.y = translateArr[0] } else {   if (translateArr[0].search(/,/) !== -1)
-            // {     const arr = translateArr[0].split(',')     delta.x = arr[0] delta.y =
-            // arr[1]   } else if (translateArr[0].trim().search(/\s/) !== -1) {   const arr
-            // = translateArr[0].split(' ')     delta.x = arr[0]     delta.y = arr[1] } else
-            // {     delta.x = translateArr[0]     delta.y = translateArr[1] } }
-            // console.log(ele, translateArr, delta, transformRect)
-
+            // console.log(ele, this.transformList)
             this.observer({
               type: "touchdrag",
               evt: ev,
               movement: {
                 ele,
-                delta,
+                delta: utils.getDelta(ele.style.cssText),
                 rect: transformRect
               }
             });
           }
         })
-    }, delay));
+      this.transformList = []
+    }, delay), {
+      noShadow: true
+    });
 
     windowFinger.addEventListener('touchpaint', debounce(ev => {
       this.observer({
         type: 'paint',
         evt: ev
       })
-    }, delay))
+    }, delay), {
+      noShadow: true
+    })
   }
 
   observer(obj) {
@@ -551,6 +520,7 @@ export default class Clairvoyant {
           scroll = evt.target.scrollTop
         }
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(target)}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        console.log('scorll')
         _self.pushData(param)
       },
       visibilitychange: function () {
@@ -562,13 +532,13 @@ export default class Clairvoyant {
       visibilityblur: function () {},
       touchdrag: function () {
         event = eventType.ACTION_DRAG;
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}S:${evt.changedTouches[0].clientX}-${evt.changedTouches[0].clientY}${
-        eventType.SPLIT_DATA}E:${evt._startPoint.changedTouches[0].clientX}-${evt._startPoint.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        param.m = `${param.m}${event}${eventType.SPLIT_DATA}${readXPath(movement.ele)}${eventType.SPLIT_DATA}W:${movement.rect.width}${
-        eventType.SPLIT_DATA}H:${movement.rect.height}${
-        eventType.SPLIT_DATA}EX:${movement.delta.x}${
-        eventType.SPLIT_DATA}EY:${movement.delta.y}${
-        eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        const r = param.r.concat()
+        param.r = `${r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${
+          movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${
+          movement.delta.x},${movement.delta.y}${eventType.SPLIT_DATA}${
+          readXPath(movement.ele)}${eventType.SPLIT_DATA}${
+          evt._startPoint.changedTouches[0].clientX},${evt._startPoint.changedTouches[0].clientY}${eventType.SPLIT_DATA}${
+          evt.changedTouches[0].clientX},${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.pushData(param, 100);
       },
       paint: function () {
@@ -702,7 +672,7 @@ document
         }
       }
       clairvoyant.wsSocket.onmessage = function (evt) {
-        console.log("server:" + evt.data)
+        // console.log("server:" + evt.data)
       }
       clairvoyant.wsSocket.onclose = function (evt) {
         console.log('Connection closed.')
