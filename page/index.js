@@ -597,66 +597,20 @@ export default class clairvoyant {
   }
 }
 
-document
-  .addEventListener('DOMContentLoaded', function (event) {
-    var iseebiz = cookie.getCookie('ISEE_BIZ')
-    var ISEE_RE = cookie.getCookie('ISEE_RE')
-    if (process.env.NODE_ENV === 'production') {
-      if (ISEE_RE)
-        return
-      if (iseebiz) {
-        const Clairvoyant = (window.clairvoyant = new clairvoyant())
-        Clairvoyant.wsSocket.onopen = function (evt) {
-          console.log('Connection start.')
-          Clairvoyant.observer({
-            type: 'openpage',
-            evt: evt
-          })
-          let end = getConfig('end')
-          let type = getConfig('type')
-          if (end && type) {
-            if (type === 'history') {
-              if (location.pathname.indexOf(end) === 0) {
-                cookie.delCookie('ISEE_BIZ')
-              }
-            } else {
-              if (location.hash === end) {
-                cookie.delCookie('ISEE_BIZ')
-              }
-            }
-          }
-        }
-        Clairvoyant.wsSocket.onmessage = function (evt) {
-          switch (evt.data) {
-            // 需要发送localstorage
-            case 'LS000':
-              Clairvoyant.observer({
-                type: 'sendLocalstorage'
-              })
-              break;
-            default:
-              break;
-          }
-          // console.log("server:" + evt.data)
-        }
-        Clairvoyant.wsSocket.onclose = function (evt) {
-          console.log('Connection closed.')
-        }
-        Clairvoyant.wsSocket.onerror = function (evt) {
-          console.log(evt)
-        }
-        Clairvoyant.init()
-      }
-    } else {
+function domloaded (event) {
+  var iseebiz = cookie.getCookie('ISEE_BIZ')
+  var ISEE_RE = cookie.getCookie('ISEE_RE')
+  if (process.env.NODE_ENV === 'production') {
+    if (ISEE_RE)
+      return
+    if (iseebiz) {
       const Clairvoyant = (window.clairvoyant = new clairvoyant())
-
       Clairvoyant.wsSocket.onopen = function (evt) {
         console.log('Connection start.')
         Clairvoyant.observer({
           type: 'openpage',
           evt: evt
         })
-
         let end = getConfig('end')
         let type = getConfig('type')
         if (end && type) {
@@ -672,6 +626,16 @@ document
         }
       }
       Clairvoyant.wsSocket.onmessage = function (evt) {
+        switch (evt.data) {
+          // 需要发送localstorage
+          case 'LS000':
+            Clairvoyant.observer({
+              type: 'sendLocalstorage'
+            })
+            break;
+          default:
+            break;
+        }
         // console.log("server:" + evt.data)
       }
       Clairvoyant.wsSocket.onclose = function (evt) {
@@ -682,6 +646,53 @@ document
       }
       Clairvoyant.init()
     }
-  }, {
+  } else {
+    const Clairvoyant = (window.clairvoyant = new clairvoyant())
+
+    Clairvoyant.wsSocket.onopen = function (evt) {
+      console.log('Connection start.')
+      Clairvoyant.observer({
+        type: 'openpage',
+        evt: evt
+      })
+
+      let end = getConfig('end')
+      let type = getConfig('type')
+      if (end && type) {
+        if (type === 'history') {
+          if (location.pathname.indexOf(end) === 0) {
+            cookie.delCookie('ISEE_BIZ')
+          }
+        } else {
+          if (location.hash === end) {
+            cookie.delCookie('ISEE_BIZ')
+          }
+        }
+      }
+    }
+    Clairvoyant.wsSocket.onmessage = function (evt) {
+      // console.log("server:" + evt.data)
+    }
+    Clairvoyant.wsSocket.onclose = function (evt) {
+      console.log('Connection closed.')
+    }
+    Clairvoyant.wsSocket.onerror = function (evt) {
+      console.log(evt)
+    }
+    Clairvoyant.init()
+  }
+}
+
+document
+  .addEventListener('DOMContentLoaded', domloaded, {
     noShadow: true
   })
+
+window
+  .addEventListener('pageshow', function (evt) {
+    if (evt.persisted) {
+      domloaded()
+    }
+  }, {
+  noShadow: true
+})
