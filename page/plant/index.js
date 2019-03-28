@@ -1,7 +1,14 @@
 export const IsPc = () => {
-  let userAgentInfo = navigator.userAgent,
-    Agents = ['Android', 'iPhone', 'SymbianOS', 'Windows Phone', 'iPad', 'iPod'],
-    flag = true
+  let userAgentInfo = navigator.userAgent
+  let Agents = [
+    'Android',
+    'iPhone',
+    'SymbianOS',
+    'Windows Phone',
+    'iPad',
+    'iPod'
+  ]
+  let flag = true
   for (var v = 0; v < Agents.length; v++) {
     if (userAgentInfo.indexOf(Agents[v]) > 0) {
       flag = false
@@ -43,7 +50,13 @@ export const FindScrollNode = function FindScrollNode(target) {
   if (!target) return false
   if (target.tagName.toLowerCase() === 'html') return window
   let style = window.getComputedStyle(target)
-  if ((style.overflowX === 'scroll' || style.overflowX === 'auto' || style.overflowY === 'scroll' || style.overflowY === 'auto') && isShouldScrollNode(target)) {
+  if (
+    (style.overflowX === 'scroll' ||
+      style.overflowX === 'auto' ||
+      style.overflowY === 'scroll' ||
+      style.overflowY === 'auto') &&
+    isShouldScrollNode(target)
+  ) {
     return target
   }
   if (target.parentElement) {

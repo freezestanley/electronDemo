@@ -6,32 +6,34 @@ export default class Cookie {
     this.exp = exp || 60 * 60 * 1000
   }
   setCookie(name, value) {
-    var exp = new Date();
-    exp.setTime(exp.getTime() + this.exp);
-    document.cookie = `${name}=${escape(value)};expires=${exp.toGMTString()};path=${this.path};domain=${this.domain};`
+    var exp = new Date()
+    exp.setTime(exp.getTime() + this.exp)
+    document.cookie = `${name}=${escape(
+      value
+    )};expires=${exp.toGMTString()};path=${this.path};domain=${this.domain};`
   }
   getCookie(name) {
-    var arr,
-      reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+    var arr
+    var reg = new RegExp('(^| )' + name + '=([^;]*)(;|$)')
     if ((arr = document.cookie.match(reg))) {
-      return unescape(arr[2]);
+      return unescape(arr[2])
     } else {
-      return null;
+      return null
     }
   }
 
   delCookie(name) {
-    var exp = new Date();
-    exp.setTime(exp.getTime() - 100 - this.exp);
-    var cval = this.getCookie(name);
+    var exp = new Date()
+    exp.setTime(exp.getTime() - 100 - this.exp)
+    var cval = this.getCookie(name)
     if (cval != null) {
       // document.cookie = name + "=" + cval + ";expires=" + exp.toGMTString();
-      document.cookie = `${name}=${escape(cval)};expires=${exp.toGMTString()};path=${this.path};domain=${this.domain};`
+      document.cookie = `${name}=${escape(
+        cval
+      )};expires=${exp.toGMTString()};path=${this.path};domain=${this.domain};`
     }
   }
 }
-
-
 
 // const cookie = {
 //   domain: 'localhost',

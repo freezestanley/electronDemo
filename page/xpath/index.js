@@ -1,12 +1,11 @@
 const getAttribute = (el, attr) => {
-
   if (!el || !el.getAttribute) {
     return ''
   }
   return el.getAttribute(attr)
 }
 
-export const readXPath = (element) => {
+export const readXPath = element => {
   // if (element.id!==""){//判断id属性，如果这个元素有id，则显 示//*[@id="xPath"]  形式内容   return
   // '//*[@id=\"'+element.id+'\"]'; } if (element.getAttribute("class")!==null){
   // //判断class属性，如果这个元素有class，则显 示//*[@class="xPath"]  形式内容   return
@@ -30,23 +29,21 @@ export const readXPath = (element) => {
     return `//*[@data-qly="${qlyAttr}"]`
   }
   if (element === document.body) {
-    return `/html/${element
-      .tagName
-      .toLowerCase()}`;
+    return `/html/${element.tagName.toLowerCase()}`
   }
   if (!element.parentNode) {
     return `/html`
   }
   let ix = 1
-  const siblings = element.parentNode.childNodes;
+  const siblings = element.parentNode.childNodes
   for (let i = 0; i < siblings.length; i += 1) {
-    const sibling = siblings[i];
+    const sibling = siblings[i]
     if (sibling === element) {
-      return `${readXPath(element.parentNode)}/${element
-        .tagName
-        .toLowerCase()}[${ix}]`;
+      return `${readXPath(
+        element.parentNode
+      )}/${element.tagName.toLowerCase()}[${ix}]`
     } else if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
-      ix += 1;
+      ix += 1
     }
   }
   return undefined
@@ -54,43 +51,47 @@ export const readXPath = (element) => {
 
 // xpath get dom
 export const selectNodes = (expression, context = document, namespaces) => {
-  var doc = (context.nodeType !== 9
-      ? context.ownerDocument
-      : context),
-    nodes = [],
-    result = null,
-    i = 0,
-    len = 0;
-  if (typeof doc.evaluate !== "undefined") {
-    var nsresolver = null;
+  var doc = context.nodeType !== 9 ? context.ownerDocument : context
+  var nodes = []
+  var result = null
+  var i = 0
+  var len = 0
+  if (typeof doc.evaluate !== 'undefined') {
+    var nsresolver = null
     if (namespaces instanceof Object) {
-      nsresolver = function (prefix) {
-        return namespaces[prefix];
-      };
+      nsresolver = function(prefix) {
+        return namespaces[prefix]
+      }
     }
-    result = doc.evaluate(expression, context, nsresolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    result = doc.evaluate(
+      expression,
+      context,
+      nsresolver,
+      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+      null
+    )
     if (result !== null) {
       for (i = 0, len = result.snapshotLength; i < len; i++) {
-        nodes.push(result.snapshotItem(i));
+        nodes.push(result.snapshotItem(i))
       }
     }
-    return nodes;
-  } else if (typeof context.selectNodes !== "undefined") {
+    return nodes
+  } else if (typeof context.selectNodes !== 'undefined') {
     if (namespaces instanceof Object) {
-      var ns = '';
+      var ns = ''
       for (var prefix in namespaces) {
         if (namespaces.hasOwnProperty(prefix)) {
-          ns += 'xmlns:' + prefix + "='" + namespaces[prefix] + "' ";
+          ns += 'xmlns:' + prefix + "='" + namespaces[prefix] + "' "
         }
       }
-      doc.setProperty("SelectionNamespaces", ns);
+      doc.setProperty('SelectionNamespaces', ns)
     }
-    result = context.selectNodes(expression);
+    result = context.selectNodes(expression)
     for (i = 0, len = result.length; i < len; i++) {
-      nodes.push(result[i]);
+      nodes.push(result[i])
     }
-    return nodes;
+    return nodes
   } else {
-    throw new Error("No XPath engine found.");
+    throw new Error('No XPath engine found.')
   }
 }

@@ -1,44 +1,43 @@
 function wsocket(urlValue) {
-  if (window.WebSocket) return (new window.WebSocket(urlValue));
-  if (window.MozWebSocket) return new MozWebSocket(urlValue);
+  if (window.WebSocket) return new window.WebSocket(urlValue)
+  // eslint-disable-next-line no-undef
+  if (window.MozWebSocket) return new MozWebSocket(urlValue)
   return false
 }
 
 function Wsocket(url) {
   this.url = url
   this.skt = wsocket(url)
-  this.skt.onopen = (ev) => {
+  this.skt.onopen = ev => {
     console.log('open')
     this.onopen(ev)
   }
-  this.skt.onmessage = (ev) => {
+  this.skt.onmessage = ev => {
     console.log('message')
     this.onmessage(ev)
   }
   this.skt.onclose = this.onclose
   this.skt.onerror = this.onerror
 }
-Wsocket.prototype.onopen = function (evt) {}
-Wsocket.prototype.onmessage = function (evt) {
-
-}
-Wsocket.prototype.onclose = function (evt) {}
-Wsocket.prototype.onerror = function (evt) {
+Wsocket.prototype.onopen = function(evt) {}
+Wsocket.prototype.onmessage = function(evt) {}
+Wsocket.prototype.onclose = function(evt) {}
+Wsocket.prototype.onerror = function(evt) {
   return new Error(evt)
 }
-Wsocket.prototype.send = function (param) {
+Wsocket.prototype.send = function(param) {
   if (this.skt.readyState === 1) {
     this.skt.send(param)
   } else if (this.skt.readyState === 3) {
     this.reconnect()
   }
 }
-Wsocket.prototype.close = function () {
+Wsocket.prototype.close = function() {
   this.skt.close()
 }
-Wsocket.prototype.reconnect = function () {
+Wsocket.prototype.reconnect = function() {
   this.skt = wsocket(this.url)
-  this.skt.onopen = (ev) => {
+  this.skt.onopen = ev => {
     console.log('open')
     this.onopen(ev)
   }
@@ -47,7 +46,7 @@ Wsocket.prototype.reconnect = function () {
   this.skt.onerror = this.onerror
 }
 
-export default Wsocket = Wsocket
+export default Wsocket
 
 // export const debounce = function (method, delay) {
 //   let timer = null
@@ -55,20 +54,20 @@ export default Wsocket = Wsocket
 //     let context = this, args = arguments
 //     clearTimeout(timer)
 //     timer = setTimeout(function(){
-//       method.apply(context,args); 
+//       method.apply(context,args);
 //     }, delay)
 //   }
 // }
 
-export const debounce = function (method, delay) {
-  return function () {
-    let context = this,
-      args = arguments
+export const debounce = function(method, delay) {
+  return function() {
+    let context = this
+    let args = arguments
     if (debounce.timer !== null) {
       clearTimeout(debounce.timer)
       debounce.timer = null
     }
-    debounce.timer = setTimeout(function () {
+    debounce.timer = setTimeout(function() {
       method.apply(context, args)
       clearTimeout(debounce.timer)
       debounce.timer = null
@@ -93,7 +92,7 @@ debounce.timer = null
 //       let context = this, args = arguments
 //       clearTimeout(_this.time)
 //       _this.timer = setTimeout(function(){
-//         method.apply(context,args); 
+//         method.apply(context,args);
 //       }, delay)
 //     }
 //   }
@@ -111,7 +110,7 @@ export function throttle(fn, threshhold) {
   threshhold || (threshhold = 250)
 
   // 返回的函数，每过 threshhold 毫秒就执行一次 fn 函数
-  return function () {
+  return function() {
     // 保存函数调用时的上下文和参数，传递给 fn
     var context = this
     var args = arguments
@@ -124,7 +123,7 @@ export function throttle(fn, threshhold) {
       clearTimeout(timer)
 
       // 保证在当前时间区间结束后，再执行一次 fn
-      timer = setTimeout(function () {
+      timer = setTimeout(function() {
         last = now
         fn.apply(context, args)
       }, threshhold)

@@ -1,23 +1,15 @@
 // import axios from 'axios'
-import Wsocket, {
-  throttle,
-  debounce
-} from "./socket";
-import * as plant from "./plant";
-import {
-  readXPath,
-  selectNodes
-} from "./xpath";
-import * as eventType from "./enum";
-import domObserver from "./observer";
-import Finger from "./finger";
-import Cookie from "./cookie";
-import AjaxHook, {
-  CreateXMLHttp
-} from "./xmlhttprequest";
-import ProxyEvent from "./proxyEvent";
-import Checkhover from "./checkhover";
-import * as utils from "./utils";
+import Wsocket, { throttle, debounce } from './socket'
+import * as plant from './plant'
+import { readXPath, selectNodes } from './xpath'
+import * as eventType from './enum'
+import DomObserver from './observer'
+import Finger from './finger'
+import Cookie from './cookie'
+import { CreateXMLHttp } from './xmlhttprequest'
+import ProxyEvent from './proxyEvent'
+import Checkhover from './checkhover'
+import * as utils from './utils'
 
 /**
  *
@@ -38,26 +30,31 @@ function eId(element) {
   return element._eId || (element._eId = _eId++)
 }
 
-const getConfig = function (name) {
-  return window.st_conf && window.st_conf[name] ?
-    window.st_conf[name] :
-    null
+const getConfig = function(name) {
+  return window.st_conf && window.st_conf[name] ? window.st_conf[name] : null
 }
-const cookie = new Cookie(getConfig('domain'), getConfig('path'), getConfig('exp'))
+const cookie = new Cookie(
+  getConfig('domain'),
+  getConfig('path'),
+  getConfig('exp')
+)
 
-const wspath = getConfig('ws') || (process.env.NODE_ENV === 'production' ?
-  'wss://isee-test.zhongan.io/sapi/ed/events' :
-  'ws://127.0.0.1:3000/test/123')
+const wspath =
+  getConfig('ws') ||
+  (process.env.NODE_ENV === 'production'
+    ? 'wss://isee-test.zhongan.io/sapi/ed/events'
+    : 'ws://127.0.0.1:3000/test/123')
 const delay = 300
-const lazyPath = 'https://www.zhongan.com/open/member/login_screen/get_sso_uni_form_domain_url.jso' +
+const lazyPath =
+  'https://www.zhongan.com/open/member/login_screen/get_sso_uni_form_domain_url.jso' +
   'n'
 const proxyEvent = new ProxyEvent()
-proxyEvent.callback = function (ev) {
+proxyEvent.callback = function(ev) {
   console.log(`===${ev.type}===${ev.target}`)
 }
 let mousedownPoint
 
-export default class clairvoyant {
+export default class Clairvoyant {
   constructor(ws = wspath) {
     this.wsSocket = new Wsocket(ws)
     this.proxyEvent = proxyEvent
@@ -84,89 +81,112 @@ export default class clairvoyant {
   init() {
     this.addBaseEvent()
     this.mutationWatch()
-    this.plant ?
-      this.deskWatch() :
-      this.mobileWatch()
+    this.plant ? this.deskWatch() : this.mobileWatch()
   }
   addBaseEvent() {
     // 添加全局基础事件
-    document.addEventListener('visibilitychange', ev => {
-      typeof document.hidden === 'boolean' && document.hidden === false ?
-        this.observer({
-          type: 'visibilitychange',
-          evt: ev
-        }) :
-        this.observer({
-          type: 'visibilityblur',
-          evt: ev
-        })
-    }, {
-      noShadow: true
-    })
-    window.addEventListener('input', ev => {
-      let target = ev
-        .target
-        .nodeName
-        .toLocaleLowerCase()
-      if (target === 'textarea') {
-        this.observer({
-          type: 'inputChange',
-          evt: ev
-        })
-      } else if (target === 'select') {
-        this.observer({
-          type: 'select',
-          evt: ev
-        })
-      } else if (target === 'input') {
-        this.observer({
-          type: 'inputChange',
-          evt: ev
-        })
+    document.addEventListener(
+      'visibilitychange',
+      ev => {
+        typeof document.hidden === 'boolean' && document.hidden === false
+          ? this.observer({
+              type: 'visibilitychange',
+              evt: ev
+            })
+          : this.observer({
+              type: 'visibilityblur',
+              evt: ev
+            })
+      },
+      {
+        noShadow: true
       }
-    }, {
-      noShadow: true
-    })
-    window.addEventListener('popstate', ev => {
-      this.observer({
-        type: 'popstate',
-        evt: ev
-      })
-    }, {
-      noShadow: true
-    })
+    )
+    window.addEventListener(
+      'input',
+      ev => {
+        let target = ev.target.nodeName.toLocaleLowerCase()
+        if (target === 'textarea') {
+          this.observer({
+            type: 'inputChange',
+            evt: ev
+          })
+        } else if (target === 'select') {
+          this.observer({
+            type: 'select',
+            evt: ev
+          })
+        } else if (target === 'input') {
+          this.observer({
+            type: 'inputChange',
+            evt: ev
+          })
+        }
+      },
+      {
+        noShadow: true
+      }
+    )
+    window.addEventListener(
+      'popstate',
+      ev => {
+        this.observer({
+          type: 'popstate',
+          evt: ev
+        })
+      },
+      {
+        noShadow: true
+      }
+    )
 
-    window.addEventListener('hashchange', ev => {
-      this.observer({
-        type: 'hashchange',
-        evt: ev
-      })
-    }, {
-      noShadow: true
-    })
+    window.addEventListener(
+      'hashchange',
+      ev => {
+        this.observer({
+          type: 'hashchange',
+          evt: ev
+        })
+      },
+      {
+        noShadow: true
+      }
+    )
 
-    window.addEventListener('beforeunload', ev => {
-      this.observer({
-        type: 'unload',
-        evt: ev
-      })
-      this.lazy()
-    }, {
-      noShadow: true
-    })
+    window.addEventListener(
+      'beforeunload',
+      ev => {
+        this.observer({
+          type: 'unload',
+          evt: ev
+        })
+        this.lazy()
+      },
+      {
+        noShadow: true
+      }
+    )
 
-    window.addEventListener('scroll', debounce(ev => this.observer({
-      type: 'scroll',
-      evt: ev
-    }), delay), {
-      noShadow: true
-    })
+    window.addEventListener(
+      'scroll',
+      debounce(
+        ev =>
+          this.observer({
+            type: 'scroll',
+            evt: ev
+          }),
+        delay
+      ),
+      {
+        noShadow: true
+      }
+    )
   }
 
   mutationWatch() {
     let config = {
       attributes: true,
-      attributeFilter: ["style"],
+      attributeFilter: ['style'],
       childList: true,
       characterData: false,
       subtree: true,
@@ -175,18 +195,22 @@ export default class clairvoyant {
     }
     let transformList = []
     let mutationEventCallback = (mutationsList, itself) => {
-      const _this = this;
+      const _this = this
       for (let mutation of mutationsList) {
         if (mutation.type == 'attributes') {
-          transformList = mutationsList
-            .map(mutation => mutation.target)
-            .filter(item => item.style.cssText.indexOf('translate') > -1) || [];
+          transformList =
+            mutationsList
+              .map(mutation => mutation.target)
+              .filter(item => item.style.cssText.indexOf('translate') > -1) ||
+            []
           // console.log(mutation, mutationsList)
           // console.log(mutation.target.getBoundingClientRect())
         }
       }
-      console.log(transformList);
-      _this.transformList = [...new Set([..._this.transformList, ...transformList])];
+      console.log(transformList)
+      _this.transformList = [
+        ...new Set([..._this.transformList, ...transformList])
+      ]
       let currentNode = [
         ...document.querySelectorAll('input'),
         ...document.querySelectorAll('textarea'),
@@ -200,7 +224,11 @@ export default class clairvoyant {
         // if (   cNode.type === "radio" ||   cNode.type === "checkbox" ) {   //
         // cNode.addEventListener("change", _this.inputChangEvent.bind(_this), {   //
         // noShadow: true   // }); } else
-        if (cNode.type != 'radio' || cNode.type != 'checkbox' || cNode.type != 'select') {
+        if (
+          cNode.type != 'radio' ||
+          cNode.type != 'checkbox' ||
+          cNode.type != 'select'
+        ) {
           cNode.addEventListener('focus', _this.inputFocusEvent.bind(_this), {
             noShadow: true
           })
@@ -209,15 +237,15 @@ export default class clairvoyant {
           })
         }
       })
-      _this.formlist = _this
-        .formlist
-        .concat(currentNode)
+      _this.formlist = _this.formlist.concat(currentNode)
     }
 
-    this.domObserver = new domObserver(document.body, config, mutationEventCallback)
-    this
-      .domObserver
-      .start()
+    this.domObserver = new DomObserver(
+      document.body,
+      config,
+      mutationEventCallback
+    )
+    this.domObserver.start()
   }
 
   inputChangEvent(ev) {
@@ -255,9 +283,9 @@ export default class clairvoyant {
 
   deskWatch() {
     // div 内滚动
-    document
-      .body
-      .addEventListener('mouseover', debounce(ev => {
+    document.body.addEventListener(
+      'mouseover',
+      debounce(ev => {
         this.observer({
           type: 'mouseover',
           evt: ev
@@ -265,15 +293,11 @@ export default class clairvoyant {
         const scrollNode = plant.FindScrollNode(ev.target)
         if (scrollNode) {
           // const targetXpath = readXPath(scrollNode);
-          const isListener = this
-            .scrollList
-            .find(ele => {
-              return ele === scrollNode
-            })
+          const isListener = this.scrollList.find(ele => {
+            return ele === scrollNode
+          })
           if (!isListener) {
-            this
-              .scrollList
-              .push(scrollNode)
+            this.scrollList.push(scrollNode)
             const domScroll = throttle(ev => {
               // console.log('domScroll')
               this.observer({
@@ -304,22 +328,30 @@ export default class clairvoyant {
             // })
           }
         }
-      }, delay), {
+      }, delay),
+      {
         noShadow: true
-      })
+      }
+    )
 
     // 页面点击
-    document
-      .body
-      .addEventListener('mousedown', ev => {
+    document.body.addEventListener(
+      'mousedown',
+      ev => {
         mousedownPoint = ev
-      }, {
+      },
+      {
         noShadow: true
-      })
-    document
-      .body
-      .addEventListener('mouseup', ev => {
-        if (mousedownPoint.clientX === ev.clientX && mousedownPoint.clientY === ev.clientY && mousedownPoint.target === ev.target) {
+      }
+    )
+    document.body.addEventListener(
+      'mouseup',
+      ev => {
+        if (
+          mousedownPoint.clientX === ev.clientX &&
+          mousedownPoint.clientY === ev.clientY &&
+          mousedownPoint.target === ev.target
+        ) {
           this.observer({
             type: 'click',
             evt: ev
@@ -330,167 +362,195 @@ export default class clairvoyant {
             evt: ev
           })
         }
-      }, {
+      },
+      {
         noShadow: true
-      })
+      }
+    )
   }
 
   mobileWatch() {
     let windowFinger = new Finger(window)
     // 页面点击
-    windowFinger.addEventListener('touchtap', ev => {
-      this.observer({
-        type: 'click',
-        evt: ev
-      })
-    }, {
-      noShadow: true
-    })
+    windowFinger.addEventListener(
+      'touchtap',
+      ev => {
+        this.observer({
+          type: 'click',
+          evt: ev
+        })
+      },
+      {
+        noShadow: true
+      }
+    )
 
     // div 内滚动
-    windowFinger.addEventListener('touchstart', ev => {
-      const scrolltarget = plant.FindScrollNode(ev.target)
-      // console.log('-----scrolltarget', scrolltarget)
-      if (scrolltarget) {
-        // const targetXpath = readXPath(scrolltarget);
-        const isListener = this
-          .scrollList
-          .find(id => {
+    windowFinger.addEventListener(
+      'touchstart',
+      ev => {
+        const scrolltarget = plant.FindScrollNode(ev.target)
+        // console.log('-----scrolltarget', scrolltarget)
+        if (scrolltarget) {
+          // const targetXpath = readXPath(scrolltarget);
+          const isListener = this.scrollList.find(id => {
             return id === eId(scrolltarget)
           })
-        if (!isListener) {
-          this
-            .scrollList
-            .push(eId(scrolltarget))
-          const domScroll = throttle(ev => {
-            this.observer({
-              type: 'scroll',
-              evt: ev
+          if (!isListener) {
+            this.scrollList.push(eId(scrolltarget))
+            const domScroll = throttle(ev => {
+              this.observer({
+                type: 'scroll',
+                evt: ev
+              })
+            }, delay)
+            scrolltarget.addEventListener('scroll', domScroll, {
+              noShadow: true
             })
-          }, delay)
-          scrolltarget.addEventListener('scroll', domScroll, {
-            noShadow: true
-          })
-          // scrolltarget.addEventListener('touchstart', () => {
+            // scrolltarget.addEventListener('touchstart', () => {
             // scrolltarget.addEventListener('scroll', domScroll)
-          // })
+            // })
 
-          // scrolltarget.addEventListener('touchend', () => {
-          //   scrolltarget.removeEventListener('scroll', domScroll)
-          // })
+            // scrolltarget.addEventListener('touchend', () => {
+            //   scrolltarget.removeEventListener('scroll', domScroll)
+            // })
+          }
         }
+      },
+      {
+        noShadow: true
       }
-    }, {
-      noShadow: true
-    })
+    )
 
-    windowFinger.addEventListener('touchmove', debounce(ev => {
-      this.observer({
-        type: 'fingermove',
-        evt: ev
-      })
-    }, delay), {
-      noShadow: true
-    })
+    windowFinger.addEventListener(
+      'touchmove',
+      debounce(ev => {
+        this.observer({
+          type: 'fingermove',
+          evt: ev
+        })
+      }, delay),
+      {
+        noShadow: true
+      }
+    )
 
-    windowFinger.addEventListener("touchdrag", debounce(ev => {
-      this
-        .transformList
-        .forEach(ele => {
+    windowFinger.addEventListener(
+      'touchdrag',
+      debounce(ev => {
+        this.transformList.forEach(ele => {
           const transformRect = ele.getBoundingClientRect()
-          const dragRect = ev
-            .target
-            .getBoundingClientRect()
+          const dragRect = ev.target.getBoundingClientRect()
           if (utils.isOverlap(dragRect, transformRect)) {
             // console.log(ele, this.transformList)
             this.observer({
-              type: "touchdrag",
+              type: 'touchdrag',
               evt: ev,
               movement: {
                 ele,
                 delta: utils.getDelta(ele.style.cssText),
                 rect: transformRect
               }
-            });
+            })
           }
         })
-      this.transformList = []
-    }, delay), {
-      noShadow: true
-    });
+        this.transformList = []
+      }, delay),
+      {
+        noShadow: true
+      }
+    )
 
-    windowFinger.addEventListener('touchpaint', debounce(ev => {
-      this.observer({
-        type: 'paint',
-        evt: ev
-      })
-    }, delay), {
-      noShadow: true
-    })
+    windowFinger.addEventListener(
+      'touchpaint',
+      debounce(ev => {
+        this.observer({
+          type: 'paint',
+          evt: ev
+        })
+      }, delay),
+      {
+        noShadow: true
+      }
+    )
   }
 
   observer(obj) {
-    let evt = obj.evt,
-      movement = obj.movement,
-      param = {
-        t: +new Date(),
-        i: cookie.getCookie('ISEE_BIZ'),
-        a: this.plant ?
-          eventType.AGENT_PC : eventType.AGENT_MOBILE,
-        u: window.location.href
-      },
-      event = null,
-      _self = this
-    param.r = `${ + new Date()}${eventType.SPLIT_DATA}`
+    let evt = obj.evt
+    let movement = obj.movement
+    let param = {
+      t: +new Date(),
+      i: cookie.getCookie('ISEE_BIZ'),
+      a: this.plant ? eventType.AGENT_PC : eventType.AGENT_MOBILE,
+      u: window.location.href
+    }
+    let event = null
+    let _self = this
+    param.r = `${+new Date()}${eventType.SPLIT_DATA}`
     const target = {
-      openpage: function () {
+      openpage: function() {
         // const ck = cookie.getCookie('ISEE_BIZ')
         // const ck_cache = cookie.getCookie('ISEE_BIZ_CACHE')
         // pc端取文档的高度和宽度， 手机端取设备屏幕的宽度和高度
-        param.wh = _self.plant ? `${document.documentElement.clientWidth}x${document.documentElement.clientHeight}` : `${window.screen.width}x${window.screen.height}`
+        param.wh = _self.plant
+          ? `${document.documentElement.clientWidth}x${
+              document.documentElement.clientHeight
+            }`
+          : `${window.screen.width}x${window.screen.height}`
         // if (!ck_cache || ck_cache !== ck) {
         //   cookie.setCookie('ISEE_BIZ_CACHE', ck)
         //   param.lc = JSON.stringify(window.localStorage)
         // }
         _self.pushData(param)
       },
-      sendLocalstorage: function () {
+      sendLocalstorage: function() {
         param.ls = ls
         _self.pushData(param)
       },
-      click: function () {
+      click: function() {
         let point = ''
         if (evt instanceof TouchEvent) {
-          point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX}-${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}`
+          point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX}-${
+            evt.changedTouches[0].clientY
+          }${eventType.SPLIT_DATA}`
         } else if (evt instanceof MouseEvent) {
-          point = `${eventType.SPLIT_DATA}${evt.clientX}-${evt.clientY}${eventType.SPLIT_DATA}`
+          point = `${eventType.SPLIT_DATA}${evt.clientX}-${evt.clientY}${
+            eventType.SPLIT_DATA
+          }`
         }
         const link = plant.FindANode(evt.target, 'a')
         if (link && link.target === '_blank') {
-          param.r = `${param.r}${eventType.ACTION_TAB}${eventType.SPLIT_DATA}${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
+          param.r = `${param.r}${eventType.ACTION_TAB}${
+            eventType.SPLIT_DATA
+          }${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
         } else {
-          param.r = `${param.r}${eventType.ACTION_CLICK}${eventType.SPLIT_DATA}${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
+          param.r = `${param.r}${eventType.ACTION_CLICK}${
+            eventType.SPLIT_DATA
+          }${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
         }
         _self.pushData(param)
       },
-      mouseover: function () {
-        let tagName = evt
-          .target
-          .tagName
-          .toLowerCase()
+      mouseover: function() {
+        let tagName = evt.target.tagName.toLowerCase()
         let check = Checkhover(evt.target, ':hover')
-        if (tagName === 'li' || tagName === 'a' || check || evt.target.onmouseover || (evt.__eventOrginList && evt.__eventOrginList.length > 0)) {
+        if (
+          tagName === 'li' ||
+          tagName === 'a' ||
+          check ||
+          evt.target.onmouseover ||
+          (evt.__eventOrginList && evt.__eventOrginList.length > 0)
+        ) {
           event = eventType.ACTION_HOVER
-          param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
+          param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+            evt.target
+          )}${eventType.SPLIT_LINE}`
           _self.pushData(param)
         }
       },
-      unload: function () {
-        _self
-          .wsSocket
-          .close()
+      unload: function() {
+        _self.wsSocket.close()
       },
-      inputChange: function () {
+      inputChange: function() {
         event = eventType.ACTION_INPUT
         if (evt.target.type === 'password') {
           let length = evt.target.value.length
@@ -499,98 +559,112 @@ export default class clairvoyant {
             evt.target.value += '*'
           }
         }
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          evt.target
+        )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
-      select: function () {
+      select: function() {
         event = eventType.ACTION_SELECT
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          evt.target
+        )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
-      mousedown: function () {},
-      mousemove: function () {},
-      scroll: function () {
+      mousedown: function() {},
+      mousemove: function() {},
+      scroll: function() {
         event = eventType.ACTION_SCROLL
-        let scroll,
-          target = evt.target
-        if (evt.target.nodeName.toLowerCase() === '#document' || evt.target.nodeName.toLowerCase() === 'body' || evt.target.nodeName.toLowerCase() === 'html') {
+        let scroll
+        let target = evt.target
+        if (
+          evt.target.nodeName.toLowerCase() === '#document' ||
+          evt.target.nodeName.toLowerCase() === 'body' ||
+          evt.target.nodeName.toLowerCase() === 'html'
+        ) {
           scroll = document.documentElement.scrollTop || document.body.scrollTop
           target = document.body
         } else {
           scroll = evt.target.scrollTop
         }
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(target)}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          target
+        )}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${
+          eventType.SPLIT_LINE
+        }`
         console.log('scorll')
         _self.pushData(param)
       },
-      visibilitychange: function () {
+      visibilitychange: function() {
         event = eventType.ACTION_SWITCH
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${location.href}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${location.href}${
+          eventType.SPLIT_LINE
+        }`
         _self.pushData(param)
       },
-      fingermove: function () {},
-      visibilityblur: function () {},
-      touchdrag: function () {
-        event = eventType.ACTION_DRAG;
+      fingermove: function() {},
+      visibilityblur: function() {},
+      touchdrag: function() {
+        event = eventType.ACTION_DRAG
         const r = param.r.concat()
-        param.r = `${r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${
-          movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${
-          movement.delta.x},${movement.delta.y}${eventType.SPLIT_DATA}${
-          readXPath(movement.ele)}${eventType.SPLIT_DATA}${
-          evt._startPoint.changedTouches[0].clientX},${evt._startPoint.changedTouches[0].clientY}${eventType.SPLIT_DATA}${
-          evt.changedTouches[0].clientX},${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        _self.pushData(param, 100);
+        param.r = `${r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${
+          eventType.SPLIT_DATA
+        }${movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${
+          movement.delta.x
+        },${movement.delta.y}${eventType.SPLIT_DATA}${readXPath(movement.ele)}${
+          eventType.SPLIT_DATA
+        }${evt._startPoint.changedTouches[0].clientX},${
+          evt._startPoint.changedTouches[0].clientY
+        }${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX},${
+          evt.changedTouches[0].clientY
+        }${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        _self.pushData(param, 100)
       },
-      paint: function () {
+      paint: function() {
         event = eventType.PAINT_MOVE
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt._movePoint}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        _self
-          .wsSocket
-          .send(JSON.stringify(param))
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          evt.target
+        )}${eventType.SPLIT_DATA}${evt._movePoint}${eventType.SPLIT_DATA}${
+          eventType.SPLIT_LINE
+        }`
+        _self.wsSocket.send(JSON.stringify(param))
       },
-      popstate: function () {
+      popstate: function() {
         event = eventType.POP_STATE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        _self
-          .wsSocket
-          .send(JSON.stringify(param))
+        _self.wsSocket.send(JSON.stringify(param))
       },
-      hashchange: function () {
+      hashchange: function() {
         event = eventType.HASH_CHANGE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        _self
-          .wsSocket
-          .send(JSON.stringify(param))
+        _self.wsSocket.send(JSON.stringify(param))
       },
-      inputBlur: function () {
+      inputBlur: function() {
         event = eventType.INPUT_BLUR
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          evt.target
+        )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
-      inputFocus: function () {
+      inputFocus: function() {
         event = eventType.INPUT_FOCUS
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
+          evt.target
+        )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       }
     }
     target[obj.type]()
   }
   pushData(obj, time = 0) {
-    if (!cookie.getCookie('ISEE_BIZ'))
-      return
+    if (!cookie.getCookie('ISEE_BIZ')) return
     let pushMode = getConfig('pushMode') || 'once'
     if (pushMode === 'once') {
-      this
-        .wsSocket
-        .send(JSON.stringify(obj))
+      this.wsSocket.send(JSON.stringify(obj))
     } else {
-      this
-        .messageList
-        .push(obj)
+      this.messageList.push(obj)
       if (this.messageList.length >= 30) {
-        this
-          .wsSocket
-          .send(JSON.stringify(this.messageList))
+        this.wsSocket.send(JSON.stringify(this.messageList))
         this.messageList = []
       }
     }
@@ -607,7 +681,7 @@ function domloaded (event) {
       const Clairvoyant = (window.clairvoyant = new clairvoyant())
       Clairvoyant.wsSocket.onopen = function (evt) {
         console.log('Connection start.')
-        Clairvoyant.observer({
+        clairvoyant.observer({
           type: 'openpage',
           evt: evt
         })
@@ -638,13 +712,13 @@ function domloaded (event) {
         }
         // console.log("server:" + evt.data)
       }
-      Clairvoyant.wsSocket.onclose = function (evt) {
+      clairvoyant.wsSocket.onclose = function(evt) {
         console.log('Connection closed.')
       }
-      Clairvoyant.wsSocket.onerror = function (evt) {
+      clairvoyant.wsSocket.onerror = function(evt) {
         console.log(evt)
       }
-      Clairvoyant.init()
+      clairvoyant.init()
     }
   } else {
     const Clairvoyant = (window.clairvoyant = new clairvoyant())

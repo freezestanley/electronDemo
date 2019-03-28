@@ -1,6 +1,7 @@
 export default class ProxyHistoryApi {
   constructor(options) {
-    this._onStateChange = options && options.onStateChange ? options.onStateChange : null
+    this._onStateChange =
+      options && options.onStateChange ? options.onStateChange : null
     this.initProxy(window.history)
   }
   set onStateChange(fun) {
