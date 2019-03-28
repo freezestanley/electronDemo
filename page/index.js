@@ -671,15 +671,14 @@ export default class Clairvoyant {
   }
 }
 
-function domloaded (event) {
+function domloaded(event) {
   var iseebiz = cookie.getCookie('ISEE_BIZ')
   var ISEE_RE = cookie.getCookie('ISEE_RE')
   if (process.env.NODE_ENV === 'production') {
-    if (ISEE_RE)
-      return
+    if (ISEE_RE) return
     if (iseebiz) {
-      const Clairvoyant = (window.clairvoyant = new clairvoyant())
-      Clairvoyant.wsSocket.onopen = function (evt) {
+      const clairvoyant = (window.clairvoyant = new Clairvoyant())
+      clairvoyant.wsSocket.onopen = function(evt) {
         console.log('Connection start.')
         clairvoyant.observer({
           type: 'openpage',
@@ -699,16 +698,16 @@ function domloaded (event) {
           }
         }
       }
-      Clairvoyant.wsSocket.onmessage = function (evt) {
+      clairvoyant.wsSocket.onmessage = function(evt) {
         switch (evt.data) {
           // 需要发送localstorage
           case 'LS000':
-            Clairvoyant.observer({
+            clairvoyant.observer({
               type: 'sendLocalstorage'
             })
-            break;
+            break
           default:
-            break;
+            break
         }
         // console.log("server:" + evt.data)
       }
@@ -721,11 +720,11 @@ function domloaded (event) {
       clairvoyant.init()
     }
   } else {
-    const Clairvoyant = (window.clairvoyant = new clairvoyant())
+    const clairvoyant = (window.clairvoyant = new Clairvoyant())
 
-    Clairvoyant.wsSocket.onopen = function (evt) {
+    clairvoyant.wsSocket.onopen = function(evt) {
       console.log('Connection start.')
-      Clairvoyant.observer({
+      clairvoyant.observer({
         type: 'openpage',
         evt: evt
       })
@@ -744,29 +743,31 @@ function domloaded (event) {
         }
       }
     }
-    Clairvoyant.wsSocket.onmessage = function (evt) {
+    clairvoyant.wsSocket.onmessage = function(evt) {
       // console.log("server:" + evt.data)
     }
-    Clairvoyant.wsSocket.onclose = function (evt) {
+    clairvoyant.wsSocket.onclose = function(evt) {
       console.log('Connection closed.')
     }
-    Clairvoyant.wsSocket.onerror = function (evt) {
+    clairvoyant.wsSocket.onerror = function(evt) {
       console.log(evt)
     }
-    Clairvoyant.init()
+    clairvoyant.init()
   }
 }
 
-document
-  .addEventListener('DOMContentLoaded', domloaded, {
-    noShadow: true
-  })
+document.addEventListener('DOMContentLoaded', domloaded, {
+  noShadow: true
+})
 
-window
-  .addEventListener('pageshow', function (evt) {
+window.addEventListener(
+  'pageshow',
+  function(evt) {
     if (evt.persisted) {
       domloaded()
     }
-  }, {
-  noShadow: true
-})
+  },
+  {
+    noShadow: true
+  }
+)
