@@ -1,14 +1,20 @@
-const path = require("path"),
-  HtmlWebpackPlugin = require("html-webpack-plugin"),
-  CleanWebpackPlugin = require("clean-webpack-plugin"),
-  webpack = require("webpack"),
-  baseConfig = require("./webpack.dev"),
-  merge = require("webpack-merge");
+const path = require('path')
+// const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
+const webpack = require('webpack')
+const baseConfig = require('./webpack.dev')
+const merge = require('webpack-merge')
 
 const hotdev = {
   entry: {
-    st: ["webpack-hot-middleware/client?noInfo=false&reload=true&quiet=false", "./page/index.js"],
-    eye: ["webpack-hot-middleware/client?noInfo=false&reload=true&quiet=false", "./page/eye.js"]
+    st: [
+      'webpack-hot-middleware/client?noInfo=false&reload=true&quiet=false',
+      './page/index.js'
+    ],
+    eye: [
+      'webpack-hot-middleware/client?noInfo=false&reload=true&quiet=false',
+      './page/eye.js'
+    ]
   },
   output: {
     filename: '[name].js',
@@ -18,11 +24,11 @@ const hotdev = {
     publicPath: 'http://localhost:3000/'
   },
   plugins: [
-    new CleanWebpackPlugin(["dist"]),
+    new CleanWebpackPlugin(['dist']),
     new webpack.NamedModulesPlugin(),
     new webpack.HotModuleReplacementPlugin()
   ]
-};
+}
 
 module.exports = merge(baseConfig, hotdev)
 // module.exports = function () {

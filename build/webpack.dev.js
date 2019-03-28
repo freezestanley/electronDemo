@@ -1,5 +1,5 @@
 const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+// const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 const webpack = require('webpack')
 
@@ -17,6 +17,16 @@ module.exports = {
   },
   module: {
     rules: [
+      {
+        test: /\.js$/,
+        loader: 'eslint-loader',
+        enforce: 'pre',
+        include: [path.resolve(__dirname, '../page')],
+        options: {
+          formatter: require('eslint-friendly-formatter'),
+          emitWarning: true
+        }
+      },
       {
         test: /\.m?js$/,
         exclude: /(node_modules|bower_components)/,
