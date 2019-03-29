@@ -46,8 +46,7 @@ const wspath =
     : 'ws://127.0.0.1:3000/test/123')
 const delay = 300
 const lazyPath =
-  'https://www.zhongan.com/open/member/login_screen/get_sso_uni_form_domain_url.jso' +
-  'n'
+  'https://www.zhongan.com/open/member/login_screen/get_sso_uni_form_domain_url.json'
 const proxyEvent = new ProxyEvent()
 proxyEvent.callback = function(ev) {
   process.env.NODE_ENV === 'production' &&

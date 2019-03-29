@@ -200,9 +200,9 @@ function respond(ctx) {
   // allow bypassing koa
   if (false === ctx.respond) return;
 
-  const res = ctx.res;
   if (!ctx.writable) return;
 
+  const res = ctx.res;
   let body = ctx.body;
   const code = ctx.status;
 
@@ -222,7 +222,11 @@ function respond(ctx) {
 
   // status body
   if (null == body) {
-    body = ctx.message || String(code);
+    if (ctx.req.httpVersionMajor >= 2) {
+      body = String(code);
+    } else {
+      body = ctx.message || String(code);
+    }
     if (!res.headersSent) {
       ctx.type = 'text';
       ctx.length = Buffer.byteLength(body);

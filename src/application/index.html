@@ -51,7 +51,9 @@
 </style>
 <body>
   <div id="app">
-    <canvas width="800" height="800" style="border: 1px solid;">
+
+    <iframe src="http://www.163.com" width="500" height="300"></iframe>
+    <canvas width="200" height="200" style="border: 1px solid;">
 
     </canvas>
 
@@ -169,259 +171,261 @@
 </body>
 
 <script>
-  function  aa () {
+//   function  aa () {
    
-  }
-  function bb () {
-    alert('ff')
-    document.getElementById('test').innerHTML = ''
-  }
+//   }
+//   function bb () {
+//     alert('ff')
+//     document.getElementById('test').innerHTML = ''
+//   }
 
 
-  var i = 0
-  function clickhandler () {
-    axios.get('./test', {
-      code: '11111'
-    }).then(function (response) {
-      console.log(response.data)
-    }).catch(function (error) {
-      console.log(error);
-    })
-  }
-  var imglist = []
-  function ob () {
-    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver
-    // 选择目标节点
-    var target = document.getElementById('app'); 
-    // 创建观察者对象
-    var observer = new MutationObserver(function(mutations) { 
-      console.dir(mutations)
-      mutations.forEach(function(mutation) { 
-        console.log('******************')
-        console.log(mutation.type); 
-        console.log('******************')
-      }); 
+//   var i = 0
+//   function clickhandler () {
+//     axios.get('./test', {
+//       code: '11111'
+//     }).then(function (response) {
+//       console.log(response.data)
+//     }).catch(function (error) {
+//       console.log(error);
+//     })
+//   }
+//   var imglist = []
+//   function ob () {
+//     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver
+//     // 选择目标节点
+//     var target = document.getElementById('app'); 
+//     // 创建观察者对象
+//     var observer = new MutationObserver(function(mutations) { 
+//       console.dir(mutations)
+//       mutations.forEach(function(mutation) { 
+//         console.log('******************')
+//         console.log(mutation.type); 
+//         console.log('******************')
+//       }); 
       
-      html2canvas(document.body).then(function(canvas) {
-          // document.getElementById('list').appendChild(canvas);
-          var imgData = canvas.toDataURL("image/png")
-          imglist.push(imgData)
-      });
-    }); 
-    // 配置观察选项:
-    var config = { attributes: true, childList: true, characterData: true, subtree: true, attributeOldValue: true, characterDataOldValue: true } 
-    // 传入目标节点和观察选项
-    // observer.observe(target, config); 
-    // 随后,你还可以停止观察
-    // observer.disconnect();
-  }
+//       html2canvas(document.body).then(function(canvas) {
+//           // document.getElementById('list').appendChild(canvas);
+//           var imgData = canvas.toDataURL("image/png")
+//           imglist.push(imgData)
+//       });
+//     }); 
+//     // 配置观察选项:
+//     var config = { attributes: true, childList: true, characterData: true, subtree: true, attributeOldValue: true, characterDataOldValue: true } 
+//     // 传入目标节点和观察选项
+//     // observer.observe(target, config); 
+//     // 随后,你还可以停止观察
+//     // observer.disconnect();
+//   }
 
-  function clickSubmit () {
-    axios({
-      async: true,
-      method: 'post',
-      url: '/images',
-      headers: {
-        "Content-Type": "text/plain"
-      },
-      data: imglist.join(' ')
-    }).then(function (response) {
-      console.log(response.data)
-    }).catch(function (error) {
-      console.log(error);
-    });
-  }
-  function clickEdit () {
-    i++
-    var input = document.createElement('input')
-    input.type = 'text'
+//   function clickSubmit () {
+//     axios({
+//       async: true,
+//       method: 'post',
+//       url: '/images',
+//       headers: {
+//         "Content-Type": "text/plain"
+//       },
+//       data: imglist.join(' ')
+//     }).then(function (response) {
+//       console.log(response.data)
+//     }).catch(function (error) {
+//       console.log(error);
+//     });
+//   }
+//   function clickEdit () {
+//     i++
+//     var input = document.createElement('input')
+//     input.type = 'text'
 
-    var abc = document.getElementById('list')
-    var ee = document.createElement('div')
-    ee.innerHTML = '第' + i + '次'
-    ee.appendChild(input)
-    abc.appendChild(ee)
-  }
-  function clickCreate() {
-    axios.get('./create', {
-      code: '11111'
-    }).then(function (response) {
-      console.log(response.data)
-    }).catch(function (error) {
-      console.log(error);
-    })
-  }
-
-
-
-  (function () {
-    // window.st_conf = {
-    //   end: '/dm/open/cashier/cashier_pay_return.do',
-    //   type: 'history',
-    //   domain: '.zhongan.com'
-    // }
-    // var script=document.createElement("script");
-    // script.type="text/javascript";
-    // script.src = "http://localhost:3000/st.js?v=" + (+new Date())
-    // document.getElementsByTagName('head')[0].appendChild(script); 
-  })()
-
-  // (function () {
-  //   window.st_conf = {
-  //     end: '/dm/open/cashier/cashier_pay_return.do',
-  //     type: 'history'
-  //   }
-  //   var script=document.createElement("script");
-  //   script.type="text/javascript";
-  //   script.src = "https://staticdaily.zhongan.com/website/mobile/assets/js/st.js?v=" + (+new Date())
-  //   document.getElementsByTagName('head')[0].appendChild(script); 
-  // })()
-
-  
-
-  
-  
+//     var abc = document.getElementById('list')
+//     var ee = document.createElement('div')
+//     ee.innerHTML = '第' + i + '次'
+//     ee.appendChild(input)
+//     abc.appendChild(ee)
+//   }
+//   function clickCreate() {
+//     axios.get('./create', {
+//       code: '11111'
+//     }).then(function (response) {
+//       console.log(response.data)
+//     }).catch(function (error) {
+//       console.log(error);
+//     })
+//   }
 
 
+
+//   (function () {
+//     // window.st_conf = {
+//     //   end: '/dm/open/cashier/cashier_pay_return.do',
+//     //   type: 'history',
+//     //   domain: '.zhongan.com'
+//     // }
+//     // var script=document.createElement("script");
+//     // script.type="text/javascript";
+//     // script.src = "http://localhost:3000/st.js?v=" + (+new Date())
+//     // document.getElementsByTagName('head')[0].appendChild(script); 
+//   })()
+
+//   // (function () {
+//   //   window.st_conf = {
+//   //     end: '/dm/open/cashier/cashier_pay_return.do',
+//   //     type: 'history'
+//   //   }
+//   //   var script=document.createElement("script");
+//   //   script.type="text/javascript";
+//   //   script.src = "https://staticdaily.zhongan.com/website/mobile/assets/js/st.js?v=" + (+new Date())
+//   //   document.getElementsByTagName('head')[0].appendChild(script); 
+//   // })()
 
   
 
-
-  function getAjax () {
-    Ajax.get('/test/123', function (rsp) {
-      console.log(rsp)
-    })
-  }
-  function getPost () {
-    Ajax.post('/test/123', function (rsp) {
-      console.log(rsp)
-    })
-  }
-
-    var Ajax={
-      get: function(url, fn) {
-        // XMLHttpRequest对象用于在后台与服务器交换数据   
-        var xhr = new XMLHttpRequest();            
-        xhr.open('GET', url, true);
-        xhr.onreadystatechange = function() {
-          // readyState == 4说明请求已完成
-          if (xhr.readyState == 4 && xhr.status == 200 || xhr.status == 304) { 
-            // 从服务器获得数据 
-            fn.call(this, xhr.responseText);  
-          }
-        };
-        xhr.send();
-      },
-      // datat应为'a=a1&b=b1'这种字符串格式，在jq里如果data为对象会自动将对象转成这种字符串格式
-      post: function (url, fn, data) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", url, true);
-        // 添加http头，发送信息至服务器时内容编码类型
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");  
-        xhr.onreadystatechange = function() {
-          if (xhr.readyState == 4 && (xhr.status == 200 || xhr.status == 304)) {
-            fn.call(this, xhr.responseText);
-          }
-        };
-        xhr.send(data);
-      }
-    }
-function lineCanvas(obj) {
-    this.linewidth = 1;
-    this.color = "#000000";
-    this.background = "#ffffff";
-    for (var i in obj) {
-        this[i] = obj[i];
-    };
-    this.canvas = document.createElement("canvas");
-    this.el.appendChild(this.canvas);
-    this.cxt = this.canvas.getContext("2d");
-    this.canvas.width = this.el.clientWidth;
-    this.canvas.height = this.el.clientHeight;
-    this.cxt.fillStyle = this.background;
-    this.cxt.fillRect(0, 0, this.canvas.width, this.canvas.width);
-    this.cxt.strokeStyle = this.color;
-    this.cxt.lineWidth = this.linewidth;
-    this.cxt.lineCap = "round";
-    //开始绘制
-    this.canvas.addEventListener("touchstart", function(e) {
-        this.cxt.beginPath();
-        this.cxt.moveTo(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
-    }.bind(this), false);
-    //绘制中
-    this.canvas.addEventListener("touchmove", function(e) {
-        this.cxt.lineTo(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
-        this.cxt.stroke();
-    }.bind(this), false);
-    //结束绘制
-    this.canvas.addEventListener("touchend", function() {
-        this.cxt.closePath();
-    }.bind(this), false);
-    //清除画布
-    // this.clearEl.addEventListener("click", function() {
-    //     this.cxt.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    // }.bind(this), false);
-    // //保存图片，直接转base64
-    // this.saveEl.addEventListener("click", function() {
-    //     var imgBase64 = this.canvas.toDataURL();
-    //     console.log(imgBase64);
-    // }.bind(this), false);
-};
+  
+  
 
 
 
-window.onload = function () {
-    var a = document.getElementById('ttt')
-    var c = window.getComputedStyle(
-      a, ':before'
-    )
+  
+
+
+//   function getAjax () {
+//     Ajax.get('/test/123', function (rsp) {
+//       console.log(rsp)
+//     })
+//   }
+//   function getPost () {
+//     Ajax.post('/test/123', function (rsp) {
+//       console.log(rsp)
+//     })
+//   }
+
+//     var Ajax={
+//       get: function(url, fn) {
+//         // XMLHttpRequest对象用于在后台与服务器交换数据   
+//         var xhr = new XMLHttpRequest();            
+//         xhr.open('GET', url, true);
+//         xhr.onreadystatechange = function() {
+//           // readyState == 4说明请求已完成
+//           if (xhr.readyState == 4 && xhr.status == 200 || xhr.status == 304) { 
+//             // 从服务器获得数据 
+//             fn.call(this, xhr.responseText);  
+//           }
+//         };
+//         xhr.send();
+//       },
+//       // datat应为'a=a1&b=b1'这种字符串格式，在jq里如果data为对象会自动将对象转成这种字符串格式
+//       post: function (url, fn, data) {
+//         var xhr = new XMLHttpRequest();
+//         xhr.open("POST", url, true);
+//         // 添加http头，发送信息至服务器时内容编码类型
+//         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");  
+//         xhr.onreadystatechange = function() {
+//           if (xhr.readyState == 4 && (xhr.status == 200 || xhr.status == 304)) {
+//             fn.call(this, xhr.responseText);
+//           }
+//         };
+//         xhr.send(data);
+//       }
+//     }
+// function lineCanvas(obj) {
+//     this.linewidth = 1;
+//     this.color = "#000000";
+//     this.background = "#ffffff";
+//     for (var i in obj) {
+//         this[i] = obj[i];
+//     };
+//     this.canvas = document.createElement("canvas");
+//     this.el.appendChild(this.canvas);
+//     this.cxt = this.canvas.getContext("2d");
+//     this.canvas.width = this.el.clientWidth;
+//     this.canvas.height = this.el.clientHeight;
+//     this.cxt.fillStyle = this.background;
+//     this.cxt.fillRect(0, 0, this.canvas.width, this.canvas.width);
+//     this.cxt.strokeStyle = this.color;
+//     this.cxt.lineWidth = this.linewidth;
+//     this.cxt.lineCap = "round";
+//     //开始绘制
+//     this.canvas.addEventListener("touchstart", function(e) {
+//         this.cxt.beginPath();
+//         this.cxt.moveTo(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+//     }.bind(this), false);
+//     //绘制中
+//     this.canvas.addEventListener("touchmove", function(e) {
+//         this.cxt.lineTo(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+//         this.cxt.stroke();
+//     }.bind(this), false);
+//     //结束绘制
+//     this.canvas.addEventListener("touchend", function() {
+//         this.cxt.closePath();
+//     }.bind(this), false);
+//     //清除画布
+//     // this.clearEl.addEventListener("click", function() {
+//     //     this.cxt.clearRect(0, 0, this.canvas.width, this.canvas.height);
+//     // }.bind(this), false);
+//     // //保存图片，直接转base64
+//     // this.saveEl.addEventListener("click", function() {
+//     //     var imgBase64 = this.canvas.toDataURL();
+//     //     console.log(imgBase64);
+//     // }.bind(this), false);
+// };
+
+
+
+// window.onload = function () {
+//     var a = document.getElementById('ttt')
+//     var c = window.getComputedStyle(
+//       a, ':before'
+//     )
     
-    a.style.setProperty('color', '#7F583F');
-    var edittext = document.getElementById('edittext')
-    edittext.addEventListener('click', function(){
-      console.log('1')
-    })
-    edittext.addEventListener('click', function(){
-      console.log('2')
-    })
-    edittext.addEventListener('click', function(){
-      console.log('3')
-    })
+//     a.style.setProperty('color', '#7F583F');
+//     var edittext = document.getElementById('edittext')
+//     edittext.addEventListener('click', function(){
+//       console.log('1')
+//     })
+//     edittext.addEventListener('click', function(){
+//       console.log('2')
+//     })
+//     edittext.addEventListener('click', function(){
+//       console.log('3')
+//     })
 
-    new lineCanvas({
-      el: document.getElementById("canvas"),//绘制canvas的父级div
-    });
+//     new lineCanvas({
+//       el: document.getElementById("canvas"),//绘制canvas的父级div
+//     });
 
 
 
-    function AdaptedEvent(ev) {
-      const initialEvent = ev;
-      let newTarget = 'your new target';
+//     function AdaptedEvent(ev) {
+//       const initialEvent = ev;
+//       let newTarget = 'your new target';
 
-      return {
-        get: (target, prop) => {
-          if (Object.prototype.toString.call(target[prop]) === '[object Function]') {
-            return target[prop].bind(initialEvent);
-          }
-          else if (prop === 'target') {
-            return newTarget ? newTarget : initialEvent.target;
-          }
-          return target[prop];
-        }
-      };
-    }
+//       return {
+//         get: (target, prop) => {
+//           if (Object.prototype.toString.call(target[prop]) === '[object Function]') {
+//             return target[prop].bind(initialEvent);
+//           }
+//           else if (prop === 'target') {
+//             return newTarget ? newTarget : initialEvent.target;
+//           }
+//           return target[prop];
+//         }
+//       };
+//     }
 
-  function handleClick(event) {
-    event.preventDefault();
-    console.log(event.target);
-    console.log(event.which);
+//   function handleClick(event) {
+//     event.preventDefault();
+//     console.log(event.target);
+//     console.log(event.which);
+//   }
+
+//   // binding click event.
+//   document.querySelector('#foo').addEventListener('click', e => handleClick(new Proxy(e, new AdaptedEvent(e))));
+
+//   }
+  window.onload = function () {
+    alert('ffff')
   }
-
-  // binding click event.
-  document.querySelector('#foo').addEventListener('click', e => handleClick(new Proxy(e, new AdaptedEvent(e))));
-
-  }
-
   
 </script>
 </html>
