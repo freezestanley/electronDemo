@@ -494,12 +494,12 @@ export default class Clairvoyant {
 
     windowFinger.addEventListener(
       'touchpaint',
-      debounce(ev => {
+      ev => {
         this.observer({
           type: 'paint',
           evt: ev
         })
-      }, delay),
+      },
       {
         noShadow: true
       }
