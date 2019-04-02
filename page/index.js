@@ -25,13 +25,15 @@ import * as utils from './utils'
 
 let _eId = 1
 let ls = JSON.stringify(window.localStorage)
+const win = window
+const doc = window.document
 
 function eId(element) {
   return element._eId || (element._eId = _eId++)
 }
 
 const getConfig = function(name) {
-  return window.st_conf && window.st_conf[name] ? window.st_conf[name] : null
+  return win.st_conf && win.st_conf[name] ? win.st_conf[name] : null
 }
 const cookie = new Cookie(
   getConfig('domain'),
@@ -72,6 +74,12 @@ export default class Clairvoyant {
   static getXpath(node) {
     return readXPath(node)
   }
+  selectNode(xpath) {
+    return selectNodes(xpath)
+  }
+  getXpath(node) {
+    return readXPath(node)
+  }
 
   shouldScroll(scrollerXpath, variable) {
     const node = selectNodes(scrollerXpath)[0]
@@ -85,10 +93,10 @@ export default class Clairvoyant {
   }
   addBaseEvent() {
     // 添加全局基础事件
-    document.addEventListener(
+    doc.addEventListener(
       'visibilitychange',
       ev => {
-        typeof document.hidden === 'boolean' && document.hidden === false
+        typeof doc.hidden === 'boolean' && doc.hidden === false
           ? this.observer({
               type: 'visibilitychange',
               evt: ev
@@ -102,7 +110,7 @@ export default class Clairvoyant {
         noShadow: true
       }
     )
-    window.addEventListener(
+    win.addEventListener(
       'input',
       ev => {
         let target = ev.target.nodeName.toLocaleLowerCase()
@@ -127,7 +135,7 @@ export default class Clairvoyant {
         noShadow: true
       }
     )
-    window.addEventListener(
+    win.addEventListener(
       'popstate',
       ev => {
         this.observer({
@@ -140,7 +148,7 @@ export default class Clairvoyant {
       }
     )
 
-    window.addEventListener(
+    win.addEventListener(
       'hashchange',
       ev => {
         this.observer({
@@ -153,7 +161,7 @@ export default class Clairvoyant {
       }
     )
 
-    window.addEventListener(
+    win.addEventListener(
       'beforeunload',
       ev => {
         this.observer({
@@ -167,7 +175,7 @@ export default class Clairvoyant {
       }
     )
 
-    window.addEventListener(
+    win.addEventListener(
       'scroll',
       debounce(
         ev =>
@@ -212,9 +220,9 @@ export default class Clairvoyant {
         ...new Set([..._this.transformList, ...transformList])
       ]
       let currentNode = [
-        ...document.querySelectorAll('input'),
-        ...document.querySelectorAll('textarea'),
-        ...document.querySelectorAll('select')
+        ...doc.querySelectorAll('input'),
+        ...doc.querySelectorAll('textarea'),
+        ...doc.querySelectorAll('select')
       ]
       currentNode = currentNode.filter(v => _this.formlist.indexOf(v) === -1)
 
@@ -240,11 +248,7 @@ export default class Clairvoyant {
       _this.formlist = _this.formlist.concat(currentNode)
     }
 
-    this.domObserver = new DomObserver(
-      document.body,
-      config,
-      mutationEventCallback
-    )
+    this.domObserver = new DomObserver(doc.body, config, mutationEventCallback)
     this.domObserver.start()
   }
 
@@ -283,7 +287,7 @@ export default class Clairvoyant {
 
   deskWatch() {
     // div 内滚动
-    document.body.addEventListener(
+    doc.body.addEventListener(
       'mouseover',
       debounce(ev => {
         this.observer({
@@ -335,7 +339,7 @@ export default class Clairvoyant {
     )
 
     // 页面点击
-    document.body.addEventListener(
+    doc.body.addEventListener(
       'mousedown',
       ev => {
         mousedownPoint = ev
@@ -344,7 +348,7 @@ export default class Clairvoyant {
         noShadow: true
       }
     )
-    document.body.addEventListener(
+    doc.body.addEventListener(
       'mouseup',
       ev => {
         if (
@@ -370,7 +374,7 @@ export default class Clairvoyant {
   }
 
   mobileWatch() {
-    let windowFinger = new Finger(window)
+    let windowFinger = new Finger(win)
     // 页面点击
     windowFinger.addEventListener(
       'touchtap',
@@ -482,25 +486,14 @@ export default class Clairvoyant {
       t: +new Date(),
       i: cookie.getCookie('ISEE_BIZ'),
       a: this.plant ? eventType.AGENT_PC : eventType.AGENT_MOBILE,
-      u: window.location.href
+      u: win.location.href
     }
     let event = null
     let _self = this
     param.r = `${+new Date()}${eventType.SPLIT_DATA}`
     const target = {
       openpage: function() {
-        // const ck = cookie.getCookie('ISEE_BIZ')
-        // const ck_cache = cookie.getCookie('ISEE_BIZ_CACHE')
-        // pc端取文档的高度和宽度， 手机端取设备屏幕的宽度和高度
-        param.wh = _self.plant
-          ? `${document.documentElement.clientWidth}x${
-              document.documentElement.clientHeight
-            }`
-          : `${window.screen.width}x${window.screen.height}`
-        // if (!ck_cache || ck_cache !== ck) {
-        //   cookie.setCookie('ISEE_BIZ_CACHE', ck)
-        //   param.lc = JSON.stringify(window.localStorage)
-        // }
+        param.wh = _self.plant? `${doc.documentElement.clientWidth}x${doc.documentElement.clientHeight}` : `${win.screen.width}x${win.screen.height}`
         _self.pushData(param)
       },
       sendLocalstorage: function() {
@@ -578,12 +571,11 @@ export default class Clairvoyant {
         let scroll
         let target = evt.target
         if (
-          evt.target.nodeName.toLowerCase() === '#document' ||
           evt.target.nodeName.toLowerCase() === 'body' ||
           evt.target.nodeName.toLowerCase() === 'html'
         ) {
-          scroll = document.documentElement.scrollTop || document.body.scrollTop
-          target = document.body
+          scroll = doc.documentElement.scrollTop || doc.body.scrollTop
+          target = doc.body
         } else {
           scroll = evt.target.scrollTop
         }
@@ -657,7 +649,7 @@ export default class Clairvoyant {
     target[obj.type]()
   }
   pushData(obj, time = 0) {
-    if (!cookie.getCookie('ISEE_BIZ')) return
+    if (process.env.NODE_ENV === 'production' && !cookie.getCookie('ISEE_BIZ')) return
     let pushMode = getConfig('pushMode') || 'once'
     if (pushMode === 'once') {
       this.wsSocket.send(JSON.stringify(obj))
@@ -677,7 +669,7 @@ function domloaded(event) {
   if (process.env.NODE_ENV === 'production') {
     if (ISEE_RE) return
     if (iseebiz) {
-      const clairvoyant = (window.clairvoyant = new Clairvoyant())
+      const clairvoyant = (win.clairvoyant = new Clairvoyant())
       clairvoyant.wsSocket.onopen = function(evt) {
         console.log('Connection start.')
         clairvoyant.observer({
@@ -720,7 +712,7 @@ function domloaded(event) {
       clairvoyant.init()
     }
   } else {
-    const clairvoyant = (window.clairvoyant = new Clairvoyant())
+    const clairvoyant = (win.clairvoyant = new Clairvoyant())
 
     clairvoyant.wsSocket.onopen = function(evt) {
       console.log('Connection start.')
@@ -728,23 +720,9 @@ function domloaded(event) {
         type: 'openpage',
         evt: evt
       })
-
-      let end = getConfig('end')
-      let type = getConfig('type')
-      if (end && type) {
-        if (type === 'history') {
-          if (location.pathname.indexOf(end) === 0) {
-            cookie.delCookie('ISEE_BIZ')
-          }
-        } else {
-          if (location.hash === end) {
-            cookie.delCookie('ISEE_BIZ')
-          }
-        }
-      }
     }
     clairvoyant.wsSocket.onmessage = function(evt) {
-      // console.log("server:" + evt.data)
+      console.log('server:' + evt.data)
     }
     clairvoyant.wsSocket.onclose = function(evt) {
       console.log('Connection closed.')
@@ -756,11 +734,11 @@ function domloaded(event) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', domloaded, {
+doc.addEventListener('DOMContentLoaded', domloaded, {
   noShadow: true
 })
 
-window.addEventListener(
+win.addEventListener(
   'pageshow',
   function(evt) {
     if (evt.persisted) {
