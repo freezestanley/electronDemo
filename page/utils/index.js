@@ -34,6 +34,7 @@ export const getDelta = style => {
       const arr = style.replace('3d(', '').split(',')
       delta.x = arr[0].trim()
       delta.y = arr[1].trim()
+      delta.z = arr[2].trim()
       return false
     } else if (style.indexOf('x(') > -1) {
       delta.x = style.replace('x(', '').trim()
