@@ -1,20 +1,12 @@
 // import axios from 'axios'
-import Wsocket, {
-  throttle,
-  debounce
-} from './socket'
+import Wsocket, { throttle, debounce } from './socket'
 import * as plant from './plant'
-import {
-  readXPath,
-  selectNodes
-} from './xpath'
+import { readXPath, selectNodes } from './xpath'
 import * as eventType from './enum'
 import DomObserver from './observer'
 import Finger from './finger'
 import Cookie from './cookie'
-import {
-  CreateXMLHttp
-} from './xmlhttprequest'
+import { CreateXMLHttp } from './xmlhttprequest'
 import ProxyEvent from './proxyEvent'
 import Checkhover from './checkhover'
 import * as utils from './utils'
@@ -39,7 +31,6 @@ const doc = window.document
 function eId(element) {
   return element._eId || (element._eId = _eId++)
 }
-
 const getConfig = function(name) {
   return win.st_conf && win.st_conf[name] ? win.st_conf[name] : null
 }
@@ -51,14 +42,15 @@ const cookie = new Cookie(
 
 const wspath =
   getConfig('ws') ||
-  (process.env.NODE_ENV === 'production' ?
-    'wss://isee-test.zhongan.io/sapi/ed/events' :
-    'ws://127.0.0.1:3000/test/123')
+  (process.env.NODE_ENV === 'production'
+    ? 'wss://isee-test.zhongan.io/sapi/ed/events'
+    : 'ws://127.0.0.1:3000/test/123')
 const delay = 300
+let bodyChildrenLength = 0
 const lazyPath =
   'https://www.zhongan.com/open/member/login_screen/get_sso_uni_form_domain_url.json'
 const proxyEvent = new ProxyEvent()
-proxyEvent.callback = function (ev) {
+proxyEvent.callback = function(ev) {
   process.env.NODE_ENV === 'production' &&
     console.log(`===${ev.type}===${ev.target}`)
 }
@@ -99,6 +91,7 @@ export default class Clairvoyant {
     this.mutationWatch()
     this.plant ? this.deskWatch() : this.mobileWatch()
   }
+
   addBaseEvent() {
     // 添加全局基础事件
     doc.addEventListener(
@@ -138,7 +131,8 @@ export default class Clairvoyant {
             evt: ev
           })
         }
-      }, {
+      },
+      {
         noShadow: true
       }
     )
@@ -149,7 +143,8 @@ export default class Clairvoyant {
           type: 'popstate',
           evt: ev
         })
-      }, {
+      },
+      {
         noShadow: true
       }
     )
@@ -161,7 +156,8 @@ export default class Clairvoyant {
           type: 'hashchange',
           evt: ev
         })
-      }, {
+      },
+      {
         noShadow: true
       }
     )
@@ -174,7 +170,8 @@ export default class Clairvoyant {
           evt: ev
         })
         this.lazy()
-      }, {
+      },
+      {
         noShadow: true
       }
     )
@@ -183,12 +180,13 @@ export default class Clairvoyant {
       'scroll',
       debounce(
         ev =>
-        this.observer({
-          type: 'scroll',
-          evt: ev
-        }),
+          this.observer({
+            type: 'scroll',
+            evt: ev
+          }),
         delay
-      ), {
+      ),
+      {
         noShadow: true
       }
     )
@@ -208,16 +206,24 @@ export default class Clairvoyant {
     let mutationEventCallback = (mutationsList, itself) => {
       const _this = this
       for (let mutation of mutationsList) {
+        if (
+          mutation.type === 'childList' &&
+          mutation.target.nodeName.toLowerCase() === 'body'
+        ) {
+          this.observer({
+            type: 'collectDom'
+          })
+        }
         if (mutation.type == 'attributes') {
           transformList =
             mutationsList
-            .map(mutation => mutation.target)
-            .filter(item => item.style.cssText.indexOf('translate') > -1) || []
+              .map(mutation => mutation.target)
+              .filter(item => item.style.cssText.indexOf('translate') > -1) ||
+            []
           // console.log(mutation, mutationsList)
           // console.log(mutation.target.getBoundingClientRect())
         }
       }
-      // console.log(transformList)
       _this.transformList = [
         ...new Set([..._this.transformList, ...transformList])
       ]
@@ -334,7 +340,8 @@ export default class Clairvoyant {
             // })
           }
         }
-      }, delay), {
+      }, delay),
+      {
         noShadow: true
       }
     )
@@ -344,7 +351,8 @@ export default class Clairvoyant {
       'mousedown',
       ev => {
         mousedownPoint = ev
-      }, {
+      },
+      {
         noShadow: true
       }
     )
@@ -366,7 +374,8 @@ export default class Clairvoyant {
             evt: ev
           })
         }
-      }, {
+      },
+      {
         noShadow: true
       }
     )
@@ -382,7 +391,8 @@ export default class Clairvoyant {
           type: 'click',
           evt: ev
         })
-      }, {
+      },
+      {
         noShadow: true
       }
     )
@@ -418,7 +428,8 @@ export default class Clairvoyant {
             // })
           }
         }
-      }, {
+      },
+      {
         noShadow: true
       }
     )
@@ -430,7 +441,8 @@ export default class Clairvoyant {
           type: 'fingermove',
           evt: ev
         })
-      }, delay), {
+      }, delay),
+      {
         noShadow: true
       }
     )
@@ -455,7 +467,8 @@ export default class Clairvoyant {
           }
         })
         this.transformList = []
-      }, delay), {
+      }, delay),
+      {
         noShadow: true
       }
     )
@@ -467,7 +480,8 @@ export default class Clairvoyant {
           type: 'paint',
           evt: ev
         })
-      }, delay), {
+      }, delay),
+      {
         noShadow: true
       }
     )
@@ -490,11 +504,30 @@ export default class Clairvoyant {
         param.wh = _self.plant? `${doc.documentElement.clientWidth}x${doc.documentElement.clientHeight}` : `${win.screen.width}x${win.screen.height}`
         _self.pushData(param)
       },
-      sendLocalstorage: function () {
+      sendLocalstorage: function() {
         param.ls = ls
         _self.pushData(param)
       },
-      click: function () {
+      collectDom: function() {
+        const domtree = []
+        const children = document.body.children
+        if (children && children.length) {
+          for (let i = 0; i < children.length; i++) {
+            const child = children[i]
+            domtree.push(
+              `t:${child.tagName.toLowerCase()}|c:${child.className}|i:${
+                child.id
+              }`
+            )
+          }
+        }
+        param.dm = domtree.join(eventType.SPLIT_DATA)
+        if (bodyChildrenLength !== children.length) {
+          _self.pushData(param)
+          bodyChildrenLength = children.length
+        }
+      },
+      click: function() {
         let point = ''
         if (evt instanceof TouchEvent) {
           point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX}-${
@@ -517,7 +550,7 @@ export default class Clairvoyant {
         }
         _self.pushData(param)
       },
-      mouseover: function () {
+      mouseover: function() {
         let tagName = evt.target.tagName.toLowerCase()
         let check = Checkhover(evt.target, ':hover')
         if (
@@ -534,10 +567,10 @@ export default class Clairvoyant {
           _self.pushData(param)
         }
       },
-      unload: function () {
+      unload: function() {
         _self.wsSocket.close()
       },
-      inputChange: function () {
+      inputChange: function() {
         event = eventType.ACTION_INPUT
         if (evt.target.type === 'password') {
           let length = evt.target.value.length
@@ -551,16 +584,16 @@ export default class Clairvoyant {
         )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
-      select: function () {
+      select: function() {
         event = eventType.ACTION_SELECT
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
           evt.target
         )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
-      mousedown: function () {},
-      mousemove: function () {},
-      scroll: function () {
+      mousedown: function() {},
+      mousemove: function() {},
+      scroll: function() {
         event = eventType.ACTION_SCROLL
         let scroll
         let target = evt.target
@@ -581,32 +614,34 @@ export default class Clairvoyant {
         
         _self.pushData(param)
       },
-      visibilitychange: function () {
+      visibilitychange: function() {
         event = eventType.ACTION_SWITCH
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${location.href}${
           eventType.SPLIT_LINE
         }`
         _self.pushData(param)
       },
-      fingermove: function () {},
-      visibilityblur: function () {},
-      touchdrag: function () {
+      fingermove: function() {},
+      visibilityblur: function() {},
+      touchdrag: function() {
         event = eventType.ACTION_DRAG
         const r = param.r.concat()
         param.r = `${r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${
           eventType.SPLIT_DATA
         }${movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${
           movement.delta.x
-        },${movement.delta.y},${movement.delta.z}${eventType.SPLIT_DATA}${readXPath(movement.ele)}${
+        },${movement.delta.y},${movement.delta.z}${
           eventType.SPLIT_DATA
-        }${evt._startPoint.changedTouches[0].clientX},${
-          evt._startPoint.changedTouches[0].clientY
-        }${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX},${
-          evt.changedTouches[0].clientY
-        }${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        }${readXPath(movement.ele)}${eventType.SPLIT_DATA}${
+          evt._startPoint.changedTouches[0].clientX
+        },${evt._startPoint.changedTouches[0].clientY}${eventType.SPLIT_DATA}${
+          evt.changedTouches[0].clientX
+        },${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${
+          eventType.SPLIT_LINE
+        }`
         _self.pushData(param, 100)
       },
-      paint: function () {
+      paint: function() {
         event = eventType.PAINT_MOVE
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
           evt.target
@@ -615,24 +650,24 @@ export default class Clairvoyant {
         }`
         _self.wsSocket.send(JSON.stringify(param))
       },
-      popstate: function () {
+      popstate: function() {
         event = eventType.POP_STATE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
         _self.wsSocket.send(JSON.stringify(param))
       },
-      hashchange: function () {
+      hashchange: function() {
         event = eventType.HASH_CHANGE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
         _self.wsSocket.send(JSON.stringify(param))
       },
-      inputBlur: function () {
+      inputBlur: function() {
         event = eventType.INPUT_BLUR
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
           evt.target
         )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
-      inputFocus: function () {
+      inputFocus: function() {
         event = eventType.INPUT_FOCUS
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
           evt.target
@@ -664,10 +699,14 @@ function domloaded(event) {
     if (ISEE_RE) return
     if (iseebiz) {
       const clairvoyant = (win.clairvoyant = new Clairvoyant())
-      clairvoyant.wsSocket.onopen = function(evt) {
+      clairvoyant.wsSocket.onopen = function (evt) {
         console.log('Connection start.')
         clairvoyant.observer({
           type: 'openpage',
+          evt: evt
+        })
+        clairvoyant.observer({
+          type: 'collectDom',
           evt: evt
         })
         let end = getConfig('end')
@@ -684,7 +723,7 @@ function domloaded(event) {
           }
         }
       }
-      clairvoyant.wsSocket.onmessage = function (evt) {
+      clairvoyant.wsSocket.onmessage = function(evt) {
         switch (evt.data) {
           // 需要发送localstorage
           case 'LS000':
@@ -714,9 +753,26 @@ function domloaded(event) {
         type: 'openpage',
         evt: evt
       })
+      clairvoyant.observer({
+        type: 'collectDom',
+        evt: evt
+      })
+      let end = getConfig('end')
+      let type = getConfig('type')
+      if (end && type) {
+        if (type === 'history') {
+          if (location.pathname.indexOf(end) === 0) {
+            cookie.delCookie('ISEE_BIZ')
+          }
+        } else {
+          if (location.hash === end) {
+            cookie.delCookie('ISEE_BIZ')
+          }
+        }
+      }
     }
-    clairvoyant.wsSocket.onmessage = function (evt) {
-      // console.log("server:" + evt.data)
+    clairvoyant.wsSocket.onmessage = function(evt) {
+      console.log('server:' + evt.data)
     }
     clairvoyant.wsSocket.onclose = function (evt) {
       // console.log('Connection closed.')
@@ -734,11 +790,12 @@ doc.addEventListener('DOMContentLoaded', domloaded, {
 
 win.addEventListener(
   'pageshow',
-  function (evt) {
+  function(evt) {
     if (evt.persisted) {
       domloaded()
     }
-  }, {
+  },
+  {
     noShadow: true
   }
 )
