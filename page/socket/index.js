@@ -59,18 +59,18 @@ export default Wsocket
 //   }
 // }
 
-export const debounce = function (method, delay) {
+export const debounce = function (method, delay, timerName = 'timer') {
   return function () {
     let context = this
     let args = arguments
-    if (debounce.timer !== null) {
-      clearTimeout(debounce.timer)
-      debounce.timer = null
+    if (debounce[timerName] !== null) {
+      clearTimeout(debounce[timerName])
+      debounce[timerName] = null
     }
-    debounce.timer = setTimeout(function () {
+    debounce[timerName] = setTimeout(function () {
       method.apply(context, args)
-      clearTimeout(debounce.timer)
-      debounce.timer = null
+      clearTimeout(debounce[timerName])
+      debounce[timerName] = null
     }, delay)
   }
 }

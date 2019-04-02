@@ -46,7 +46,6 @@ const wspath =
     ? 'wss://isee-test.zhongan.io/sapi/ed/events'
     : 'ws://127.0.0.1:3000/test/123')
 const delay = 300
-let bodyChildrenLength = 0
 const lazyPath =
   'https://www.zhongan.com/open/member/login_screen/get_sso_uni_form_domain_url.json'
 const proxyEvent = new ProxyEvent()
@@ -205,14 +204,19 @@ export default class Clairvoyant {
     let transformList = []
     let mutationEventCallback = (mutationsList, itself) => {
       const _this = this
+      const childrenList = []
+      for (let i = 0; i < doc.body.children.length; i++) {
+        childrenList.push(doc.body.children[i].tagName.toLowerCase())
+      }
       for (let mutation of mutationsList) {
-        if (
-          mutation.type === 'childList' &&
-          mutation.target.nodeName.toLowerCase() === 'body'
-        ) {
-          this.observer({
-            type: 'collectDom'
-          })
+        const nodeName = mutation.target.nodeName.toLowerCase()
+        if (nodeName === 'body' && mutation.type == 'childList') {
+          console.log(mutation)
+          debounce(() => {
+            this.observer({
+              type: 'collectDom'
+            })
+          }, delay, 'collectTimer')()
         }
         if (mutation.type == 'attributes') {
           transformList =
@@ -515,7 +519,6 @@ export default class Clairvoyant {
       collectDom: function () {
         const domtree = []
         const children = doc.body.children
-        if (bodyChildrenLength === children.length) return
         if (children && children.length) {
           for (let i = 0; i < children.length; i++) {
             const child = children[i]
@@ -526,7 +529,6 @@ export default class Clairvoyant {
         }
         param.r = `${param.r}${eventType.COLLECT_DOM}${eventType.SPLIT_DATA}${domtree.join('€')}${eventType.SPLIT_LINE}`
         _self.pushData(param)
-        bodyChildrenLength = children.length
       },
       click: function () {
         let point = ''
