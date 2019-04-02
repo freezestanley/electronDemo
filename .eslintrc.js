@@ -2,11 +2,11 @@ module.exports = {
   root: true,
   extends: [
     'standard',
-    'plugin:vue/recommended',
-    'prettier',
-    'prettier/standard',
-    'prettier/vue'
+    'plugin:vue/recommended'
   ],
+  // 'prettier',
+  // 'prettier/standard',
+  // 'prettier/vue'
   plugins: ['standard', 'vue'], // , 'prettier'
   rules: {
     // 'prettier/prettier': [

@@ -1,6 +1,6 @@
 // import { throttle, debounce } from '../socket'
 
-function DomObserver(node = document.body, config, callback) {
+function DomObserver (node = document.body, config, callback) {
   return ((n, c) => {
     this.node = n
     this.config = c

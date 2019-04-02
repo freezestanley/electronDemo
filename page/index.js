@@ -28,10 +28,10 @@ let ls = JSON.stringify(window.localStorage)
 const win = window
 const doc = window.document
 
-function eId(element) {
+function eId (element) {
   return element._eId || (element._eId = _eId++)
 }
-const getConfig = function(name) {
+const getConfig = function (name) {
   return win.st_conf && win.st_conf[name] ? win.st_conf[name] : null
 }
 const cookie = new Cookie(
@@ -50,14 +50,14 @@ let bodyChildrenLength = 0
 const lazyPath =
   'https://www.zhongan.com/open/member/login_screen/get_sso_uni_form_domain_url.json'
 const proxyEvent = new ProxyEvent()
-proxyEvent.callback = function(ev) {
+proxyEvent.callback = function (ev) {
   process.env.NODE_ENV === 'production' &&
     console.log(`===${ev.type}===${ev.target}`)
 }
 let mousedownPoint
 
 export default class Clairvoyant {
-  constructor(ws = wspath) {
+  constructor (ws = wspath) {
     this.wsSocket = new Wsocket(ws)
     this.proxyEvent = proxyEvent
     this.plant = plant.IsPc()
@@ -68,44 +68,44 @@ export default class Clairvoyant {
     this.transformList = []
   }
 
-  static selectNode(xpath) {
+  static selectNode (xpath) {
     return selectNodes(xpath)
   }
-  static getXpath(node) {
+  static getXpath (node) {
     return readXPath(node)
   }
-  selectNode(xpath) {
+  selectNode (xpath) {
     return selectNodes(xpath)
   }
-  getXpath(node) {
+  getXpath (node) {
     return readXPath(node)
   }
 
-  shouldScroll(scrollerXpath, variable) {
+  shouldScroll (scrollerXpath, variable) {
     const node = selectNodes(scrollerXpath)[0]
     return node && node.scrollHeight && node.scrollHeight >= variable
   }
 
-  init() {
+  init () {
     this.addBaseEvent()
     this.mutationWatch()
     this.plant ? this.deskWatch() : this.mobileWatch()
   }
 
-  addBaseEvent() {
+  addBaseEvent () {
     // 添加全局基础事件
     doc.addEventListener(
       'visibilitychange',
       ev => {
         typeof doc.hidden === 'boolean' && doc.hidden === false
           ? this.observer({
-              type: 'visibilitychange',
-              evt: ev
-            })
+            type: 'visibilitychange',
+            evt: ev
+          })
           : this.observer({
-              type: 'visibilityblur',
-              evt: ev
-            })
+            type: 'visibilityblur',
+            evt: ev
+          })
       },
       {
         noShadow: true
@@ -192,7 +192,7 @@ export default class Clairvoyant {
     )
   }
 
-  mutationWatch() {
+  mutationWatch () {
     let config = {
       attributes: true,
       attributeFilter: ['style'],
@@ -260,40 +260,40 @@ export default class Clairvoyant {
     this.domObserver.start()
   }
 
-  inputChangEvent(ev) {
+  inputChangEvent (ev) {
     this.observer({
       type: 'inputChange',
       evt: ev
     })
   }
 
-  inputFocusEvent(ev) {
+  inputFocusEvent (ev) {
     this.observer({
       type: 'inputFocus',
       evt: ev
     })
   }
-  inputBlurEvent(ev) {
+  inputBlurEvent (ev) {
     this.observer({
       type: 'inputBlur',
       evt: ev
     })
   }
   // select 添加onchange 监听
-  selectChangEvent(ev) {
+  selectChangEvent (ev) {
     this.observer({
       type: 'select',
       evt: ev
     })
   }
 
-  lazy() {
+  lazy () {
     var xhr = new CreateXMLHttp()
     xhr.open('GET', `${lazyPath}`, false)
     xhr.send(null)
   }
 
-  deskWatch() {
+  deskWatch () {
     // div 内滚动
     doc.body.addEventListener(
       'mouseover',
@@ -381,7 +381,7 @@ export default class Clairvoyant {
     )
   }
 
-  mobileWatch() {
+  mobileWatch () {
     let windowFinger = new Finger(win)
     // 页面点击
     windowFinger.addEventListener(
@@ -487,7 +487,7 @@ export default class Clairvoyant {
     )
   }
 
-  observer(obj) {
+  observer (obj) {
     let evt = obj.evt
     let movement = obj.movement
     let param = {
@@ -500,34 +500,35 @@ export default class Clairvoyant {
     let _self = this
     param.r = `${+new Date()}${eventType.SPLIT_DATA}`
     const target = {
-      openpage: function() {
-        param.wh = _self.plant? `${doc.documentElement.clientWidth}x${doc.documentElement.clientHeight}` : `${win.screen.width}x${win.screen.height}`
+      openpage: function () {
+        param.wh = _self.plant
+          ? `${doc.documentElement.clientWidth}x${
+            doc.documentElement.clientHeight
+          }`
+          : `${win.screen.width}x${win.screen.height}`
         _self.pushData(param)
       },
-      sendLocalstorage: function() {
+      sendLocalstorage: function () {
         param.ls = ls
         _self.pushData(param)
       },
-      collectDom: function() {
+      collectDom: function () {
         const domtree = []
-        const children = document.body.children
+        const children = doc.body.children
+        if (bodyChildrenLength === children.length) return
         if (children && children.length) {
           for (let i = 0; i < children.length; i++) {
             const child = children[i]
             domtree.push(
-              `t:${child.tagName.toLowerCase()}|c:${child.className}|i:${
-                child.id
-              }`
+              `t:${child.tagName.toLowerCase()}|c:${child.className}|i:${child.id}`
             )
           }
         }
         param.dm = domtree.join(eventType.SPLIT_DATA)
-        if (bodyChildrenLength !== children.length) {
-          _self.pushData(param)
-          bodyChildrenLength = children.length
-        }
+        _self.pushData(param)
+        bodyChildrenLength = children.length
       },
-      click: function() {
+      click: function () {
         let point = ''
         if (evt instanceof TouchEvent) {
           point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX}-${
@@ -550,7 +551,7 @@ export default class Clairvoyant {
         }
         _self.pushData(param)
       },
-      mouseover: function() {
+      mouseover: function () {
         let tagName = evt.target.tagName.toLowerCase()
         let check = Checkhover(evt.target, ':hover')
         if (
@@ -567,10 +568,10 @@ export default class Clairvoyant {
           _self.pushData(param)
         }
       },
-      unload: function() {
+      unload: function () {
         _self.wsSocket.close()
       },
-      inputChange: function() {
+      inputChange: function () {
         event = eventType.ACTION_INPUT
         if (evt.target.type === 'password') {
           let length = evt.target.value.length
@@ -584,16 +585,16 @@ export default class Clairvoyant {
         )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
-      select: function() {
+      select: function () {
         event = eventType.ACTION_SELECT
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
           evt.target
         )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
-      mousedown: function() {},
-      mousemove: function() {},
-      scroll: function() {
+      mousedown: function () {},
+      mousemove: function () {},
+      scroll: function () {
         event = eventType.ACTION_SCROLL
         let scroll
         let target = evt.target
@@ -614,16 +615,16 @@ export default class Clairvoyant {
         console.log('scorll')
         _self.pushData(param)
       },
-      visibilitychange: function() {
+      visibilitychange: function () {
         event = eventType.ACTION_SWITCH
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${location.href}${
           eventType.SPLIT_LINE
         }`
         _self.pushData(param)
       },
-      fingermove: function() {},
-      visibilityblur: function() {},
-      touchdrag: function() {
+      fingermove: function () {},
+      visibilityblur: function () {},
+      touchdrag: function () {
         event = eventType.ACTION_DRAG
         const r = param.r.concat()
         param.r = `${r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${
@@ -641,7 +642,7 @@ export default class Clairvoyant {
         }`
         _self.pushData(param, 100)
       },
-      paint: function() {
+      paint: function () {
         event = eventType.PAINT_MOVE
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
           evt.target
@@ -650,24 +651,24 @@ export default class Clairvoyant {
         }`
         _self.wsSocket.send(JSON.stringify(param))
       },
-      popstate: function() {
+      popstate: function () {
         event = eventType.POP_STATE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
         _self.wsSocket.send(JSON.stringify(param))
       },
-      hashchange: function() {
+      hashchange: function () {
         event = eventType.HASH_CHANGE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
         _self.wsSocket.send(JSON.stringify(param))
       },
-      inputBlur: function() {
+      inputBlur: function () {
         event = eventType.INPUT_BLUR
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
           evt.target
         )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
-      inputFocus: function() {
+      inputFocus: function () {
         event = eventType.INPUT_FOCUS
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
           evt.target
@@ -677,8 +678,8 @@ export default class Clairvoyant {
     }
     target[obj.type]()
   }
-  pushData(obj, time = 0) {
-    if (process.env.NODE_ENV === 'production' && !cookie.getCookie('ISEE_BIZ')) return
+  pushData (obj, time = 0) {
+    if (process.env.NODE_ENV === 'production' && !cookie.getCookie('ISEE_BIZ')) { return }
     let pushMode = getConfig('pushMode') || 'once'
     if (pushMode === 'once') {
       this.wsSocket.send(JSON.stringify(obj))
@@ -692,7 +693,7 @@ export default class Clairvoyant {
   }
 }
 
-function domloaded(event) {
+function domloaded (event) {
   var iseebiz = cookie.getCookie('ISEE_BIZ')
   var ISEE_RE = cookie.getCookie('ISEE_RE')
   if (process.env.NODE_ENV === 'production') {
@@ -723,7 +724,7 @@ function domloaded(event) {
           }
         }
       }
-      clairvoyant.wsSocket.onmessage = function(evt) {
+      clairvoyant.wsSocket.onmessage = function (evt) {
         switch (evt.data) {
           // 需要发送localstorage
           case 'LS000':
@@ -736,10 +737,10 @@ function domloaded(event) {
         }
         // console.log("server:" + evt.data)
       }
-      clairvoyant.wsSocket.onclose = function(evt) {
+      clairvoyant.wsSocket.onclose = function (evt) {
         console.log('Connection closed.')
       }
-      clairvoyant.wsSocket.onerror = function(evt) {
+      clairvoyant.wsSocket.onerror = function (evt) {
         console.log(evt)
       }
       clairvoyant.init()
@@ -747,7 +748,7 @@ function domloaded(event) {
   } else {
     const clairvoyant = (win.clairvoyant = new Clairvoyant())
 
-    clairvoyant.wsSocket.onopen = function(evt) {
+    clairvoyant.wsSocket.onopen = function (evt) {
       console.log('Connection start.')
       clairvoyant.observer({
         type: 'openpage',
@@ -771,13 +772,13 @@ function domloaded(event) {
         }
       }
     }
-    clairvoyant.wsSocket.onmessage = function(evt) {
+    clairvoyant.wsSocket.onmessage = function (evt) {
       console.log('server:' + evt.data)
     }
-    clairvoyant.wsSocket.onclose = function(evt) {
+    clairvoyant.wsSocket.onclose = function (evt) {
       console.log('Connection closed.')
     }
-    clairvoyant.wsSocket.onerror = function(evt) {
+    clairvoyant.wsSocket.onerror = function (evt) {
       console.log(evt)
     }
     clairvoyant.init()
@@ -790,7 +791,7 @@ doc.addEventListener('DOMContentLoaded', domloaded, {
 
 win.addEventListener(
   'pageshow',
-  function(evt) {
+  function (evt) {
     if (evt.persisted) {
       domloaded()
     }

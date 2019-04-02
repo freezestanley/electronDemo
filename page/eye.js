@@ -1,5 +1,5 @@
 import cookie from './cookie'
-;(function() {
+;(function () {
   window.ck = cookie
   var start = '/p/'
   var end = '/dm/open/cashier/cashier_pay_return.do'

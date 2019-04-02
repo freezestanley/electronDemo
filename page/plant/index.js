@@ -41,12 +41,12 @@ export const IsWeixin = () => {
 //   }, 0)
 //   return childrenTotalHeight > containerHeight + 10
 // }
-export const isShouldScrollNode = function(target) {
+export const isShouldScrollNode = function (target) {
   const containerHeight = target.clientHeight
   const containerScrollHeight = target.scrollHeight
   return containerScrollHeight > containerHeight
 }
-export const FindScrollNode = function FindScrollNode(target) {
+export const FindScrollNode = function FindScrollNode (target) {
   if (!target) return false
   if (target.tagName.toLowerCase() === 'html') return window
   let style = window.getComputedStyle(target)
@@ -64,7 +64,7 @@ export const FindScrollNode = function FindScrollNode(target) {
   }
 }
 
-export const FindANode = function FindANode(target, nodeName) {
+export const FindANode = function FindANode (target, nodeName) {
   if (!target || !nodeName) return false
   if (target.nodeName.toLowerCase() === nodeName.toLowerCase()) {
     return target

@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-function matches(node, selector) {
+function matches (node, selector) {
   // Most modern browsers support the ".matches" method. However, IE9+ uses a
   // non-standard method name. As such, we can fall-back to the IE version when
   // the standard one doesn't exist and that should cover all the modern

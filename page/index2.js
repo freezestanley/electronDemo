@@ -16,7 +16,7 @@ const wspath =
     : 'ws://127.0.0.1:3000/test/123'
 const delay = 300
 const proxyEvent = new ProxyEvent()
-proxyEvent.callback = function(ev) {
+proxyEvent.callback = function (ev) {
   console.log(`===${ev.type}===${ev.target}`)
 }
 
@@ -27,21 +27,21 @@ proxyEvent.callback = function(ev) {
  * @class camera
  */
 export default class camera {
-  constructor(ws = wspath) {
+  constructor (ws = wspath) {
     this.wsSocket = new Wsocket(ws)
     this.scrollList = []
     this.canvasList = []
     this.hasListener = []
     this.mousedownPoint = null
   }
-  static selectNode(xpath) {
+  static selectNode (xpath) {
     return selectNodes(xpath)
   }
-  static getXpath(node) {
+  static getXpath (node) {
     return readXPath(node)
   }
 
-  observer(obj) {
+  observer (obj) {
     let evt = obj.evt
     let param = {
       t: +new Date(),
@@ -193,7 +193,7 @@ export default class camera {
     }
     // console.log(obj.type + ': ' + JSON.stringify(param))
   }
-  pushData(obj, time = 100) {
+  pushData (obj, time = 100) {
     if (time) {
       debounce(() => {
         this.wsSocket.send(JSON.stringify(obj))
@@ -207,17 +207,17 @@ export default class camera {
     // }, time)()
   }
   // input textarea select 添加onchange 监听
-  inputChangEvent(ev) {
+  inputChangEvent (ev) {
     this.observer({ type: 'inputChange', evt: ev })
   }
   // select 添加onchange 监听
-  selectChangEvent(ev) {
+  selectChangEvent (ev) {
     this.observer({ type: 'select', evt: ev })
   }
   /**
    * 添加dom变化监听 对动态插入的input textarea select 添加监听
    */
-  addDomObserver() {
+  addDomObserver () {
     let config = {
       attributes: true,
       childList: true,
@@ -274,7 +274,7 @@ export default class camera {
   /**
    * 全局代理事件
    */
-  eventAgent() {
+  eventAgent () {
     /**
      * dom element scroll evnent
      * mouseenter mouserleave 模拟div 内部滚动
@@ -330,7 +330,7 @@ export default class camera {
     })
   }
 
-  addFinger() {
+  addFinger () {
     let windowFinger = new Finger(window)
     windowFinger.addEventListener('touchtap', ev => {
       this.observer({ type: 'click', evt: ev })
@@ -394,7 +394,7 @@ export default class camera {
       }, delay)
     )
   }
-  lazy() {
+  lazy () {
     var xhr = new CreateXMLHttp()
     xhr.open(
       'GET',
@@ -403,7 +403,7 @@ export default class camera {
     )
     xhr.send(null)
   }
-  addBaseEvent() {
+  addBaseEvent () {
     /**
      * tab switch
      * */
@@ -439,7 +439,7 @@ export default class camera {
   /**
    * init 初始化
    */
-  init() {
+  init () {
     this.addBaseEvent()
     this.addDomObserver()
     // this.proxyAddEventListener(function (event) {
@@ -452,11 +452,11 @@ export default class camera {
   }
 }
 
-document.addEventListener('DOMContentLoaded', function(event) {
+document.addEventListener('DOMContentLoaded', function (event) {
   /**
    * 自执行
    * */
-  ;(function() {
+  ;(function () {
     var iseebiz = cookie.getCookie('ISEE_BIZ')
     var ISEE_RE = cookie.getCookie('ISEE_RE')
 
@@ -465,7 +465,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
       if (iseebiz) {
         // eslint-disable-next-line new-cap
         const wcamera = (window.wcamera = new camera())
-        wcamera.wsSocket.onopen = function(evt) {
+        wcamera.wsSocket.onopen = function (evt) {
           console.log('Connection start.')
           wcamera.observer({ type: 'openpage', evt: evt })
 
@@ -481,13 +481,13 @@ document.addEventListener('DOMContentLoaded', function(event) {
             }
           }
         }
-        wcamera.wsSocket.onmessage = function(evt) {
+        wcamera.wsSocket.onmessage = function (evt) {
           // console.log("server:" + evt.data)
         }
-        wcamera.wsSocket.onclose = function(evt) {
+        wcamera.wsSocket.onclose = function (evt) {
           console.log('Connection closed.')
         }
-        wcamera.wsSocket.onerror = function(evt) {
+        wcamera.wsSocket.onerror = function (evt) {
           console.log(evt)
         }
         wcamera.init()
@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
     } else {
       // eslint-disable-next-line new-cap
       const wcamera = (window.wcamera = new camera())
-      wcamera.wsSocket.onopen = function(evt) {
+      wcamera.wsSocket.onopen = function (evt) {
         console.log('Connection start.')
         wcamera.observer({ type: 'openpage', evt: evt })
 
@@ -511,13 +511,13 @@ document.addEventListener('DOMContentLoaded', function(event) {
           }
         }
       }
-      wcamera.wsSocket.onmessage = function(evt) {
+      wcamera.wsSocket.onmessage = function (evt) {
         // console.log("server:" + evt.data)
       }
-      wcamera.wsSocket.onclose = function(evt) {
+      wcamera.wsSocket.onclose = function (evt) {
         console.log('Connection closed.')
       }
-      wcamera.wsSocket.onerror = function(evt) {
+      wcamera.wsSocket.onerror = function (evt) {
         console.log(evt)
       }
       wcamera.init()

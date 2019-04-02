@@ -11,7 +11,7 @@
  * Object.getOwnPropertyDescriptor(window, 'onLineCallBack')
  */
 export default class proxyEvent {
-  constructor(options = null) {
+  constructor (options = null) {
     // let _self = this
     this._callback = options ? options.callback || null : null
     this._includeWindows = options ? options.includeWindows || true : true
@@ -22,15 +22,15 @@ export default class proxyEvent {
     this.initEventproxy(document)
   }
 
-  get callback() {
+  get callback () {
     return this._callback
   }
 
-  set callback(fun) {
+  set callback (fun) {
     this._callback = fun
   }
 
-  initEventproxy(target) {
+  initEventproxy (target) {
     let _self = this
     target['__proxy'] = {
       __addEvent: target.addEventListener,
@@ -39,15 +39,15 @@ export default class proxyEvent {
     }
     // noShadow
     // once
-    target.getEventListenerList = function(e) {
+    target.getEventListenerList = function (e) {
       return this.__eventOrginList[e]
     }
 
     Object.defineProperty(target, 'mode', {
-      get: function() {
+      get: function () {
         return this.__proxy.__run
       },
-      set: function(val) {
+      set: function (val) {
         this.__proxy.__run = val
         let _self = this
         for (var i in this.__eventList) {
@@ -74,8 +74,8 @@ export default class proxyEvent {
     })
 
     Object.defineProperty(target, 'addEventListener', {
-      get: function() {
-        return function(type, listener, options, useCapture) {
+      get: function () {
+        return function (type, listener, options, useCapture) {
           let _this = this
 
           this.__eventList = this.__eventList || {}
@@ -160,8 +160,8 @@ export default class proxyEvent {
     })
 
     Object.defineProperty(target, 'removeEventListener', {
-      get: function() {
-        return function(type, listener, options, useCapture) {
+      get: function () {
+        return function (type, listener, options, useCapture) {
           // let _this = this
 
           if (!this.__eventOrginList || !this.__eventOrginList[type]) return
@@ -200,12 +200,12 @@ export default class proxyEvent {
           continue
         }
         Object.defineProperty(target, i, {
-          get: function(e) {
+          get: function (e) {
             return this.__pro && this.__pro[`__${i}`]
               ? this.__pro[`__${i}`]
               : null
           },
-          set: function(newValue) {
+          set: function (newValue) {
             this.__pro = this.__pro ? this.__pro : Object.create(this.__proxy)
             let type = i.split('on')[1]
             if (newValue) {

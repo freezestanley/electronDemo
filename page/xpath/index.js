@@ -59,7 +59,7 @@ export const selectNodes = (expression, context = document, namespaces) => {
   if (typeof doc.evaluate !== 'undefined') {
     var nsresolver = null
     if (namespaces instanceof Object) {
-      nsresolver = function(prefix) {
+      nsresolver = function (prefix) {
         return namespaces[prefix]
       }
     }

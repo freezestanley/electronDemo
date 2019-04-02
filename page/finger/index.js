@@ -5,16 +5,16 @@ const TOUCH_LONGTAP = 'longtap'
 const TOUCH_DRAGTAP = 'dragtap'
 
 export class FingerType {
-  constructor(state) {
+  constructor (state) {
     this._prePoint = null
     this._nextPoint = null
   }
-  start(evt) {
+  start (evt) {
     evt.time = +new Date()
     this._nextPoint = null
     this._prePoint = evt
   }
-  end(evt) {
+  end (evt) {
     const prePoint = this._prePoint.targetTouches[0]
     const curPoint = evt.changedTouches[0]
     const nextPoint = this._nextPoint ? this._nextPoint.targetTouches[0] : null
@@ -44,7 +44,7 @@ export class FingerType {
     }
     return type
   }
-  move(evt) {
+  move (evt) {
     if (
       this._prePoint.targetTouches[0].identifier ===
       evt.targetTouches[0].identifier
@@ -56,7 +56,7 @@ export class FingerType {
 }
 
 export default class Finger {
-  constructor(node = window, ev) {
+  constructor (node = window, ev) {
     this._touchstart = null
     this._touchmove = null
     this._touchend = null
@@ -184,44 +184,44 @@ export default class Finger {
       }
     )
   }
-  get ontouchstart() {
+  get ontouchstart () {
     return this._touchstart
   }
-  set ontouchstart(param) {
+  set ontouchstart (param) {
     this._touchstart = param
   }
-  get ontouchend() {
+  get ontouchend () {
     return this._touchend
   }
-  set ontouchend(param) {
+  set ontouchend (param) {
     this._touchend = param
   }
-  get ontouchmove() {
+  get ontouchmove () {
     return this._touchmove
   }
-  set ontouchmove(param) {
+  set ontouchmove (param) {
     this._touchmove = param
   }
-  get ontouchtap() {
+  get ontouchtap () {
     return this._touchtap
   }
-  set ontouchtap(param) {
+  set ontouchtap (param) {
     this._touchtap = param
   }
-  get ontouchdrag() {
+  get ontouchdrag () {
     return this._touchdrag
   }
-  set ontouchdrag(param) {
+  set ontouchdrag (param) {
     this._touchdrag = param
   }
-  get ontouchpaint() {
+  get ontouchpaint () {
     return this._touchPaint
   }
-  set ontouchpaint(param) {
+  set ontouchpaint (param) {
     this._touchPaint = param
   }
 
-  addEventListener(eventType, callback, options) {
+  addEventListener (eventType, callback, options) {
     switch (eventType) {
       case 'touchstart':
         this.ontouchstart = callback
@@ -243,7 +243,7 @@ export default class Finger {
         break
     }
   }
-  removeEventListener(eventType, callback, options) {
+  removeEventListener (eventType, callback, options) {
     switch (eventType) {
       case 'touchstart':
         this.ontouchstart = null

@@ -1,7 +1,7 @@
-const AjaxHook = function(ob = window) {
-  ob.hookAjax = function(proxy) {
+const AjaxHook = function (ob = window) {
+  ob.hookAjax = function (proxy) {
     window._ahrealxhr = window._ahrealxhr || XMLHttpRequest
-    window.XMLHttpRequest = function() {
+    window.XMLHttpRequest = function () {
       this.xhr = new window._ahrealxhr()
       for (var attr in this.xhr) {
         var type = ''
@@ -19,8 +19,8 @@ const AjaxHook = function(ob = window) {
       }
     }
 
-    function getFactory(attr) {
-      return function() {
+    function getFactory (attr) {
+      return function () {
         var v = this.hasOwnProperty(attr + '_')
           ? this[attr + '_']
           : this.xhr[attr]
@@ -29,13 +29,13 @@ const AjaxHook = function(ob = window) {
       }
     }
 
-    function setFactory(attr) {
-      return function(v) {
+    function setFactory (attr) {
+      return function (v) {
         var xhr = this.xhr
         var that = this
         var hook = proxy[attr]
         if (typeof hook === 'function') {
-          xhr[attr] = function() {
+          xhr[attr] = function () {
             proxy[attr](that) || v.apply(xhr, arguments)
           }
         } else {
@@ -51,8 +51,8 @@ const AjaxHook = function(ob = window) {
       }
     }
 
-    function hookfun(fun) {
-      return function() {
+    function hookfun (fun) {
+      return function () {
         var args = [].slice.call(arguments)
         if (proxy[fun] && proxy[fun].call(this, args, this.xhr)) {
           return
@@ -62,7 +62,7 @@ const AjaxHook = function(ob = window) {
     }
     return window._ahrealxhr
   }
-  ob.unHookAjax = function() {
+  ob.unHookAjax = function () {
     // eslint-disable-next-line no-global-assign
     if (window._ahrealxhr) XMLHttpRequest = window._ahrealxhr
     window._ahrealxhr = undefined
@@ -71,7 +71,7 @@ const AjaxHook = function(ob = window) {
   return ob.hookAjax
 }
 
-export const CreateXMLHttp = function CreateXMLHttp() {
+export const CreateXMLHttp = function CreateXMLHttp () {
   // 创建一个新变量并赋值false，使用false作为判断条件说明还没有创建XMLHTTPRequest对象
   var flag = true
 
