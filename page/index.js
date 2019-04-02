@@ -40,13 +40,8 @@ function eId(element) {
   return element._eId || (element._eId = _eId++)
 }
 
-<<<<<<< HEAD
 const getConfig = function(name) {
   return win.st_conf && win.st_conf[name] ? win.st_conf[name] : null
-=======
-const getConfig = function (name) {
-  return window.st_conf && window.st_conf[name] ? window.st_conf[name] : null
->>>>>>> daa66cd73403fe14b49b442a31ca284e2b186682
 }
 const cookie = new Cookie(
   getConfig('domain'),
@@ -109,7 +104,6 @@ export default class Clairvoyant {
     doc.addEventListener(
       'visibilitychange',
       ev => {
-<<<<<<< HEAD
         typeof doc.hidden === 'boolean' && doc.hidden === false
           ? this.observer({
               type: 'visibilitychange',
@@ -121,18 +115,6 @@ export default class Clairvoyant {
             })
       },
       {
-=======
-        typeof document.hidden === 'boolean' && document.hidden === false ?
-          this.observer({
-            type: 'visibilitychange',
-            evt: ev
-          }) :
-          this.observer({
-            type: 'visibilityblur',
-            evt: ev
-          })
-      }, {
->>>>>>> daa66cd73403fe14b49b442a31ca284e2b186682
         noShadow: true
       }
     )
@@ -504,24 +486,8 @@ export default class Clairvoyant {
     let _self = this
     param.r = `${+new Date()}${eventType.SPLIT_DATA}`
     const target = {
-<<<<<<< HEAD
       openpage: function() {
         param.wh = _self.plant? `${doc.documentElement.clientWidth}x${doc.documentElement.clientHeight}` : `${win.screen.width}x${win.screen.height}`
-=======
-      openpage: function () {
-        // const ck = cookie.getCookie('ISEE_BIZ')
-        // const ck_cache = cookie.getCookie('ISEE_BIZ_CACHE')
-        // pc端取文档的高度和宽度， 手机端取设备屏幕的宽度和高度
-        param.wh = _self.plant ?
-          `${document.documentElement.clientWidth}x${
-              document.documentElement.clientHeight
-            }` :
-          `${window.screen.width}x${window.screen.height}`
-        // if (!ck_cache || ck_cache !== ck) {
-        //   cookie.setCookie('ISEE_BIZ_CACHE', ck)
-        //   param.lc = JSON.stringify(window.localStorage)
-        // }
->>>>>>> daa66cd73403fe14b49b442a31ca284e2b186682
         _self.pushData(param)
       },
       sendLocalstorage: function () {
@@ -697,13 +663,8 @@ function domloaded(event) {
   if (process.env.NODE_ENV === 'production') {
     if (ISEE_RE) return
     if (iseebiz) {
-<<<<<<< HEAD
       const clairvoyant = (win.clairvoyant = new Clairvoyant())
       clairvoyant.wsSocket.onopen = function(evt) {
-=======
-      const clairvoyant = (window.clairvoyant = new Clairvoyant())
-      clairvoyant.wsSocket.onopen = function (evt) {
->>>>>>> daa66cd73403fe14b49b442a31ca284e2b186682
         console.log('Connection start.')
         clairvoyant.observer({
           type: 'openpage',
@@ -754,13 +715,8 @@ function domloaded(event) {
         evt: evt
       })
     }
-<<<<<<< HEAD
-    clairvoyant.wsSocket.onmessage = function(evt) {
-      console.log('server:' + evt.data)
-=======
     clairvoyant.wsSocket.onmessage = function (evt) {
       // console.log("server:" + evt.data)
->>>>>>> daa66cd73403fe14b49b442a31ca284e2b186682
     }
     clairvoyant.wsSocket.onclose = function (evt) {
       console.log('Connection closed.')
