@@ -612,7 +612,7 @@ export default class Clairvoyant {
         )}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${
           eventType.SPLIT_LINE
         }`
-        console.log('scorll')
+
         _self.pushData(param)
       },
       visibilitychange: function () {
@@ -738,10 +738,10 @@ function domloaded (event) {
         // console.log("server:" + evt.data)
       }
       clairvoyant.wsSocket.onclose = function (evt) {
-        console.log('Connection closed.')
+        // console.log('Connection closed.')
       }
       clairvoyant.wsSocket.onerror = function (evt) {
-        console.log(evt)
+        // console.log(evt)
       }
       clairvoyant.init()
     }
@@ -749,7 +749,7 @@ function domloaded (event) {
     const clairvoyant = (win.clairvoyant = new Clairvoyant())
 
     clairvoyant.wsSocket.onopen = function (evt) {
-      console.log('Connection start.')
+      // console.log('Connection start.')
       clairvoyant.observer({
         type: 'openpage',
         evt: evt
@@ -773,13 +773,13 @@ function domloaded (event) {
       }
     }
     clairvoyant.wsSocket.onmessage = function (evt) {
-      console.log('server:' + evt.data)
+      // console.log('server:' + evt.data)
     }
     clairvoyant.wsSocket.onclose = function (evt) {
-      console.log('Connection closed.')
+      // console.log('Connection closed.')
     }
     clairvoyant.wsSocket.onerror = function (evt) {
-      console.log(evt)
+      // console.log(evt)
     }
     clairvoyant.init()
   }
