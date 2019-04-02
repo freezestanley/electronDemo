@@ -176,21 +176,21 @@ export default class Clairvoyant {
       }
     )
 
-    win.addEventListener(
-      'scroll',
-      debounce(
-        ev =>
-          this.observer({
-            type: 'scroll',
-            evt: ev
-          }),
-        delay
-      ),
-      {
-        noShadow: true
-      }
-    )
-  }
+  //   win.addEventListener(
+  //     'scroll',
+  //     debounce(
+  //       ev =>
+  //         this.observer({
+  //           type: 'scroll',
+  //           evt: ev
+  //         }),
+  //       delay
+  //     ),
+  //     {
+  //       noShadow: true
+  //     }
+  //   )
+  // }
 
   mutationWatch () {
     let config = {
@@ -600,7 +600,8 @@ export default class Clairvoyant {
         let target = evt.target
         if (
           evt.target.nodeName.toLowerCase() === 'body' ||
-          evt.target.nodeName.toLowerCase() === 'html'
+          evt.target.nodeName.toLowerCase() === 'html' ||
+          evt.target.nodeName.toLowerCase() === '#document'
         ) {
           scroll = doc.documentElement.scrollTop || doc.body.scrollTop
           target = doc.body
