@@ -31,8 +31,6 @@ const doc = window.document
 function eId(element) {
   return element._eId || (element._eId = _eId++)
 }
-
-
 const getConfig = function(name) {
   return win.st_conf && win.st_conf[name] ? win.st_conf[name] : null
 }
