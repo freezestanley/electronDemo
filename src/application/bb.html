@@ -14,7 +14,13 @@
     <script src="http://localhost:3000/st.js"></script>
   </header>
   <body>
-    <a id="foo">click me!</a><br />
+      
+    <div>
+        <div>
+          <a id="fooclickme">click me!</a>
+        </div>
+    </div>
+    <br />
     <a id="foor">click me111111!</a>
     <input />
     <canvas id="canvas" width="300" height="300">
@@ -69,10 +75,11 @@
     function dd(e) {
       console.log("dd");
     }
-    
+    window.id="11111111111111111111111111111"
     window.addEventListener(
       "load",
       function(e) {
+        alert(window.id)
         console.log("onload");
         document.getElementById("foo").addEventListener("click", aa, { noShadow: true });
         document.getElementById("foo").addEventListener("click", bb);

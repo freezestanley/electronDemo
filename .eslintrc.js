@@ -7,15 +7,15 @@ module.exports = {
     'prettier/standard',
     'prettier/vue'
   ],
-  plugins: ['standard', 'vue', 'prettier'],
+  plugins: ['standard', 'vue'], // , 'prettier'
   rules: {
-    'prettier/prettier': [
-      'error',
-      {
-        semi: false,
-        singleQuote: true
-      }
-    ],
+    // 'prettier/prettier': [
+    //   'error',
+    //   {
+    //     semi: false,
+    //     singleQuote: true
+    //   }
+    // ],
     'vue/html-self-closing': [
       'error',
       {
