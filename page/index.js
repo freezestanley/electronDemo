@@ -47,8 +47,7 @@ const wspath =
     : 'ws://127.0.0.1:3000/test/123')
 const delay = 300
 let bodyChildrenLength = 0
-const lazyPath =
-  'https://www.zhongan.com/open/member/login_screen/get_sso_uni_form_domain_url.json'
+const lazyPath = 'https://www.zhongan.com/account/MyPolicyScreen/getRenewalClickStatus.json'
 const proxyEvent = new ProxyEvent()
 proxyEvent.callback = function (ev) {
   process.env.NODE_ENV === 'production' &&
@@ -176,21 +175,37 @@ export default class Clairvoyant {
       }
     )
 
-  //   win.addEventListener(
-  //     'scroll',
-  //     debounce(
-  //       ev =>
-  //         this.observer({
-  //           type: 'scroll',
-  //           evt: ev
-  //         }),
-  //       delay
-  //     ),
-  //     {
-  //       noShadow: true
-  //     }
-  //   )
-  // }
+    win.addEventListener(
+      'scroll',
+      debounce(
+        ev =>
+          this.observer({
+            type: 'scroll',
+            evt: ev
+          }),
+        delay
+      ),
+      {
+        noShadow: true
+      }
+    )
+    win.addEventListener(
+      'wheel',
+      debounce(
+        ev => {
+          console.log(ev)
+          this.observer({
+            type: 'scroll',
+            evt: ev
+          })
+        },
+        delay
+      ),
+      {
+        noShadow: true
+      }
+    )
+  }
 
   mutationWatch () {
     let config = {
