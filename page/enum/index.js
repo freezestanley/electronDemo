@@ -48,3 +48,5 @@ export const HASH_CHANGE = 'hc'
 export const INPUT_FOCUS = 'ic'
 
 export const INPUT_BLUR = 'ib'
+
+export const COLLECT_DOM = 'dm'

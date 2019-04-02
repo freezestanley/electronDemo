@@ -524,7 +524,7 @@ export default class Clairvoyant {
             )
           }
         }
-        param.dm = domtree.join(eventType.SPLIT_DATA)
+        param.r = `${param.r}${eventType.COLLECT_DOM}${eventType.SPLIT_DATA}${domtree.join('€')}${eventType.SPLIT_LINE}`
         _self.pushData(param)
         bodyChildrenLength = children.length
       },
