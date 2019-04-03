@@ -41,29 +41,28 @@ const cookie = new Cookie(
 )
 
 const domain = {
-  'test': 'wss://isee-test.zhongan.com/sapi/ed/events',
-  'uat': 'wss://isee-uat.zhongan.com/sapi/ed/events',
   'production': 'wss://isee.zhongan.com/sapi/ed/events',
+  'uat': 'wss://isee-uat.zhongan.com/sapi/ed/events',
+  'test': 'wss://isee-test.zhongan.com/sapi/ed/events',
+  'dev': 'wss://isee-uat.zhongan.io/sapi/ed/events',
   'io': 'wss://isee-uat.zhongan.io/sapi/ed/events',
   'development': 'ws://127.0.0.1:3000/test/123'
 }
 const wspath = getConfig('ws') || domain[process.env.NODE_ENV]
-  // (process.env.NODE_ENV === 'production'
-  //   ? 'wss://isee-test.zhongan.io/sapi/ed/events'
-  //   : 'ws://127.0.0.1:3000/test/123')
+// (process.env.NODE_ENV === 'production'
+//   ? 'wss://isee-test.zhongan.io/sapi/ed/events'
+//   : 'ws://127.0.0.1:3000/test/123')
 const delay = 300
 
 const lazydomain = {
-  'test': 'wss://isee-test.zhongan.com/sapi/block',
-  'uat': 'wss://isee-uat.zhongan.com/sapi/block',
   'production': 'wss://isee.zhongan.com/sapi/block',
+  'uat': 'wss://isee-uat.zhongan.com/sapi/block',
+  'test': 'wss://isee-test.zhongan.com/sapi/block',
+  'dev': 'wss://isee.zhongan.io/sapi/block',
   'io': 'wss://isee.zhongan.io/sapi/block',
   'development': 'ws://127.0.0.1:3000/test/123'
 }
 const lazyPath = lazydomain[process.env.NODE_ENV]
-
-
-
 const proxyEvent = new ProxyEvent()
 proxyEvent.callback = function (ev) {
   process.env.NODE_ENV === 'production' &&
