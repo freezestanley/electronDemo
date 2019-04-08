@@ -48,8 +48,8 @@ const domain = {
   'io': 'wss://isee-uat.zhongan.io/sapi/ed/events',
   'development': 'ws://127.0.0.1:3000/test/123'
 }
-// console.log('================' + process.env.NODE_ENV + '==============' + process.env.CK_ENV)
-const wspath = getConfig('ws') || domain['process.env.NODE_ENV']
+
+const wspath = getConfig('ws') || domain[process.env.NODE_ENV]
 // (process.env.NODE_ENV === 'production'
 //   ? 'wss://isee-test.zhongan.io/sapi/ed/events'
 //   : 'ws://127.0.0.1:3000/test/123')
@@ -64,6 +64,9 @@ const lazydomain = {
   'development': 'ws://127.0.0.1:3000/test/123'
 }
 const lazyPath = lazydomain[process.env.NODE_ENV]
+console.log('================' + process.env.NODE_ENV + '==============' + process.env.CK_ENV)
+console.log('================' + wspath + '==============' + lazyPath)
+
 const proxyEvent = new ProxyEvent()
 proxyEvent.callback = function (ev) {
   process.env.NODE_ENV === 'production' &&
@@ -731,7 +734,7 @@ export default class Clairvoyant {
 function domloaded (event) {
   var iseebiz = cookie.getCookie('ISEE_BIZ')
   var ISEE_RE = cookie.getCookie('ISEE_RE')
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV != 'development') {
     if (ISEE_RE) return
     if (iseebiz) {
       const clairvoyant = (win.clairvoyant = new Clairvoyant())

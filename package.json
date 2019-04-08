@@ -11,7 +11,7 @@
     "prd": "cross-env NODE_ENV=production CK_ENV=ISEE_BIZ webpack --config=build/webpack.prd.js --display-error-details  --color",
     "uat": "cross-env NODE_ENV=uat CK_ENV=ISEE_BIZ webpack --config=build/webpack.prd.js --display-error-details  --color",
     "test": "cross-env NODE_ENV=test CK_ENV=ISEE_BIZ webpack --config=build/webpack.prd.js --display-error-details  --color",
-    "deve": "cross-env NODE_ENV=dev CK_ENV=AAAs webpack --config=build/webpack.prd.js --display-error-details  --color",
+    "deve": "cross-env NODE_ENV=dev CK_ENV=ISEE_BIZ webpack --config=build/webpack.prd.js --display-error-details  --color",
     "io": "cross-env NODE_ENV=io CK_ENV=ISEE_BIZ webpack --config=build/webpack.dev.js --progress --display-error-details",
     "mdev": "cross-env NODE_ENV=development CK_ENV=ISEE_BIZ webpack --config=build/webpack.dev.js --progress --display-error-details",
     "start:dev": "webpack-dev-server --devtool eval --progress --colors --hot --content-base build",
