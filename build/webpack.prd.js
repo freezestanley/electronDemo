@@ -3,12 +3,11 @@ const webpack = require('webpack')
 module.exports = {
   mode: 'production',
   entry: {
-    st: './page/eye.js',
     eye: './page/index.js'
   },
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, '../dist'),
+    path: path.resolve(__dirname, `../dist/${process.env.NODE_ENV}`),
     library: '[name]',
     libraryTarget: 'window'
   },

@@ -1,2 +1,23 @@
 server.js  koa 服务
 page       页面监听 ws 交互
+
+websocket
+生产地址 https://static..com/website/iseebiz/eye.js
+uat地址 https://staticdaily..com/website/issebiz/eye.js
+测试地址. https://staticdaily..com/website/mobile/assets/js/eye.js
+
+
+
+测试环境：
+PC:http://pc-zatest1..com/p/83015937#channelEnName=health
+手网：http://m-itest6..com/p/83137207#/
+后台：http://3206-core-core-za-isee-console-ui.test.za.biz/retailer/auth/login
+
+预发环境：
+PC:https://uat..com/
+H5:https://m-uat..com
+后台：core-core-za-isee-console-ui.pre.za.biz
+
+生产环境：
+PC:https://www..com/
+手网:https://m..com

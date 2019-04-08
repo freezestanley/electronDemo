@@ -44,8 +44,8 @@ const domain = {
   'production': 'wss://isee.zhongan.com/sapi/ed/events',
   'uat': 'wss://isee-uat.zhongan.com/sapi/ed/events',
   'test': 'wss://isee-test.zhongan.com/sapi/ed/events',
-  'dev': 'wss://isee-test.zhongan.com/sapi/ed/events',
-  'io': 'wss://isee-uat.zhongan.io/sapi/ed/events',
+  // 'dev': 'wss://isee-test.zhongan.com/sapi/ed/events',
+  // 'io': 'wss://isee-uat.zhongan.io/sapi/ed/events',
   'development': 'ws://127.0.0.1:3000/test/123'
 }
 
@@ -59,8 +59,8 @@ const lazydomain = {
   'production': 'wss://isee.zhongan.com/sapi/block',
   'uat': 'wss://isee-uat.zhongan.com/sapi/block',
   'test': 'wss://isee-test.zhongan.com/sapi/block',
-  'dev': 'wss://isee-test.zhongan.com/sapi/block',
-  'io': 'wss://isee.zhongan.io/sapi/block',
+  // 'dev': 'wss://isee-test.zhongan.com/sapi/block',
+  // 'io': 'wss://isee.zhongan.io/sapi/block',
   'development': 'ws://127.0.0.1:3000/test/123'
 }
 const lazyPath = lazydomain[process.env.NODE_ENV]
