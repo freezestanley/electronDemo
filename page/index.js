@@ -64,8 +64,6 @@ const lazydomain = {
   'development': 'ws://127.0.0.1:3000/test/123'
 }
 const lazyPath = lazydomain[process.env.NODE_ENV]
-console.log('================' + process.env.NODE_ENV + '==============' + process.env.CK_ENV)
-console.log('================' + wspath + '==============' + lazyPath)
 
 const proxyEvent = new ProxyEvent()
 proxyEvent.callback = function (ev) {

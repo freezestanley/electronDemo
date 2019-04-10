@@ -29,17 +29,17 @@ Wsocket.prototype.send = function (param) {
   if (this.skt.readyState === 1) {
     this.skt.send(param)
   } else if (this.skt.readyState === 3) {
-    this.reconnect()
+    this.reconnect(param)
   }
 }
 Wsocket.prototype.close = function () {
   this.skt.close()
 }
-Wsocket.prototype.reconnect = function () {
+Wsocket.prototype.reconnect = function (param) {
   this.skt = wsocket(this.url)
   this.skt.onopen = ev => {
-    console.log('open')
-    this.onopen(ev)
+    console.log('reopen')
+    this.skt.send(param)
   }
   this.skt.onmessage = this.onmessage
   this.skt.onclose = this.onclose
