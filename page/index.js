@@ -34,41 +34,38 @@ function eId (element) {
 const getConfig = function (name) {
   return win.st_conf && win.st_conf[name] ? win.st_conf[name] : null
 }
-const cookie = new Cookie(
-  getConfig('domain'),
-  getConfig('path'),
-  getConfig('exp')
-)
+const cookie = new Cookie(getConfig('domain'), getConfig('path'), getConfig('exp'))
 
 const domain = {
-  'production': 'wss://isee.zhongan.com/sapi/ed/events',
-  'uat': 'wss://isee-uat.zhongan.com/sapi/ed/events',
-  'test': 'wss://isee-test.zhongan.com/sapi/ed/events',
+  production: 'wss://isee.zhongan.com/sapi/ed/events',
+  uat: 'wss://isee-uat.zhongan.com/sapi/ed/events',
+  test: 'wss://isee-test.zhongan.com/sapi/ed/events',
   // 'dev': 'wss://isee-test.zhongan.com/sapi/ed/events',
   // 'io': 'wss://isee-uat.zhongan.io/sapi/ed/events',
-  'development': 'ws://127.0.0.1:3000/test/123'
+  development: 'ws://127.0.0.1:3000/test/123'
 }
 
 const wspath = getConfig('ws') || domain[process.env.NODE_ENV]
+console.log('----------process.env.NODE_ENV', process.env.NODE_ENV)
+console.log('-------wspath', wspath)
 // (process.env.NODE_ENV === 'production'
 //   ? 'wss://isee-test.zhongan.io/sapi/ed/events'
 //   : 'ws://127.0.0.1:3000/test/123')
 const delay = 300
 
 const lazydomain = {
-  'production': 'wss://isee.zhongan.com/sapi/block',
-  'uat': 'wss://isee-uat.zhongan.com/sapi/block',
-  'test': 'wss://isee-test.zhongan.com/sapi/block',
+  production: 'wss://isee.zhongan.com/sapi/block',
+  uat: 'wss://isee-uat.zhongan.com/sapi/block',
+  test: 'wss://isee-test.zhongan.com/sapi/block',
   // 'dev': 'wss://isee-test.zhongan.com/sapi/block',
   // 'io': 'wss://isee.zhongan.io/sapi/block',
-  'development': 'ws://127.0.0.1:3000/test/123'
+  development: 'ws://127.0.0.1:3000/test/123'
 }
 const lazyPath = lazydomain[process.env.NODE_ENV]
 
 const proxyEvent = new ProxyEvent()
 proxyEvent.callback = function (ev) {
-  process.env.NODE_ENV === 'production' &&
-    console.log(`===${ev.type}===${ev.target}`)
+  process.env.NODE_ENV === 'production' && console.log(`===${ev.type}===${ev.target}`)
 }
 let mousedownPoint
 
@@ -194,7 +191,7 @@ export default class Clairvoyant {
 
     win.addEventListener(
       'scroll',
-      debounce(
+      throttle(
         ev =>
           this.observer({
             type: 'scroll',
@@ -208,16 +205,13 @@ export default class Clairvoyant {
     )
     win.addEventListener(
       'wheel',
-      debounce(
-        ev => {
-          console.log(ev)
-          this.observer({
-            type: 'scroll',
-            evt: ev
-          })
-        },
-        delay
-      ),
+      debounce(ev => {
+        console.log(ev)
+        this.observer({
+          type: 'scroll',
+          evt: ev
+        })
+      }, delay),
       {
         noShadow: true
       }
@@ -245,30 +239,24 @@ export default class Clairvoyant {
         const nodeName = mutation.target.nodeName.toLowerCase()
         if (nodeName === 'body' && mutation.type == 'childList') {
           console.log(mutation)
-          debounce(() => {
-            this.observer({
-              type: 'collectDom'
-            })
-          }, delay, 'collectTimer')()
+          debounce(
+            () => {
+              this.observer({
+                type: 'collectDom'
+              })
+            },
+            delay,
+            'collectTimer'
+          )()
         }
         if (mutation.type == 'attributes') {
-          transformList =
-            mutationsList
-              .map(mutation => mutation.target)
-              .filter(item => item.style.cssText.indexOf('translate') > -1) ||
-            []
+          transformList = mutationsList.map(mutation => mutation.target).filter(item => item.style.cssText.indexOf('translate') > -1) || []
           // console.log(mutation, mutationsList)
           // console.log(mutation.target.getBoundingClientRect())
         }
       }
-      _this.transformList = [
-        ...new Set([..._this.transformList, ...transformList])
-      ]
-      let currentNode = [
-        ...doc.querySelectorAll('input'),
-        ...doc.querySelectorAll('textarea'),
-        ...doc.querySelectorAll('select')
-      ]
+      _this.transformList = [...new Set([..._this.transformList, ...transformList])]
+      let currentNode = [...doc.querySelectorAll('input'), ...doc.querySelectorAll('textarea'), ...doc.querySelectorAll('select')]
       currentNode = currentNode.filter(v => _this.formlist.indexOf(v) === -1)
 
       currentNode.map((cNode, index, array) => {
@@ -277,11 +265,7 @@ export default class Clairvoyant {
         // if (   cNode.type === "radio" ||   cNode.type === "checkbox" ) {   //
         // cNode.addEventListener("change", _this.inputChangEvent.bind(_this), {   //
         // noShadow: true   // }); } else
-        if (
-          cNode.type != 'radio' ||
-          cNode.type != 'checkbox' ||
-          cNode.type != 'select'
-        ) {
+        if (cNode.type != 'radio' || cNode.type != 'checkbox' || cNode.type != 'select') {
           cNode.addEventListener('focus', _this.inputFocusEvent.bind(_this), {
             noShadow: true
           })
@@ -396,11 +380,7 @@ export default class Clairvoyant {
     doc.body.addEventListener(
       'mouseup',
       ev => {
-        if (
-          mousedownPoint.clientX === ev.clientX &&
-          mousedownPoint.clientY === ev.clientY &&
-          mousedownPoint.target === ev.target
-        ) {
+        if (mousedownPoint.clientX === ev.clientX && mousedownPoint.clientY === ev.clientY && mousedownPoint.target === ev.target) {
           this.observer({
             type: 'click',
             evt: ev
@@ -538,11 +518,7 @@ export default class Clairvoyant {
     param.r = `${+new Date()}${eventType.SPLIT_DATA}`
     const target = {
       openpage: function () {
-        param.wh = _self.plant
-          ? `${doc.documentElement.clientWidth}x${
-            doc.documentElement.clientHeight
-          }`
-          : `${win.screen.width}x${win.screen.height}`
+        param.wh = _self.plant ? `${doc.documentElement.clientWidth}x${doc.documentElement.clientHeight}` : `${win.screen.width}x${win.screen.height}`
         _self.pushData(param)
       },
       sendLocalstorage: function () {
@@ -555,9 +531,7 @@ export default class Clairvoyant {
         if (children && children.length) {
           for (let i = 0; i < children.length; i++) {
             const child = children[i]
-            domtree.push(
-              `t:${child.tagName.toLowerCase()}|c:${child.className}|i:${child.id}`
-            )
+            domtree.push(`t:${child.tagName.toLowerCase()}|c:${child.className}|i:${child.id}`)
           }
         }
         param.r = `${param.r}${eventType.COLLECT_DOM}${eventType.SPLIT_DATA}${domtree.join('€')}${eventType.SPLIT_LINE}`
@@ -566,40 +540,24 @@ export default class Clairvoyant {
       click: function () {
         let point = ''
         if (evt instanceof TouchEvent) {
-          point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX}-${
-            evt.changedTouches[0].clientY
-          }${eventType.SPLIT_DATA}`
+          point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX}-${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}`
         } else if (evt instanceof MouseEvent) {
-          point = `${eventType.SPLIT_DATA}${evt.clientX}-${evt.clientY}${
-            eventType.SPLIT_DATA
-          }`
+          point = `${eventType.SPLIT_DATA}${evt.clientX}-${evt.clientY}${eventType.SPLIT_DATA}`
         }
         const link = plant.FindANode(evt.target, 'a')
         if (link && link.target === '_blank') {
-          param.r = `${param.r}${eventType.ACTION_TAB}${
-            eventType.SPLIT_DATA
-          }${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
+          param.r = `${param.r}${eventType.ACTION_TAB}${eventType.SPLIT_DATA}${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
         } else {
-          param.r = `${param.r}${eventType.ACTION_CLICK}${
-            eventType.SPLIT_DATA
-          }${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
+          param.r = `${param.r}${eventType.ACTION_CLICK}${eventType.SPLIT_DATA}${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
         }
         _self.pushData(param)
       },
       mouseover: function () {
         let tagName = evt.target.tagName.toLowerCase()
         let check = Checkhover(evt.target, ':hover')
-        if (
-          tagName === 'li' ||
-          tagName === 'a' ||
-          check ||
-          evt.target.onmouseover ||
-          (evt.__eventOrginList && evt.__eventOrginList.length > 0)
-        ) {
+        if (tagName === 'li' || tagName === 'a' || check || evt.target.onmouseover || (evt.__eventOrginList && evt.__eventOrginList.length > 0)) {
           event = eventType.ACTION_HOVER
-          param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
-            evt.target
-          )}${eventType.SPLIT_LINE}`
+          param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
           _self.pushData(param)
         }
       },
@@ -615,16 +573,12 @@ export default class Clairvoyant {
             evt.target.value += '*'
           }
         }
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
-          evt.target
-        )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
       select: function () {
         event = eventType.ACTION_SELECT
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
-          evt.target
-        )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
       mousedown: function () {},
@@ -633,29 +587,19 @@ export default class Clairvoyant {
         event = eventType.ACTION_SCROLL
         let scroll
         let target = evt.target
-        if (
-          evt.target.nodeName.toLowerCase() === 'body' ||
-          evt.target.nodeName.toLowerCase() === 'html' ||
-          evt.target.nodeName.toLowerCase() === '#document'
-        ) {
+        if (evt.target.nodeName.toLowerCase() === 'body' || evt.target.nodeName.toLowerCase() === 'html' || evt.target.nodeName.toLowerCase() === '#document') {
           scroll = doc.documentElement.scrollTop || doc.body.scrollTop
           target = doc.body
         } else {
           scroll = evt.target.scrollTop
         }
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
-          target
-        )}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${
-          eventType.SPLIT_LINE
-        }`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(target)}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
 
         _self.pushData(param)
       },
       visibilitychange: function () {
         event = eventType.ACTION_SWITCH
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${location.href}${
-          eventType.SPLIT_LINE
-        }`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${location.href}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
       fingermove: function () {},
@@ -663,28 +607,16 @@ export default class Clairvoyant {
       touchdrag: function () {
         event = eventType.ACTION_DRAG
         const r = param.r.concat()
-        param.r = `${r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${
+        param.r = `${r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${movement.delta.x},${
+          movement.delta.y
+        },${movement.delta.z}${eventType.SPLIT_DATA}${readXPath(movement.ele)}${eventType.SPLIT_DATA}${evt._startPoint.changedTouches[0].clientX},${evt._startPoint.changedTouches[0].clientY}${
           eventType.SPLIT_DATA
-        }${movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${
-          movement.delta.x
-        },${movement.delta.y},${movement.delta.z}${
-          eventType.SPLIT_DATA
-        }${readXPath(movement.ele)}${eventType.SPLIT_DATA}${
-          evt._startPoint.changedTouches[0].clientX
-        },${evt._startPoint.changedTouches[0].clientY}${eventType.SPLIT_DATA}${
-          evt.changedTouches[0].clientX
-        },${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${
-          eventType.SPLIT_LINE
-        }`
+        }${evt.changedTouches[0].clientX},${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.pushData(param, 100)
       },
       paint: function () {
         event = eventType.PAINT_MOVE
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
-          evt.target
-        )}${eventType.SPLIT_DATA}${evt._movePoint}${eventType.SPLIT_DATA}${
-          eventType.SPLIT_LINE
-        }`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt._movePoint}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.wsSocket.send(JSON.stringify(param))
       },
       popstate: function () {
@@ -699,23 +631,21 @@ export default class Clairvoyant {
       },
       inputBlur: function () {
         event = eventType.INPUT_BLUR
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
-          evt.target
-        )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       },
       inputFocus: function () {
         event = eventType.INPUT_FOCUS
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(
-          evt.target
-        )}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param)
       }
     }
     target[obj.type]()
   }
   pushData (obj, time = 0) {
-    if (process.env.NODE_ENV === 'production' && !cookie.getCookie('ISEE_BIZ')) { return }
+    if (process.env.NODE_ENV === 'production' && !cookie.getCookie('ISEE_BIZ')) {
+      return
+    }
     let pushMode = getConfig('pushMode') || 'once'
     if (pushMode === 'once') {
       this.wsSocket.send(JSON.stringify(obj))

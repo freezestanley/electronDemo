@@ -19,19 +19,10 @@ export class FingerType {
     const curPoint = evt.changedTouches[0]
     const nextPoint = this._nextPoint ? this._nextPoint.targetTouches[0] : null
     let type = false
-    if (
-      nextPoint &&
-      prePoint.identifier === curPoint.identifier &&
-      nextPoint.identifier === prePoint.identifier
-    ) {
+    if (nextPoint && prePoint.identifier === curPoint.identifier && nextPoint.identifier === prePoint.identifier) {
       type = TOUCH_DRAGTAP
     } else if (prePoint.identifier === curPoint.identifier) {
-      if (
-        curPoint.pageX <= prePoint.pageX + 10 &&
-        curPoint.pageX >= prePoint.pageX - 10 &&
-        (curPoint.pageY <= prePoint.pageY + 10 &&
-          curPoint.pageY >= prePoint.pageY - 10)
-      ) {
+      if (curPoint.pageX <= prePoint.pageX + 10 && curPoint.pageX >= prePoint.pageX - 10 && (curPoint.pageY <= prePoint.pageY + 10 && curPoint.pageY >= prePoint.pageY - 10)) {
         const conTime = +new Date() - this._prePoint.time
         if (conTime <= 500) {
           type = TOUCH_TAP
@@ -45,10 +36,7 @@ export class FingerType {
     return type
   }
   move (evt) {
-    if (
-      this._prePoint.targetTouches[0].identifier ===
-      evt.targetTouches[0].identifier
-    ) {
+    if (this._prePoint.targetTouches[0].identifier === evt.targetTouches[0].identifier) {
       evt.time = +new Date()
       this._nextPoint = evt
     }
@@ -85,16 +73,11 @@ export default class Finger {
         this.finger = new FingerType()
         this.finger.start(ev)
         this._startPoint = ev
-        if (ev.target.tagName.toLowerCase() === 'canvas') {
+        // 临时解决办法，根据canvas是否含有touchmove事件来判断是否需要发送paint事件（是否为签名）
+        if (ev.target.tagName.toLowerCase() === 'canvas' && ev.target.__eventOriginList.touchmove) {
           const canvasEle = ev.changedTouches[0].target
-          const x =
-            ev.changedTouches[0].clientX -
-            canvasEle.getBoundingClientRect().left +
-            ''
-          const y =
-            ev.changedTouches[0].clientY -
-            canvasEle.getBoundingClientRect().top +
-            ''
+          const x = ev.changedTouches[0].clientX - canvasEle.getBoundingClientRect().left + ''
+          const y = ev.changedTouches[0].clientY - canvasEle.getBoundingClientRect().top + ''
           this._movePoint = `${x.split('.')[0]}-${y.split('.')[0]}€`
         } else {
           this._movePoint = null
@@ -121,10 +104,7 @@ export default class Finger {
             ev._startPoint = this._startPoint
             this._touchdrag(ev)
           }
-          if (
-            this._touchPaint &&
-            ev.target.tagName.toLowerCase() === 'canvas'
-          ) {
+          if (this._touchPaint && ev.target.tagName.toLowerCase() === 'canvas') {
             const allPoints = this._movePoint.split('€').filter(item => !!item)
             const movePoints = []
             let prevIndex = 0
@@ -135,10 +115,7 @@ export default class Finger {
               } else {
                 const [prevPointX, prevPointY] = allPoints[prevIndex].split('-')
                 const [pointX, pointY] = point.split('-')
-                if (
-                  Math.abs(pointX - prevPointX) > 3 ||
-                  Math.abs(pointY - prevPointY) > 3
-                ) {
+                if (Math.abs(pointX - prevPointX) > 3 || Math.abs(pointY - prevPointY) > 3) {
                   movePoints.push(point)
                   prevIndex = index
                 }
@@ -166,14 +143,8 @@ export default class Finger {
         this.finger.move(ev)
         if (this._movePoint) {
           const canvasEle = ev.changedTouches[0].target
-          const x =
-            ev.changedTouches[0].clientX -
-            canvasEle.getBoundingClientRect().left +
-            ''
-          const y =
-            ev.changedTouches[0].clientY -
-            canvasEle.getBoundingClientRect().top +
-            ''
+          const x = ev.changedTouches[0].clientX - canvasEle.getBoundingClientRect().left + ''
+          const y = ev.changedTouches[0].clientY - canvasEle.getBoundingClientRect().top + ''
           this._movePoint += `${x.split('.')[0]}-${y.split('.')[0]}€`
         }
         if (this._touchmove) this._touchmove(ev)
