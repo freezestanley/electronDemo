@@ -5,9 +5,16 @@ function wsocket (urlValue) {
   return false
 }
 
+let __dataId = 0
+function identifyData (param) {
+  return param.__dataId || (param.__dataId = __dataId++)
+}
+
 function Wsocket (url) {
   this.url = url
   this.skt = wsocket(url)
+  this.dataPool = []
+  this.cachedDataIdList = []
   this.skt.onopen = ev => {
     console.log('open')
     this.onopen(ev)
@@ -27,7 +34,7 @@ Wsocket.prototype.onerror = function (evt) {
 }
 Wsocket.prototype.send = function (param) {
   if (this.skt.readyState === 1) {
-    this.skt.send(param)
+    this.skt.send(JSON.stringify(param))
   } else if (this.skt.readyState === 3) {
     this.reconnect(param)
   }
@@ -35,11 +42,24 @@ Wsocket.prototype.send = function (param) {
 Wsocket.prototype.close = function () {
   this.skt.close()
 }
+Wsocket.prototype.flush = function () {
+  while (this.dataPool.length > 0) {
+    // const cachedDataId = this.cachedDataIdList.shift()
+    const param = this.dataPool.shift()
+    this.send(param)
+  }
+}
 Wsocket.prototype.reconnect = function (param) {
+  const cachedDataId = identifyData(param)
+  if (this.cachedDataIdList.indexOf(cachedDataId) === -1) {
+    this.cachedDataIdList.push(cachedDataId)
+    this.dataPool.push(param)
+  }
   this.skt = wsocket(this.url)
   this.skt.onopen = ev => {
     console.log('reopen')
-    this.skt.send(param)
+    // this.skt.send(param)
+    this.flush()
   }
   this.skt.onmessage = this.onmessage
   this.skt.onclose = this.onclose
