@@ -5,6 +5,7 @@ function wsocket (urlValue) {
   return false
 }
 
+// 用来对socket断开后未发送出去的数据加上标记
 let __dataId = 0
 function identifyData (param) {
   return param.__dataId || (param.__dataId = __dataId++)
@@ -44,10 +45,12 @@ Wsocket.prototype.close = function () {
 }
 Wsocket.prototype.flush = function () {
   while (this.dataPool.length > 0) {
-    // const cachedDataId = this.cachedDataIdList.shift()
+    this.cachedDataIdList.shift()
     const param = this.dataPool.shift()
     this.send(param)
   }
+  // 重置标识id
+  __dataId = 0
 }
 Wsocket.prototype.reconnect = function (param) {
   const cachedDataId = identifyData(param)
