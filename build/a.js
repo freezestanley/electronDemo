@@ -1,16 +1,16 @@
-let webpack = require("webpack");
-let path = require("path");
-let HtmlWebpackPlugin = require("html-webpack-plugin");
-let devMiddleWare = require("webpack-dev-middleware");
-let hotMiddleWare = require("webpack-hot-middleware");
+let webpack = require('webpack')
+// let path = require('path')
+let HtmlWebpackPlugin = require('html-webpack-plugin')
+let devMiddleWare = require('webpack-dev-middleware')
+let hotMiddleWare = require('webpack-hot-middleware')
 
-let baseConfig = require("./webpack.base.config");
+let baseConfig = require('./webpack.base.config')
 let devOption = {
   entry: {
-    app: ["webpack-hot-middleware/client", "./src/main.js"]
+    app: ['webpack-hot-middleware/client', './src/main.js']
   },
   output: {
-    path: "/"
+    path: '/'
     // publicPath: '/'
   },
   plugins: [
@@ -20,15 +20,15 @@ let devOption = {
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(),
     new HtmlWebpackPlugin({
-      template: "./src/index.html"
+      template: './src/index.html'
     })
   ]
-};
+}
 
-module.exports = function(app) {
-  let webpackconfig = Object.assign({}, baseConfig, devOption); // console.log(webpackconfig);
+module.exports = function (app) {
+  let webpackconfig = Object.assign({}, baseConfig, devOption) // console.log(webpackconfig);
 
-  var compiler = webpack(webpackconfig); // console.log(compiler);
+  var compiler = webpack(webpackconfig) // console.log(compiler);
   app.use(
     devMiddleWare(compiler, {
       publicPath: webpackconfig.output.publicPath,
@@ -37,7 +37,7 @@ module.exports = function(app) {
         chunks: false
       }
     })
-  );
-  app.use(hotMiddleWare(compiler));
-  return app;
-};
+  )
+  app.use(hotMiddleWare(compiler))
+  return app
+}

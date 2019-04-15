@@ -567,11 +567,11 @@ export default class Clairvoyant {
       },
       click: function () {
         let point = ''
-        if (evt instanceof TouchEvent) {
+        if (evt instanceof window.TouchEvent) {
           point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX}-${
             evt.changedTouches[0].clientY
           }${eventType.SPLIT_DATA}`
-        } else if (evt instanceof MouseEvent) {
+        } else if (evt instanceof window.MouseEvent) {
           point = `${eventType.SPLIT_DATA}${evt.clientX}-${evt.clientY}${
             eventType.SPLIT_DATA
           }`
@@ -655,7 +655,7 @@ export default class Clairvoyant {
       },
       visibilitychange: function () {
         event = eventType.ACTION_SWITCH
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${location.href}${
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${window.location.href}${
           eventType.SPLIT_LINE
         }`
         _self.pushData(param)
@@ -752,11 +752,11 @@ function domloaded (event) {
         let type = getConfig('type')
         if (end && type) {
           if (type === 'history') {
-            if (location.pathname.indexOf(end) === 0) {
+            if (window.location.pathname.indexOf(end) === 0) {
               cookie.delCookie('ISEE_BIZ')
             }
           } else {
-            if (location.hash === end) {
+            if (window.location.hash === end) {
               cookie.delCookie('ISEE_BIZ')
             }
           }
@@ -800,11 +800,11 @@ function domloaded (event) {
       let type = getConfig('type')
       if (end && type) {
         if (type === 'history') {
-          if (location.pathname.indexOf(end) === 0) {
+          if (window.location.pathname.indexOf(end) === 0) {
             cookie.delCookie('ISEE_BIZ')
           }
         } else {
-          if (location.hash === end) {
+          if (window.location.hash === end) {
             cookie.delCookie('ISEE_BIZ')
           }
         }

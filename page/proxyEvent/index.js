@@ -18,7 +18,7 @@ export default class proxyEvent {
     if (this._includeWindows) {
       this.initEventproxy(window)
     }
-    this.initEventproxy(HTMLElement.prototype)
+    this.initEventproxy(window.HTMLElement.prototype)
     this.initEventproxy(document)
   }
 

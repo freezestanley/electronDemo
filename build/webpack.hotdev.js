@@ -10,10 +10,6 @@ const hotdev = {
     st: [
       'webpack-hot-middleware/client?noInfo=false&reload=true&quiet=false',
       './page/index.js'
-    ],
-    eye: [
-      'webpack-hot-middleware/client?noInfo=false&reload=true&quiet=false',
-      './page/eye.js'
     ]
   },
   output: {

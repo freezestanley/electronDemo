@@ -6,8 +6,7 @@ const webpack = require('webpack')
 module.exports = {
   mode: 'development',
   entry: {
-    st: './page/index.js',
-    eye: './page/eye.js'
+    st: './page/index.js'
   },
   output: {
     filename: '[name].js',

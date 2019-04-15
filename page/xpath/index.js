@@ -67,7 +67,7 @@ export const selectNodes = (expression, context = document, namespaces) => {
       expression,
       context,
       nsresolver,
-      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+      window.XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
       null
     )
     if (result !== null) {

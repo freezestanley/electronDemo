@@ -1,6 +1,6 @@
 const AjaxHook = function (ob = window) {
   ob.hookAjax = function (proxy) {
-    window._ahrealxhr = window._ahrealxhr || XMLHttpRequest
+    window._ahrealxhr = window._ahrealxhr || window.XMLHttpRequest
     window.XMLHttpRequest = function () {
       this.xhr = new window._ahrealxhr()
       for (var attr in this.xhr) {
@@ -64,7 +64,7 @@ const AjaxHook = function (ob = window) {
   }
   ob.unHookAjax = function () {
     // eslint-disable-next-line no-global-assign
-    if (window._ahrealxhr) XMLHttpRequest = window._ahrealxhr
+    if (window._ahrealxhr) window.XMLHttpRequest = window._ahrealxhr
     window._ahrealxhr = undefined
   }
 
@@ -78,7 +78,7 @@ export const CreateXMLHttp = function CreateXMLHttp () {
   var xmlhttp = null
   try {
     // 尝试创建 XMLHttpRequest 对象，除 IE 外的浏览器都支持这个方法。
-    xmlhttp = new XMLHttpRequest()
+    xmlhttp = new window.XMLHttpRequest()
   } catch (e) {
     try {
       // 使用较新版本的 IE 创建 IE 兼容的对象（Msxml2.XMLHTTP）。
