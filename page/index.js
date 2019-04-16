@@ -644,12 +644,12 @@ export default class Clairvoyant {
       popstate: function () {
         event = eventType.POP_STATE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        _self.wsSocket.send(param)
+        !ISEE_RE && _self.wsSocket.send(param)
       },
       hashchange: function () {
         event = eventType.HASH_CHANGE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        _self.wsSocket.send(param)
+        !ISEE_RE && _self.wsSocket.send(param)
       },
       inputBlur: function () {
         event = eventType.INPUT_BLUR
