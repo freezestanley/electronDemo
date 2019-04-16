@@ -559,8 +559,8 @@ export default class Clairvoyant {
         let xPosition = ''
         let yPosition = ''
         if (evt instanceof TouchEvent) {
-          xPosition = evt.changedTouches[0].clientX - evt.target.getBoundingClientRect().left
-          yPosition = evt.changedTouches[0].clientY - evt.target.getBoundingClientRect().top
+          xPosition = evt.changedTouches[0].clientX - evt.changedTouches[0].target.getBoundingClientRect().left
+          yPosition = evt.changedTouches[0].clientY - evt.changedTouches[0].target.getBoundingClientRect().top
         } else if (evt instanceof MouseEvent) {
           xPosition = evt.clientX - evt.target.getBoundingClientRect().left
           yPosition = evt.clientY - evt.target.getBoundingClientRect().top
