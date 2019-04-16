@@ -556,11 +556,16 @@ export default class Clairvoyant {
       },
       click: function () {
         let point = ''
+        let xPosition = ''
+        let yPosition = ''
         if (evt instanceof TouchEvent) {
-          point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX}-${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}`
+          xPosition = evt.changedTouches[0].clientX - evt.target.getBoundingClientRect().left
+          yPosition = evt.changedTouches[0].clientY - evt.target.getBoundingClientRect().top
         } else if (evt instanceof MouseEvent) {
-          point = `${eventType.SPLIT_DATA}${evt.clientX}-${evt.clientY}${eventType.SPLIT_DATA}`
+          xPosition = evt.clientX - evt.target.getBoundingClientRect().left
+          yPosition = evt.clientY - evt.target.getBoundingClientRect().top
         }
+        point = `${eventType.SPLIT_DATA}${xPosition}-${yPosition}${eventType.SPLIT_DATA}`
         const link = plant.FindANode(evt.target, 'a')
         if (link && link.target === '_blank') {
           param.r = `${param.r}${eventType.ACTION_TAB}${eventType.SPLIT_DATA}${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
