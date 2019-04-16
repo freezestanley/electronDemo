@@ -379,19 +379,33 @@ export default class Clairvoyant {
     )
     doc.body.addEventListener(
       'mouseup',
-      ev => {
-        if (mousedownPoint.clientX === ev.clientX && mousedownPoint.clientY === ev.clientY && mousedownPoint.target === ev.target) {
+      debounce(
+        ev => {
+          if (mousedownPoint.clientX === ev.clientX && mousedownPoint.clientY === ev.clientY && mousedownPoint.target === ev.target) {
+            this.observer({
+              type: 'click',
+              evt: ev
+            })
+          } else {
+            this.observer({
+              type: 'mousemove',
+              evt: ev
+            })
+          }
+        }, 10),
+      {
+        noShadow: true
+      }
+    )
+    doc.body.addEventListener(
+      'click',
+      debounce(
+        ev => {
           this.observer({
             type: 'click',
             evt: ev
           })
-        } else {
-          this.observer({
-            type: 'mousemove',
-            evt: ev
-          })
-        }
-      },
+        }, 10),
       {
         noShadow: true
       }
