@@ -47,8 +47,8 @@ const domain = {
 }
 
 const wspath = getConfig('ws') || domain[process.env.NODE_ENV]
-console.log('----------process.env.NODE_ENV', process.env.NODE_ENV)
-console.log('-------wspath', wspath)
+// console.log('----------process.env.NODE_ENV', process.env.NODE_ENV)
+// console.log('-------wspath', wspath)
 // (process.env.NODE_ENV === 'production'
 //   ? 'wss://isee-test.zhongan.io/sapi/ed/events'
 //   : 'ws://127.0.0.1:3000/test/123')
