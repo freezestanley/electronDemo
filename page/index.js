@@ -27,6 +27,7 @@ let _eId = 1
 let ls = JSON.stringify(window.localStorage)
 const win = window
 const doc = window.document
+let ISEE_RE = ''
 
 function eId (element) {
   return element._eId || (element._eId = _eId++)
@@ -657,6 +658,9 @@ export default class Clairvoyant {
     target[obj.type]()
   }
   pushData (obj, time = 0) {
+    if (ISEE_RE) {
+      window.sessionStorage.setItem('iseeAction', JSON.stringify(obj))
+    }
     if (process.env.NODE_ENV === 'production' && !cookie.getCookie('ISEE_BIZ')) {
       return
     }
@@ -675,11 +679,14 @@ export default class Clairvoyant {
 
 function domloaded (event) {
   var iseebiz = cookie.getCookie('ISEE_BIZ')
-  var ISEE_RE = cookie.getCookie('ISEE_RE')
+  ISEE_RE = cookie.getCookie('ISEE_RE') || ''
   if (process.env.NODE_ENV != 'development') {
-    if (ISEE_RE) return
+    const clairvoyant = (win.clairvoyant = new Clairvoyant())
+    if (ISEE_RE) {
+      clairvoyant.init()
+      return
+    }
     if (iseebiz) {
-      const clairvoyant = (win.clairvoyant = new Clairvoyant())
       clairvoyant.wsSocket.onopen = function (evt) {
         console.log('Connection start.')
         clairvoyant.observer({
