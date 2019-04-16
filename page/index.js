@@ -552,7 +552,7 @@ export default class Clairvoyant {
           }
         }
         param.r = `${param.r}${eventType.COLLECT_DOM}${eventType.SPLIT_DATA}${domtree.join('€')}${eventType.SPLIT_LINE}`
-        _self.pushData(param)
+        _self.pushData(param, eventType.COLLECT_DOM)
       },
       click: function () {
         let point = ''
@@ -567,7 +567,7 @@ export default class Clairvoyant {
         } else {
           param.r = `${param.r}${eventType.ACTION_CLICK}${eventType.SPLIT_DATA}${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
         }
-        _self.pushData(param)
+        _self.pushData(param, eventType.ACTION_CLICK)
       },
       mouseover: function () {
         let tagName = evt.target.tagName.toLowerCase()
@@ -575,7 +575,7 @@ export default class Clairvoyant {
         if (tagName === 'li' || tagName === 'a' || check || evt.target.onmouseover || (evt.__eventOrginList && evt.__eventOrginList.length > 0)) {
           event = eventType.ACTION_HOVER
           param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
-          _self.pushData(param)
+          _self.pushData(param, event)
         }
       },
       unload: function () {
@@ -591,12 +591,12 @@ export default class Clairvoyant {
           }
         }
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
-        _self.pushData(param)
+        _self.pushData(param, event)
       },
       select: function () {
         event = eventType.ACTION_SELECT
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
-        _self.pushData(param)
+        _self.pushData(param, event)
       },
       mousedown: function () {},
       mousemove: function () {},
@@ -612,12 +612,12 @@ export default class Clairvoyant {
         }
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(target)}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
 
-        _self.pushData(param)
+        _self.pushData(param, event)
       },
       visibilitychange: function () {
         event = eventType.ACTION_SWITCH
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${location.href}${eventType.SPLIT_LINE}`
-        _self.pushData(param)
+        _self.pushData(param, event)
       },
       fingermove: function () {},
       visibilityblur: function () {},
@@ -629,12 +629,12 @@ export default class Clairvoyant {
         },${movement.delta.z}${eventType.SPLIT_DATA}${readXPath(movement.ele)}${eventType.SPLIT_DATA}${evt._startPoint.changedTouches[0].clientX},${evt._startPoint.changedTouches[0].clientY}${
           eventType.SPLIT_DATA
         }${evt.changedTouches[0].clientX},${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        _self.pushData(param, 100)
+        _self.pushData(param, event, 100)
       },
       paint: function () {
         event = eventType.PAINT_MOVE
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt._movePoint}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        _self.pushData(param)
+        _self.pushData(param, event)
       },
       popstate: function () {
         event = eventType.POP_STATE
@@ -649,19 +649,21 @@ export default class Clairvoyant {
       inputBlur: function () {
         event = eventType.INPUT_BLUR
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
-        _self.pushData(param)
+        _self.pushData(param, event)
       },
       inputFocus: function () {
         event = eventType.INPUT_FOCUS
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
-        _self.pushData(param)
+        _self.pushData(param, event)
       }
     }
     target[obj.type]()
   }
-  pushData (obj, time = 0) {
+  pushData (obj, eventType, time = 0) {
     if (ISEE_RE) {
-      window.sessionStorage.setItem('iseeAction', JSON.stringify(obj))
+      if (eventType) {
+        window.sessionStorage.setItem(`iseeAction-${eventType}`, JSON.stringify(obj))
+      }
       return
     }
     if (process.env.NODE_ENV === 'production' && !cookie.getCookie('ISEE_BIZ')) {
