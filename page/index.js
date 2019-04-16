@@ -72,7 +72,9 @@ let mousedownPoint
 
 export default class Clairvoyant {
   constructor (ws = wspath) {
-    this.wsSocket = new Wsocket(ws)
+    if (!ISEE_RE) {
+      this.wsSocket = new Wsocket(ws)
+    }
     this.proxyEvent = proxyEvent
     this.plant = plant.IsPc()
     this.scrollList = []
@@ -632,17 +634,17 @@ export default class Clairvoyant {
       paint: function () {
         event = eventType.PAINT_MOVE
         param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt._movePoint}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
-        _self.wsSocket.send(JSON.stringify(param))
+        _self.pushData(param)
       },
       popstate: function () {
         event = eventType.POP_STATE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        _self.wsSocket.send(JSON.stringify(param))
+        _self.wsSocket.send(param)
       },
       hashchange: function () {
         event = eventType.HASH_CHANGE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        _self.wsSocket.send(JSON.stringify(param))
+        _self.wsSocket.send(param)
       },
       inputBlur: function () {
         event = eventType.INPUT_BLUR
@@ -660,6 +662,7 @@ export default class Clairvoyant {
   pushData (obj, time = 0) {
     if (ISEE_RE) {
       window.sessionStorage.setItem('iseeAction', JSON.stringify(obj))
+      return
     }
     if (process.env.NODE_ENV === 'production' && !cookie.getCookie('ISEE_BIZ')) {
       return
@@ -734,7 +737,10 @@ function domloaded (event) {
     }
   } else {
     const clairvoyant = (win.clairvoyant = new Clairvoyant())
-
+    if (ISEE_RE) {
+      clairvoyant.init()
+      return
+    }
     clairvoyant.wsSocket.onopen = function (evt) {
       // console.log('Connection start.')
       clairvoyant.observer({
