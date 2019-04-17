@@ -552,7 +552,7 @@ export default class Clairvoyant {
     if (!node) {
       return false
     }
-    if (node.nodeType === node.ELEMENT_NODE) {
+    if (node.nodeType === node.ELEMENT_NODE && node.classList) {
       return (
         node.classList.contains(blockCls) ||
         this.isBlocked(node.parentNode, blockCls)
