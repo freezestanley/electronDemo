@@ -318,6 +318,9 @@ export default class Clairvoyant {
   }
 
   deskWatch () {
+    const debounceObserver = (cb, delay) => {
+      debounce(cb, delay)()
+    }
     // div 内滚动
     doc.body.addEventListener(
       'mouseover',
@@ -382,33 +385,56 @@ export default class Clairvoyant {
     )
     doc.body.addEventListener(
       'mouseup',
-      debounce(
-        ev => {
+      ev => {
+        const evt = ev
+        const xpath = readXPath(ev.target)
+        let targetClientRect = null
+        if (evt instanceof TouchEvent) {
+          targetClientRect = ev.changedTouches[0].target.getBoundingClientRect()
+        } else if (evt instanceof MouseEvent) {
+          targetClientRect = ev.target.getBoundingClientRect()
+        }
+        debounceObserver(() => {
           if (mousedownPoint.clientX === ev.clientX && mousedownPoint.clientY === ev.clientY && mousedownPoint.target === ev.target) {
             this.observer({
               type: 'click',
-              evt: ev
+              evt,
+              xpath,
+              targetClientRect
             })
           } else {
             this.observer({
               type: 'mousemove',
-              evt: ev
+              evt,
+              xpath
             })
           }
-        }, 10),
+        }, 10)
+      },
       {
         noShadow: true
       }
     )
     doc.body.addEventListener(
       'click',
-      debounce(
-        ev => {
+      ev => {
+        const evt = ev
+        const xpath = readXPath(ev.target)
+        let targetClientRect = null
+        if (evt instanceof TouchEvent) {
+          targetClientRect = ev.changedTouches[0].target.getBoundingClientRect()
+        } else if (evt instanceof MouseEvent) {
+          targetClientRect = ev.target.getBoundingClientRect()
+        }
+        debounceObserver(() => {
           this.observer({
             type: 'click',
-            evt: ev
+            evt,
+            xpath,
+            targetClientRect
           })
-        }, 10),
+        }, 10)
+      },
       {
         noShadow: true
       }
@@ -522,8 +548,7 @@ export default class Clairvoyant {
   }
 
   observer (obj) {
-    let evt = obj.evt
-    let movement = obj.movement
+    const { evt, movement, xpath, targetClientRect } = obj
     let param = {
       t: +new Date(),
       i: cookie.getCookie('ISEE_BIZ'),
@@ -556,16 +581,21 @@ export default class Clairvoyant {
       },
       click: function () {
         let point = ''
+        let xPosition = ''
+        let yPosition = ''
         if (evt instanceof TouchEvent) {
-          point = `${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX}-${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}`
+          xPosition = evt.changedTouches[0].clientX - (targetClientRect ? targetClientRect.left : evt.changedTouches[0].target.getBoundingClientRect().left)
+          yPosition = evt.changedTouches[0].clientY - (targetClientRect ? targetClientRect.top : evt.changedTouches[0].target.getBoundingClientRect().top)
         } else if (evt instanceof MouseEvent) {
-          point = `${eventType.SPLIT_DATA}${evt.clientX}-${evt.clientY}${eventType.SPLIT_DATA}`
+          xPosition = evt.clientX - (targetClientRect ? targetClientRect.left : evt.target.getBoundingClientRect().left)
+          yPosition = evt.clientY - (targetClientRect ? targetClientRect.top : evt.target.getBoundingClientRect().top)
         }
+        point = `${eventType.SPLIT_DATA}${xPosition}-${yPosition}${eventType.SPLIT_DATA}`
         const link = plant.FindANode(evt.target, 'a')
         if (link && link.target === '_blank') {
-          param.r = `${param.r}${eventType.ACTION_TAB}${eventType.SPLIT_DATA}${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
+          param.r = `${param.r}${eventType.ACTION_TAB}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
         } else {
-          param.r = `${param.r}${eventType.ACTION_CLICK}${eventType.SPLIT_DATA}${readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
+          param.r = `${param.r}${eventType.ACTION_CLICK}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${point}${eventType.SPLIT_LINE}`
         }
         _self.pushData(param, eventType.ACTION_CLICK)
       },
@@ -574,7 +604,7 @@ export default class Clairvoyant {
         let check = Checkhover(evt.target, ':hover')
         if (tagName === 'li' || tagName === 'a' || check || evt.target.onmouseover || (evt.__eventOrginList && evt.__eventOrginList.length > 0)) {
           event = eventType.ACTION_HOVER
-          param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_LINE}`
+          param.r = `${param.r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_LINE}`
           _self.pushData(param, event)
         }
       },
@@ -590,12 +620,12 @@ export default class Clairvoyant {
             evt.target.value += '*'
           }
         }
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param, event)
       },
       select: function () {
         event = eventType.ACTION_SELECT
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param, event)
       },
       mousedown: function () {},
@@ -610,7 +640,7 @@ export default class Clairvoyant {
         } else {
           scroll = evt.target.scrollTop
         }
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(target)}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(target)}${eventType.SPLIT_DATA}${scroll}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
 
         _self.pushData(param, event)
       },
@@ -624,36 +654,36 @@ export default class Clairvoyant {
       touchdrag: function () {
         event = eventType.ACTION_DRAG
         const r = param.r.concat()
-        param.r = `${r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${movement.delta.x},${
+        param.r = `${r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_DATA}${movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${movement.delta.x},${
           movement.delta.y
-        },${movement.delta.z}${eventType.SPLIT_DATA}${readXPath(movement.ele)}${eventType.SPLIT_DATA}${evt._startPoint.changedTouches[0].clientX},${evt._startPoint.changedTouches[0].clientY}${
+        },${movement.delta.z}${eventType.SPLIT_DATA}${xpath || readXPath(movement.ele)}${eventType.SPLIT_DATA}${evt._startPoint.changedTouches[0].clientX},${evt._startPoint.changedTouches[0].clientY}${
           eventType.SPLIT_DATA
         }${evt.changedTouches[0].clientX},${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.pushData(param, event, 100)
       },
       paint: function () {
         event = eventType.PAINT_MOVE
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt._movePoint}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_DATA}${evt._movePoint}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.pushData(param, event)
       },
       popstate: function () {
         event = eventType.POP_STATE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        _self.wsSocket.send(param)
+        !ISEE_RE && _self.wsSocket.send(param)
       },
       hashchange: function () {
         event = eventType.HASH_CHANGE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        _self.wsSocket.send(param)
+        !ISEE_RE && _self.wsSocket.send(param)
       },
       inputBlur: function () {
         event = eventType.INPUT_BLUR
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param, event)
       },
       inputFocus: function () {
         event = eventType.INPUT_FOCUS
-        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
+        param.r = `${param.r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_DATA}${evt.target.value}${eventType.SPLIT_LINE}`
         _self.pushData(param, event)
       }
     }
