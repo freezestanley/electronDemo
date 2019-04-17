@@ -69,6 +69,7 @@ proxyEvent.callback = function (ev) {
   process.env.NODE_ENV === 'production' && console.log(`===${ev.type}===${ev.target}`)
 }
 let mousedownPoint
+const blockCls = getConfig('blockClass') || 'isee-block'
 
 export default class Clairvoyant {
   constructor (ws = wspath) {
@@ -547,8 +548,24 @@ export default class Clairvoyant {
     )
   }
 
+  isBlocked (node) {
+    if (!node) {
+      return false
+    }
+    if (node.nodeType === node.ELEMENT_NODE) {
+      return (
+        node.classList.contains(blockCls) ||
+        this.isBlocked(node.parentNode, blockCls)
+      )
+    }
+    return this.isBlocked(node.parentNode)
+  }
+
   observer (obj) {
     const { evt, movement, xpath, targetClientRect } = obj
+    if (this.isBlocked(evt.target)) {
+      return
+    }
     let param = {
       t: +new Date(),
       i: cookie.getCookie('ISEE_BIZ'),
