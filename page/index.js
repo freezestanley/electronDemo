@@ -563,7 +563,7 @@ export default class Clairvoyant {
 
   observer (obj) {
     const { evt, movement, xpath, targetClientRect } = obj
-    if (this.isBlocked(evt.target)) {
+    if (evt && evt.target && this.isBlocked(evt.target)) {
       return
     }
     let param = {
