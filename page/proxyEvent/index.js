@@ -75,9 +75,26 @@ export default class proxyEvent {
 
     Object.defineProperty(target, 'addEventListener', {
       get: function () {
+      //   return function (n, b, c, d) {
+      //     console.log(arguments)
+      //     return target['__proxy']['__addEvent']
+      //   }
+      // },
+        // console.log('=========================')
+        // console.log(target)
+        // return target['__proxy']['__addEvent']
         return function (type, listener, options, useCapture) {
           let _this = this
-
+          if (typeof listener === 'object') { // better-scroll listener object
+            this.__proxy.__addEvent.call(
+              this,
+              type,
+              listener,
+              options,
+              useCapture
+            )
+            return
+          }
           this.__eventList = this.__eventList || {}
           this.__eventOrginList = this.__eventOrginList || {}
           this.__eventList[type] = this.__eventList[type] || []
@@ -163,7 +180,16 @@ export default class proxyEvent {
       get: function () {
         return function (type, listener, options, useCapture) {
           // let _this = this
-
+          if (typeof listener === 'object') { // better-scroll listener object
+            this.__proxy.__removeEvent.call(
+              this,
+              type,
+              listener,
+              options,
+              useCapture
+            )
+            return
+          }
           if (!this.__eventOrginList || !this.__eventOrginList[type]) return
 
           this.__eventOrginList = this.__eventOrginList || {}
