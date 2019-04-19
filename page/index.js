@@ -707,7 +707,8 @@ function domloaded (event) {
         // console.log('Connection closed.')
       }
       clairvoyant.wsSocket.onerror = function (evt) {
-        // console.log(evt)
+        let img = new Image()
+        img.src = 'http://gif-test.zhongan.io/i.gif'
       }
       clairvoyant.init()
     }
@@ -746,6 +747,8 @@ function domloaded (event) {
     }
     clairvoyant.wsSocket.onerror = function (evt) {
       // console.log(evt)
+      let img = new Image()
+      img.src = 'http://gif-test.zhongan.io/i.gif'
     }
     clairvoyant.init()
   }
