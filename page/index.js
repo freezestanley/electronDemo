@@ -236,19 +236,19 @@ export default class Clairvoyant {
         childrenList.push(doc.body.children[i].tagName.toLowerCase())
       }
       for (let mutation of mutationsList) {
-        const nodeName = mutation.target.nodeName.toLowerCase()
-        if (nodeName === 'body' && mutation.type == 'childList') {
-          console.log(mutation)
-          debounce(
-            () => {
-              this.observer({
-                type: 'collectDom'
-              })
-            },
-            delay,
-            'collectTimer'
-          )()
-        }
+        // const nodeName = mutation.target.nodeName.toLowerCase()
+        // if (nodeName === 'body' && mutation.type == 'childList') {
+        //   console.log(mutation)
+        //   debounce(
+        //     () => {
+        //       this.observer({
+        //         type: 'collectDom'
+        //       })
+        //     },
+        //     delay,
+        //     'collectTimer'
+        //   )()
+        // }
         if (mutation.type == 'attributes') {
           transformList = mutationsList.map(mutation => mutation.target).filter(item => item.style.cssText.indexOf('translate') > -1) || []
           // console.log(mutation, mutationsList)
