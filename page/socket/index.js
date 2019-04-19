@@ -39,18 +39,19 @@ Wsocket.prototype.send = function (param) {
   if (this.skt.readyState === 1) {
     this.skt.send(JSON.stringify(param))
   } else {
+    const paramJson = JSON.parse(param)
     // cached的数据超过了10000个，为避免占用内存太大，清空cache
     if (this.cachedDataIdList.length > 10000) {
       this.cachedDataIdList = []
       this.dataPool = []
     }
-    const cachedDataId = identifyData(param)
+    const cachedDataId = identifyData(paramJson)
     if (this.cachedDataIdList.indexOf(cachedDataId) === -1) {
       this.cachedDataIdList.push(cachedDataId)
-      this.dataPool.push(param)
+      this.dataPool.push(paramJson)
     }
     if (this.skt.readyState === 3) {
-      this.reconnect(param)
+      this.reconnect(paramJson)
     }
   }
 }
