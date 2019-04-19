@@ -672,10 +672,10 @@ function domloaded (event) {
           type: 'openpage',
           evt: evt
         })
-        clairvoyant.observer({
-          type: 'collectDom',
-          evt: evt
-        })
+        // clairvoyant.observer({
+        //   type: 'collectDom',
+        //   evt: evt
+        // })
         let end = getConfig('end')
         let type = getConfig('type')
         if (end && type) {
@@ -720,10 +720,10 @@ function domloaded (event) {
         type: 'openpage',
         evt: evt
       })
-      clairvoyant.observer({
-        type: 'collectDom',
-        evt: evt
-      })
+      // clairvoyant.observer({
+      //   type: 'collectDom',
+      //   evt: evt
+      // })
       let end = getConfig('end')
       let type = getConfig('type')
       if (end && type) {
