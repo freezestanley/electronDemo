@@ -69,6 +69,7 @@ proxyEvent.callback = function (ev) {
   process.env.NODE_ENV === 'production' && console.log(`===${ev.type}===${ev.target}`)
 }
 let mousedownPoint
+const blockCls = getConfig('blockClass') || 'isee-block'
 
 export default class Clairvoyant {
   constructor (ws = wspath) {
@@ -321,53 +322,59 @@ export default class Clairvoyant {
     const debounceObserver = (cb, delay) => {
       debounce(cb, delay)()
     }
+    let mouseX
+    let mouseY
     // div 内滚动
     doc.body.addEventListener(
       'mouseover',
-      debounce(ev => {
-        this.observer({
-          type: 'mouseover',
-          evt: ev
-        })
-        const scrollNode = plant.FindScrollNode(ev.target)
-        if (scrollNode) {
-          // const targetXpath = readXPath(scrollNode);
-          const isListener = this.scrollList.find(ele => {
-            return ele === scrollNode
+      ev => {
+        mouseX = ev.clientX
+        mouseY = ev.clientY
+        debounceObserver(() => {
+          this.observer({
+            type: 'mouseover',
+            evt: ev
           })
-          if (!isListener) {
-            this.scrollList.push(scrollNode)
-            const domScroll = throttle(ev => {
-              // console.log('domScroll')
-              this.observer({
-                type: 'scroll',
-                evt: ev
-              })
-            }, delay)
-
-            scrollNode.addEventListener('scroll', domScroll, {
-              noShadow: true
+          const scrollNode = plant.FindScrollNode(ev.target)
+          if (scrollNode) {
+            // const targetXpath = readXPath(scrollNode);
+            const isListener = this.scrollList.find(ele => {
+              return ele === scrollNode
             })
-            // console.log('scrollNode', scrollNode)
+            if (!isListener) {
+              this.scrollList.push(scrollNode)
+              const domScroll = throttle(ev => {
+                // console.log('domScroll')
+                this.observer({
+                  type: 'scroll',
+                  evt: ev
+                })
+              }, delay)
 
-            // scrollNode.addEventListener('mouseenter', () => {
-            //   scrollNode.addEventListener('scroll', domScroll, {
-            //     noShadow: true
-            //   })
-            // }, {
-            //   noShadow: true
-            // })
+              scrollNode.addEventListener('scroll', domScroll, {
+                noShadow: true
+              })
+              // console.log('scrollNode', scrollNode)
 
-            // scrollNode.addEventListener('mouseleave ', () => {
-            //   scrollNode.removeEventListener('scroll', domScroll, {
-            //     noShadow: true
-            //   })
-            // }, {
-            //   noShadow: true
-            // })
+              // scrollNode.addEventListener('mouseenter', () => {
+              //   scrollNode.addEventListener('scroll', domScroll, {
+              //     noShadow: true
+              //   })
+              // }, {
+              //   noShadow: true
+              // })
+
+              // scrollNode.addEventListener('mouseleave ', () => {
+              //   scrollNode.removeEventListener('scroll', domScroll, {
+              //     noShadow: true
+              //   })
+              // }, {
+              //   noShadow: true
+              // })
+            }
           }
-        }
-      }, delay),
+        }, delay)
+      },
       {
         noShadow: true
       }
@@ -388,18 +395,17 @@ export default class Clairvoyant {
       ev => {
         const evt = ev
         const xpath = readXPath(ev.target)
-        let targetClientRect = null
-        if (evt instanceof TouchEvent) {
-          targetClientRect = ev.changedTouches[0].target.getBoundingClientRect()
-        } else if (evt instanceof MouseEvent) {
-          targetClientRect = ev.target.getBoundingClientRect()
-        }
+        const targetClientRect = ev.target.getBoundingClientRect()
+        const clientX = ev.target.clientX || mouseX
+        const clientY = ev.target.clientY || mouseY
         debounceObserver(() => {
           if (mousedownPoint.clientX === ev.clientX && mousedownPoint.clientY === ev.clientY && mousedownPoint.target === ev.target) {
             this.observer({
               type: 'click',
               evt,
               xpath,
+              clientX,
+              clientY,
               targetClientRect
             })
           } else {
@@ -420,17 +426,16 @@ export default class Clairvoyant {
       ev => {
         const evt = ev
         const xpath = readXPath(ev.target)
-        let targetClientRect = null
-        if (evt instanceof TouchEvent) {
-          targetClientRect = ev.changedTouches[0].target.getBoundingClientRect()
-        } else if (evt instanceof MouseEvent) {
-          targetClientRect = ev.target.getBoundingClientRect()
-        }
+        const targetClientRect = ev.target.getBoundingClientRect()
+        const clientX = ev.target.clientX || mouseX
+        const clientY = ev.target.clientY || mouseY
         debounceObserver(() => {
           this.observer({
             type: 'click',
             evt,
             xpath,
+            clientX,
+            clientY,
             targetClientRect
           })
         }, 10)
@@ -547,8 +552,24 @@ export default class Clairvoyant {
     )
   }
 
+  isBlocked (node) {
+    if (!node) {
+      return false
+    }
+    if (node.nodeType === node.ELEMENT_NODE && node.classList) {
+      return (
+        node.classList.contains(blockCls) ||
+        this.isBlocked(node.parentNode, blockCls)
+      )
+    }
+    return this.isBlocked(node.parentNode)
+  }
+
   observer (obj) {
-    const { evt, movement, xpath, targetClientRect } = obj
+    const { evt, movement, xpath, targetClientRect, clientX, clientY } = obj
+    if (evt && evt.target && this.isBlocked(evt.target)) {
+      return
+    }
     let param = {
       t: +new Date(),
       i: cookie.getCookie('ISEE_BIZ'),
@@ -584,11 +605,11 @@ export default class Clairvoyant {
         let xPosition = ''
         let yPosition = ''
         if (evt instanceof TouchEvent) {
-          xPosition = evt.changedTouches[0].clientX - (targetClientRect ? targetClientRect.left : evt.changedTouches[0].target.getBoundingClientRect().left)
-          yPosition = evt.changedTouches[0].clientY - (targetClientRect ? targetClientRect.top : evt.changedTouches[0].target.getBoundingClientRect().top)
+          xPosition = (clientX || evt.changedTouches[0].clientX) - (targetClientRect ? targetClientRect.left : evt.changedTouches[0].target.getBoundingClientRect().left)
+          yPosition = (clientY || evt.changedTouches[0].clientY) - (targetClientRect ? targetClientRect.top : evt.changedTouches[0].target.getBoundingClientRect().top)
         } else if (evt instanceof MouseEvent) {
-          xPosition = evt.clientX - (targetClientRect ? targetClientRect.left : evt.target.getBoundingClientRect().left)
-          yPosition = evt.clientY - (targetClientRect ? targetClientRect.top : evt.target.getBoundingClientRect().top)
+          xPosition = (clientX || evt.clientX) - (targetClientRect ? targetClientRect.left : evt.target.getBoundingClientRect().left)
+          yPosition = (clientY || evt.clientY) - (targetClientRect ? targetClientRect.top : evt.target.getBoundingClientRect().top)
         }
         point = `${eventType.SPLIT_DATA}${xPosition}-${yPosition}${eventType.SPLIT_DATA}`
         const link = plant.FindANode(evt.target, 'a')
