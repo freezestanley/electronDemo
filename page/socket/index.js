@@ -37,7 +37,7 @@ Wsocket.prototype.onerror = function (evt) {
 }
 Wsocket.prototype.send = function (param) {
   if (this.skt.readyState === 1) {
-    this.skt.send(JSON.stringify(param))
+    this.skt.send(param)
   } else {
     const paramJson = JSON.parse(param)
     // cached的数据超过了10000个，为避免占用内存太大，清空cache
