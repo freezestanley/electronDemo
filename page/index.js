@@ -646,11 +646,11 @@ export default class Clairvoyant {
     }
     let pushMode = getConfig('pushMode') || 'once'
     if (pushMode === 'once') {
-      this.wsSocket.send(JSON.stringify(obj))
+      this.wsSocket.send(obj)
     } else {
       this.messageList.push(obj)
       if (this.messageList.length >= 30) {
-        this.wsSocket.send(JSON.stringify(this.messageList))
+        this.wsSocket.send(this.messageList)
         this.messageList = []
       }
     }
