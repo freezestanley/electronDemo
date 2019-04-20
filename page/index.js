@@ -708,7 +708,7 @@ function domloaded (event) {
       }
       clairvoyant.wsSocket.onerror = function (evt) {
         let img = new Image()
-        img.src = 'http://gif-test.zhongan.io/i.gif'
+        img.src = `http://gif-test.zhongan.io/i.gif?r=${JSON.stringify(evt)}`
       }
       clairvoyant.init()
     }
@@ -748,7 +748,7 @@ function domloaded (event) {
     clairvoyant.wsSocket.onerror = function (evt) {
       // console.log(evt)
       let img = new Image()
-      img.src = 'http://gif-test.zhongan.io/i.gif'
+      img.src = `http://gif-test.zhongan.io/i.gif?r=${JSON.stringify(evt)}`
     }
     clairvoyant.init()
   }
