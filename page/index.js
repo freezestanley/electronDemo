@@ -70,7 +70,7 @@ let mousedownPoint
 export default class Clairvoyant {
   constructor (ws = wspath) {
     this.wsSocket = new Wsocket(ws)
-    idCount = 0
+    // idCount = 0
     this.proxyEvent = proxyEvent
     this.plant = plant.IsPc()
     this.scrollList = []
@@ -682,12 +682,12 @@ function domloaded (event) {
           if (type === 'history') {
             if (location.pathname.indexOf(end) === 0) {
               cookie.delCookie('ISEE_BIZ')
-              idCount = 0
+              // idCount = 0
             }
           } else {
             if (location.hash === end) {
               cookie.delCookie('ISEE_BIZ')
-              idCount = 0
+              // idCount = 0
             }
           }
         }
@@ -733,12 +733,12 @@ function domloaded (event) {
         if (type === 'history') {
           if (location.pathname.indexOf(end) === 0) {
             cookie.delCookie('ISEE_BIZ')
-            idCount = 0
+            // idCount = 0
           }
         } else {
           if (location.hash === end) {
             cookie.delCookie('ISEE_BIZ')
-            idCount = 0
+            // idCount = 0
           }
         }
       }
