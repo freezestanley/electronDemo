@@ -70,12 +70,14 @@ proxyEvent.callback = function (ev) {
 }
 let mousedownPoint
 const blockCls = getConfig('blockClass') || 'isee-block'
+let idCount = 0
 
 export default class Clairvoyant {
   constructor (ws = wspath) {
     if (!ISEE_RE) {
       this.wsSocket = new Wsocket(ws)
     }
+    idCount = 0
     this.proxyEvent = proxyEvent
     this.plant = plant.IsPc()
     this.scrollList = []
@@ -722,6 +724,7 @@ export default class Clairvoyant {
     }
     let pushMode = getConfig('pushMode') || 'once'
     if (pushMode === 'once') {
+      obj['id'] = idCount++
       this.wsSocket.send(obj)
     } else {
       this.messageList.push(obj)
@@ -759,10 +762,12 @@ function domloaded (event) {
           if (type === 'history') {
             if (location.pathname.indexOf(end) === 0) {
               cookie.delCookie('ISEE_BIZ')
+              idCount = 0
             }
           } else {
             if (location.hash === end) {
               cookie.delCookie('ISEE_BIZ')
+              idCount = 0
             }
           }
         }
@@ -812,10 +817,12 @@ function domloaded (event) {
         if (type === 'history') {
           if (location.pathname.indexOf(end) === 0) {
             cookie.delCookie('ISEE_BIZ')
+            idCount = 0
           }
         } else {
           if (location.hash === end) {
             cookie.delCookie('ISEE_BIZ')
+            idCount = 0
           }
         }
       }
