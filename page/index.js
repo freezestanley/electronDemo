@@ -66,8 +66,7 @@ proxyEvent.callback = function (ev) {
   process.env.NODE_ENV === 'production' && console.log(`===${ev.type}===${ev.target}`)
 }
 let mousedownPoint
-let idCount = 0
-
+// let idCount = 0
 export default class Clairvoyant {
   constructor (ws = wspath) {
     this.wsSocket = new Wsocket(ws)
