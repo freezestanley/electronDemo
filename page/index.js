@@ -647,7 +647,7 @@ export default class Clairvoyant {
       return
     }
     let pushMode = getConfig('pushMode') || 'once'
-    obj['id'] = idCount++
+    // obj['id'] = idCount++
     if (pushMode === 'once') {
       this.wsSocket.send(obj)
     } else {
