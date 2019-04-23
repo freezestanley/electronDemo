@@ -54,20 +54,30 @@ export const getDelta = style => {
 
 export const setMask = (xpath, config = true) => {
   const ele = document.evaluate(xpath, document).iterateNext()
-  const { top, left, bottom, right, width, height } = ele.getBoundingClientRect()
+  const { left, right, width, height } = ele.getBoundingClientRect()
   const mask = document.getElementsByClassName('isee-selenium-mask')
+  const getElementTop = (e) => {
+    var top = e.offsetTop
+    var cur = e.offsetParent
+    while (cur != null) {
+      top += cur.offsetTop
+      cur = cur.offsetParent
+    }
+    return top
+  }
+  const top = getElementTop(ele)
   const appendMask = (direct) => {
     const maskElement = document.createElement('div')
     let style = `position: absolute;background: none;z-index:998;`
     switch (direct) {
       case 'top':
-        style += `width:100%;height:${top}px;top:0;left:0;`
+        style += `width:100%;height:${top};top:0;left:0;`
         break
       case 'left':
         style += `width:${left}px;height:${height}px;top:${top}px;left:0;`
         break
       case 'bottom':
-        style += `width:100%;height:${bottom}px;top:${top + height}px;left:0;`
+        style += `width:100%;top:${top + height}px;bottom:0;left:0;`
         break
       case 'right':
         style += `width:${right}px;height:${height}px;top:${top}px;left:${left + width}px;`
