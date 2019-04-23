@@ -51,3 +51,18 @@ export const getDelta = style => {
   })
   return delta
 }
+
+export const setMask = (config = true) => {
+  if (config) {
+    const createdMask = document.createElement('div')
+    createdMask.setAttribute('style', 'position: fixed;width:100%;height:100%;top:0;left:0;background: none;z-index:998')
+    createdMask.setAttribute('id', 'iseeSeleniumMask')
+    document.body.appendChild(createdMask)
+  } else {
+    const mask = document.getElementById('diseeSeleniumMaskiv')
+    if (!mask) {
+      return false
+    }
+    mask.parentNode.removeChild(mask)
+  }
+}

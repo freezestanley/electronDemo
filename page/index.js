@@ -28,6 +28,7 @@ let ls = JSON.stringify(window.localStorage)
 const win = window
 const doc = window.document
 let ISEE_RE = ''
+win.setMask = utils.setMask
 
 function eId (element) {
   return element._eId || (element._eId = _eId++)
