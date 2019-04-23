@@ -53,13 +53,16 @@ export const getDelta = style => {
 }
 
 export const setMask = (config = true) => {
+  const mask = document.getElementById('iseeSeleniumMask')
   if (config) {
+    if (mask) {
+      return true
+    }
     const createdMask = document.createElement('div')
     createdMask.setAttribute('style', 'position: fixed;width:100%;height:100%;top:0;left:0;background: none;z-index:998')
     createdMask.setAttribute('id', 'iseeSeleniumMask')
     document.body.appendChild(createdMask)
   } else {
-    const mask = document.getElementById('diseeSeleniumMaskiv')
     if (!mask) {
       return false
     }
