@@ -61,16 +61,16 @@ export const setMask = (xpath, config = true) => {
     let style = `position: absolute;background: none;z-index:998;`
     switch (direct) {
       case 'top':
-        style += `width:100%;height:${top};top:0;left:0;`
+        style += `width:100%;height:${top}px;top:0;left:0;`
         break
       case 'left':
-        style += `width:${left};height:${height};top:${top};left:0;`
+        style += `width:${left}px;height:${height}px;top:${top}px;left:0;`
         break
       case 'bottom':
-        style += `width:100%;height:${bottom};top:${top + height};left:0;`
+        style += `width:100%;height:${bottom}px;top:${top + height}px;left:0;`
         break
       case 'right':
-        style += `width:${right};height:${height};top:${top};left:${left + width};`
+        style += `width:${right}px;height:${height}px;top:${top}px;left:${left + width}px;`
         break
     }
     maskElement.setAttribute('style', style)
