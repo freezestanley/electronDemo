@@ -52,20 +52,44 @@ export const getDelta = style => {
   return delta
 }
 
-export const setMask = (config = true) => {
-  const mask = document.getElementById('iseeSeleniumMask')
+export const setMask = (xpath, config = true) => {
+  const ele = document.evaluate(xpath, document).iterateNext()
+  const { top, left, bottom, right, width, height } = ele.getBoundingClientRect()
+  const mask = document.getElementsByClassName('isee-selenium-mask')
+  const appendMask = (direct) => {
+    const maskElement = document.createElement('div')
+    let style = `position: absolute;background: none;z-index:998`
+    switch (direct) {
+      case 'top':
+        style += `width:100%;height:${top};top:0;left:0;`
+        break
+      case 'left':
+        style += `width:${left};height:${height};top:${top};left:0;`
+        break
+      case 'bottom':
+        style += `width:100%;height:${bottom};top:${top + height};left:0;`
+        break
+      case 'right':
+        style += `width:${right};height:${height};top:${top};left:${left + width};`
+        break
+    }
+    maskElement.setAttribute('style', style)
+    maskElement.setAttribute('class', 'isee-selenium-mask')
+    document.body.appendChild(maskElement)
+  }
   if (config) {
-    if (mask) {
+    if (mask && mask.length) {
       return true
     }
-    const createdMask = document.createElement('div')
-    createdMask.setAttribute('style', 'position: fixed;width:100%;height:100%;top:0;left:0;background: none;z-index:998')
-    createdMask.setAttribute('id', 'iseeSeleniumMask')
-    document.body.appendChild(createdMask)
+    ['top', 'left', 'bottom', 'right'].forEach(item => {
+      appendMask(item)
+    })
   } else {
-    if (!mask) {
+    if (!mask || !mask.length) {
       return false
     }
-    mask.parentNode.removeChild(mask)
+    mask.forEach(m => {
+      m.parentNode.removeChild(m)
+    })
   }
 }
