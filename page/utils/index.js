@@ -59,25 +59,26 @@ export const setMask = (xpath, config = true) => {
   const getElementTop = (e) => {
     var top = e.offsetTop
     var cur = e.offsetParent
-    while (cur != null) {
+    while (cur) {
       top += cur.offsetTop
       cur = cur.offsetParent
     }
     return top
   }
   const top = getElementTop(ele)
+  const bodyHeight = document.body.scrollHeight
   const appendMask = (direct) => {
     const maskElement = document.createElement('div')
     let style = `position: absolute;background: none;z-index:998;`
     switch (direct) {
       case 'top':
-        style += `width:100%;height:${top};top:0;left:0;`
+        style += `width:100%;height:${top}px;top:0;left:0;`
         break
       case 'left':
         style += `width:${left}px;height:${height}px;top:${top}px;left:0;`
         break
       case 'bottom':
-        style += `width:100%;top:${top + height}px;bottom:0;left:0;`
+        style += `width:100%;height:${bodyHeight - top - height}px;top:${top + height}px;left:0;`
         break
       case 'right':
         style += `width:${right}px;height:${height}px;top:${top}px;left:${left + width}px;`
@@ -98,7 +99,7 @@ export const setMask = (xpath, config = true) => {
     if (!mask || !mask.length) {
       return false
     }
-    mask.forEach(m => {
+    [...mask].forEach(m => {
       m.parentNode.removeChild(m)
     })
   }
