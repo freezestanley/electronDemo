@@ -58,7 +58,7 @@ export const setMask = (xpath, config = true) => {
   const mask = document.getElementsByClassName('isee-selenium-mask')
   const appendMask = (direct) => {
     const maskElement = document.createElement('div')
-    let style = `position: absolute;background: none;z-index:998`
+    let style = `position: absolute;background: none;z-index:998;`
     switch (direct) {
       case 'top':
         style += `width:100%;height:${top};top:0;left:0;`
