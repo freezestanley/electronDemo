@@ -28,6 +28,7 @@ let ls = JSON.stringify(window.localStorage)
 const win = window
 const doc = window.document
 let ISEE_RE = ''
+let ISEE_TEST = ''
 win.setMask = utils.setMask
 
 function eId (element) {
@@ -75,7 +76,7 @@ let idCount = 0
 
 export default class Clairvoyant {
   constructor (ws = wspath) {
-    if (!ISEE_RE) {
+    if (!ISEE_RE && !ISEE_TEST) {
       this.wsSocket = new Wsocket(ws)
     }
     idCount = 0
@@ -693,12 +694,12 @@ export default class Clairvoyant {
       popstate: function () {
         event = eventType.POP_STATE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        !ISEE_RE && _self.wsSocket.send(param)
+        !ISEE_RE && !ISEE_TEST && _self.wsSocket.send(param)
       },
       hashchange: function () {
         event = eventType.HASH_CHANGE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        !ISEE_RE && _self.wsSocket.send(param)
+        !ISEE_RE && !ISEE_TEST && _self.wsSocket.send(param)
       },
       inputBlur: function () {
         event = eventType.INPUT_BLUR
@@ -714,7 +715,7 @@ export default class Clairvoyant {
     target[obj.type]()
   }
   pushData (obj, eventType, time = 0) {
-    if (ISEE_RE) {
+    if (ISEE_RE || ISEE_TEST) {
       if (eventType) {
         window.sessionStorage.setItem(`iseeAction-${eventType}`, JSON.stringify(obj))
       }
@@ -740,9 +741,10 @@ export default class Clairvoyant {
 function domloaded (event) {
   var iseebiz = cookie.getCookie('ISEE_BIZ')
   ISEE_RE = cookie.getCookie('ISEE_RE') || ''
+  ISEE_TEST = cookie.getCookie('ISEE_TEST') || ''
   if (process.env.NODE_ENV != 'development') {
     const clairvoyant = (win.clairvoyant = new Clairvoyant())
-    if (ISEE_RE) {
+    if (ISEE_RE || ISEE_TEST) {
       clairvoyant.init()
       return
     }
@@ -798,7 +800,7 @@ function domloaded (event) {
     }
   } else {
     const clairvoyant = (win.clairvoyant = new Clairvoyant())
-    if (ISEE_RE) {
+    if (ISEE_RE || ISEE_TEST) {
       clairvoyant.init()
       return
     }

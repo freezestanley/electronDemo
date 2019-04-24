@@ -54,19 +54,31 @@ export const getDelta = style => {
 
 export const setMask = (xpath, config = true) => {
   const ele = document.evaluate(xpath, document).iterateNext()
-  const { left, right, width, height } = ele.getBoundingClientRect()
+  const { top, left, right, width, height, bottom } = ele.getBoundingClientRect()
   const mask = document.getElementsByClassName('isee-selenium-mask')
-  const getElementTop = (e) => {
-    var top = e.offsetTop
-    var cur = e.offsetParent
-    while (cur) {
-      top += cur.offsetTop
-      cur = cur.offsetParent
-    }
-    return top
-  }
-  const top = getElementTop(ele)
-  const bodyHeight = document.body.scrollHeight
+  // const getTranslate = (element) => {
+  //   var transformMatrix = element.style['WebkitTransform'] || getComputedStyle(element, '').getPropertyValue('-webkit-transform') || element.style['transform'] || getComputedStyle(element, '').getPropertyValue('transform')
+
+  //   var matrix = transformMatrix.match(/-?[0-9]+\.?[0-9]*/g)
+  //   if (!matrix) {
+  //     return [0, 0]
+  //   }
+  //   var x = parseInt(matrix[1] || matrix[4] || 0) // translate x
+  //   var y = parseInt(matrix[2] || matrix[5] || 0) // translate y
+  //   return [x, y]
+  // }
+  // const getElementTop = (e) => {
+  //   var top = e.offsetTop
+  //   var cur = e.offsetParent
+  //   while (cur) {
+  //     var translate = getTranslate(cur)
+  //     top += (cur.offsetTop + translate[1])
+  //     cur = cur.offsetParent
+  //   }
+  //   return top
+  // }
+  // const top = getElementTop(ele)
+  // const bodyHeight = document.body.scrollHeight
   const appendMask = (direct) => {
     const maskElement = document.createElement('div')
     let style = `position: absolute;background: none;z-index:998;`
@@ -78,7 +90,7 @@ export const setMask = (xpath, config = true) => {
         style += `width:${left}px;height:${height}px;top:${top}px;left:0;`
         break
       case 'bottom':
-        style += `width:100%;height:${bodyHeight - top - height}px;top:${top + height}px;left:0;`
+        style += `width:100%;height:${bottom}px;top:${top + height}px;left:0;`
         break
       case 'right':
         style += `width:${right}px;height:${height}px;top:${top}px;left:${left + width}px;`
