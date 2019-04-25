@@ -117,6 +117,25 @@ export const setMask = (xpath, config = true) => {
   }
 }
 
+export const text2Img = (text, fontsize, fontcolor) => {
+  var canvas = document.createElement('canvas')
+  // 小于32字加1  小于60字加2  小于80字加4    小于100字加6
+  let $buHeight = 0
+  if (fontsize <= 32) { $buHeight = 1 } else if (fontsize > 32 && fontsize <= 60) { $buHeight = 2 } else if (fontsize > 60 && fontsize <= 80) { $buHeight = 4 } else if (fontsize > 80 && fontsize <= 100) { $buHeight = 6 } else if (fontsize > 100) { $buHeight = 10 }
+  // 对于g j 等有时会有遮挡，这里增加一些高度
+  canvas.height = fontsize + $buHeight
+  var context = canvas.getContext('2d')
+  canvas.width = context.measureText(text).width
+  context.clearRect(0, 0, canvas.width, canvas.height)
+  context.fillStyle = fontcolor
+  context.font = fontsize + 'px Arial'
+  context.textBaseline = 'middle'
+  context.fillText(text, 0, fontsize / 2)
+
+  var dataUrl = canvas.toDataURL('image/png')// 注意这里背景透明的话，需要使用png
+  return dataUrl
+}
+
 export const setWatermark = (content, style) => {
   if (!content) {
     console.warn('请传入水印内容')
@@ -124,7 +143,7 @@ export const setWatermark = (content, style) => {
   const element = document.createElement('div')
   element.innerHTML = content
   const orginStyle = `position: fixed;background: none; z-index:998; top:10px; left:10px; font-size:26px; opacity: 0.5; pointer-events: none;`
-  element.setAttribute('style', style ? orginStyle + style : orginStyle)
+  element.setAttribute('style', style || orginStyle)
   const findTag = document.getElementsByTagName('iseewrap')
   let wrap = null
   if (findTag.length) {
