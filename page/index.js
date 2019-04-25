@@ -30,6 +30,7 @@ const doc = window.document
 let ISEE_RE = ''
 let ISEE_TEST = ''
 win.setMask = utils.setMask
+win.setWatermark = utils.setWatermark
 
 function eId (element) {
   return element._eId || (element._eId = _eId++)

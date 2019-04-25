@@ -81,7 +81,7 @@ export const setMask = (xpath, config = true) => {
   // const bodyHeight = document.body.scrollHeight
   const appendMask = (direct) => {
     const maskElement = document.createElement('div')
-    let style = `position: absolute;background: none;z-index:998;`
+    let style = `position: fixed;background: none;z-index:998;`
     switch (direct) {
       case 'top':
         style += `width:100%;height:${top}px;top:0;left:0;`
@@ -115,4 +115,15 @@ export const setMask = (xpath, config = true) => {
       m.parentNode.removeChild(m)
     })
   }
+}
+
+export const setWatermark = (content, style) => {
+  if (!content) {
+    console.warn('请传入水印内容')
+  }
+  const element = document.createElement('div')
+  element.innerHTML = content
+  const orginStyle = `position: fixed;background: none; z-index:998; top:10px; left:10px; font-size:26px; opacity: 0.5; pointer-events: none;`
+  element.setAttribute('style', style ? orginStyle + style : orginStyle)
+  document.body.appendChild(element)
 }
