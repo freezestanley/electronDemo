@@ -121,10 +121,17 @@ export const setWatermark = (content, style) => {
   if (!content) {
     console.warn('请传入水印内容')
   }
-  const wrap = document.createElement('iseewrap')
   const element = document.createElement('div')
   element.innerHTML = content
   const orginStyle = `position: fixed;background: none; z-index:998; top:10px; left:10px; font-size:26px; opacity: 0.5; pointer-events: none;`
   element.setAttribute('style', style ? orginStyle + style : orginStyle)
-  document.body.appendChild(wrap.appendChild(element))
+  const findTag = document.getElementsByTagName('iseewrap')
+  let wrap = null
+  if (findTag.length) {
+    wrap = findTag[0]
+  } else {
+    wrap = document.createElement('iseewrap')
+    document.body.appendChild(wrap)
+  }
+  wrap.innerHTML = element.outerHTML
 }
