@@ -74,7 +74,7 @@ export default class Finger {
         this.finger.start(ev)
         this._startPoint = ev
         // 临时解决办法，根据canvas是否含有touchmove事件来判断是否需要发送paint事件（是否为签名）
-        if (ev.target.tagName.toLowerCase() === 'canvas' && ev.target.__eventOrginList && ev.target.__eventOrginList.touchmove) {
+        if (ev.target.tagName.toLowerCase() === 'canvas' && (ev.target.__eventOrginList && ev.target.__eventOrginList.touchmove.length > 0)) {
           const canvasEle = ev.changedTouches[0].target
           const x = ev.changedTouches[0].clientX - canvasEle.getBoundingClientRect().left + ''
           const y = ev.changedTouches[0].clientY - canvasEle.getBoundingClientRect().top + ''
