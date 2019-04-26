@@ -51,3 +51,106 @@ export const getDelta = style => {
   })
   return delta
 }
+
+export const setMask = (xpath, config = true) => {
+  const ele = document.evaluate(xpath, document).iterateNext()
+  const { top, left, right, width, height, bottom } = ele.getBoundingClientRect()
+  const mask = document.getElementsByClassName('isee-selenium-mask')
+  // const getTranslate = (element) => {
+  //   var transformMatrix = element.style['WebkitTransform'] || getComputedStyle(element, '').getPropertyValue('-webkit-transform') || element.style['transform'] || getComputedStyle(element, '').getPropertyValue('transform')
+
+  //   var matrix = transformMatrix.match(/-?[0-9]+\.?[0-9]*/g)
+  //   if (!matrix) {
+  //     return [0, 0]
+  //   }
+  //   var x = parseInt(matrix[1] || matrix[4] || 0) // translate x
+  //   var y = parseInt(matrix[2] || matrix[5] || 0) // translate y
+  //   return [x, y]
+  // }
+  // const getElementTop = (e) => {
+  //   var top = e.offsetTop
+  //   var cur = e.offsetParent
+  //   while (cur) {
+  //     var translate = getTranslate(cur)
+  //     top += (cur.offsetTop + translate[1])
+  //     cur = cur.offsetParent
+  //   }
+  //   return top
+  // }
+  // const top = getElementTop(ele)
+  // const bodyHeight = document.body.scrollHeight
+  const appendMask = (direct) => {
+    const maskElement = document.createElement('div')
+    let style = `position: fixed;background: none;z-index:998;`
+    switch (direct) {
+      case 'top':
+        style += `width:100%;height:${top}px;top:0;left:0;`
+        break
+      case 'left':
+        style += `width:${left}px;height:${height}px;top:${top}px;left:0;`
+        break
+      case 'bottom':
+        style += `width:100%;height:${bottom}px;top:${top + height}px;left:0;`
+        break
+      case 'right':
+        style += `width:${right}px;height:${height}px;top:${top}px;left:${left + width}px;`
+        break
+    }
+    maskElement.setAttribute('style', style)
+    maskElement.setAttribute('class', 'isee-selenium-mask')
+    document.body.appendChild(maskElement)
+  }
+  if (config) {
+    if (mask && mask.length) {
+      return true
+    }
+    ['top', 'left', 'bottom', 'right'].forEach(item => {
+      appendMask(item)
+    })
+  } else {
+    if (!mask || !mask.length) {
+      return false
+    }
+    [...mask].forEach(m => {
+      m.parentNode.removeChild(m)
+    })
+  }
+}
+
+export const text2Img = (text, fontsize, fontcolor) => {
+  var canvas = document.createElement('canvas')
+  // 小于32字加1  小于60字加2  小于80字加4    小于100字加6
+  let $buHeight = 0
+  if (fontsize <= 32) { $buHeight = 1 } else if (fontsize > 32 && fontsize <= 60) { $buHeight = 2 } else if (fontsize > 60 && fontsize <= 80) { $buHeight = 4 } else if (fontsize > 80 && fontsize <= 100) { $buHeight = 6 } else if (fontsize > 100) { $buHeight = 10 }
+  // 对于g j 等有时会有遮挡，这里增加一些高度
+  canvas.height = fontsize + $buHeight
+  var context = canvas.getContext('2d')
+  canvas.width = context.measureText(text).width
+  context.clearRect(0, 0, canvas.width, canvas.height)
+  context.fillStyle = fontcolor
+  context.font = fontsize + 'px Arial'
+  context.textBaseline = 'middle'
+  context.fillText(text, 0, fontsize / 2)
+
+  var dataUrl = canvas.toDataURL('image/png')// 注意这里背景透明的话，需要使用png
+  return dataUrl
+}
+
+export const setWatermark = (content, style) => {
+  if (!content) {
+    console.warn('请传入水印内容')
+  }
+  const element = document.createElement('div')
+  element.innerHTML = content
+  const orginStyle = `position: fixed;background: none; z-index:998; top:10px; left:10px; font-size:26px; opacity: 0.5; pointer-events: none;`
+  element.setAttribute('style', style || orginStyle)
+  const findTag = document.getElementsByTagName('iseewrap')
+  let wrap = null
+  if (findTag.length) {
+    wrap = findTag[0]
+  } else {
+    wrap = document.createElement('iseewrap')
+    document.body.appendChild(wrap)
+  }
+  wrap.innerHTML = element.outerHTML
+}
