@@ -1,25 +1,10 @@
-/*
- * options
- *  - callback  守卫
- *  - includeWindows default false    false / true
- *  - mode  once  开始前只执行一次  every 每次都执行
- *    once  noShadow 当列队内都保持不要守卫则守卫不执行
- *    every noShadow 当前事件被执行但是守卫不会被执行
- *  - getEventListenerList(type) 获取事件列队
- */
-/**
- * Object.getOwnPropertyDescriptor(window, 'onLineCallBack')
- */
 export default class proxyEvent {
   constructor (options = null) {
-    // let _self = this
     this._callback = options ? options.callback || null : null
-    this._includeWindows = options ? options.includeWindows || true : true
-    if (this._includeWindows) {
-      this.initEventproxy(window)
-    }
-    this.initEventproxy(HTMLElement.prototype)
-    this.initEventproxy(document)
+    let node = [HTMLElement.prototype, ...options.node]
+    node.map((e) => {
+      this.initEventproxy(e)
+    }, this)
   }
 
   get callback () {

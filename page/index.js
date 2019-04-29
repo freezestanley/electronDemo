@@ -7,9 +7,10 @@ import DomObserver from './observer'
 import Finger from './finger'
 import Cookie from './cookie'
 import { CreateXMLHttp } from './xmlhttprequest'
-import ProxyEvent from './proxyEvent'
+// import ProxyEvent from './proxyEvent'
 import Checkhover from './checkhover'
 import * as utils from './utils'
+import { ProxyEvent, taskQuene } from 'event-shadow'
 
 /**
  *
@@ -22,7 +23,8 @@ import * as utils from './utils'
  * path         cookie path     default  /
  * exp          cookie 过期事件  default 60 * 60 * 1000
  */
-
+console.log(ProxyEvent)
+console.log(taskQuene)
 let _eId = 1
 let ls = JSON.stringify(window.localStorage)
 const win = window
@@ -64,10 +66,15 @@ const lazydomain = {
 }
 const lazyPath = lazydomain[process.env.NODE_ENV]
 
-const proxyEvent = new ProxyEvent()
-proxyEvent.callback = function (ev) {
-  process.env.NODE_ENV === 'production' && console.log(`===${ev.type}===${ev.target}`)
+const proxyEvent = new ProxyEvent({ node: [ window, document ] })
+proxyEvent.addBeforeGuard = function (ev, next) {
+  // process.env.NODE_ENV === 'production' && console.log(`===${ev.type}===${ev.target}`)
+  console.log('proxy add before guard')
+  console.log(this)
+  console.log(ev)
+  next()
 }
+
 let mousedownPoint
 const blockCls = getConfig('blockClass') || 'isee-block'
 let idCount = 0

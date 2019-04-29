@@ -16,17 +16,46 @@
 </body>
 
 <script>
-  document.addEventListener('click', {handleEvent: function (e) {
-    console.log(this)
-  }})
-  document.addEventListener('click', {handleEvent: (e) => {
-    console.log(this)
-  }})
-  document.addEventListener('click', function (e) {
-    console.log(this)
-  })
-  document.addEventListener('click', (e) => {
-    console.log(this)
-  })
+  // document.addBeforeGuard(function (evt, next) {
+  //   console.log('this is add Before Guard')
+  //   console.log(evt)
+  //   console.log(this)
+  //   next()
+  // })
+  // document.addAfterGuard(function (evt, next) {
+  //   console.log('this is add After Guard')
+  //   console.log(evt)
+  //   console.log(this)
+  //   next()
+  // })
+  // document.firstGuard('click', function (evt) {
+  //   console.log('this is firstGuard')
+  //   console.log(evt)
+  //   console.log(this)
+  // })
+  // document.addEventListener('click', {handleEvent: (e) => {
+  //   console.log(this)
+  // }, name: "a2"})
+  // document.addEventListener('click', {handleEvent: (e) => {
+  //   console.log(this)
+  // }})
+  // document.addEventListener('click', function (e) {
+  //   console.log(this)
+  // })
+  
+  var b = {
+    init: function (){
+      document.onclick = (e) => {
+        console.log(this)
+        document.onclick = null
+      }
+      var a = function(e){
+        console.log(this)
+        document.removeEventListener('click', a)
+      }
+      document.addEventListener('click', a)
+    }
+  }
+  b.init()
 </script>
 </html>

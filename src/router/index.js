@@ -49,6 +49,10 @@ router.get('/admin', async (ctx, next) => {
   await ctx.render('index')
   await next()
 })
+router.get('/bb2', async (ctx, next) => {
+  await ctx.render('bb2')
+  await next()
+})
 router.get('/bb', async (ctx, next) => {
   await ctx.render('bb')
   await next()
