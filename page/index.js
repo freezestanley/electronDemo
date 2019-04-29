@@ -29,6 +29,7 @@ const win = window
 const doc = window.document
 let ISEE_RE = ''
 let ISEE_TEST = ''
+let isWsOpened = false
 win.setMask = utils.setMask
 win.setWatermark = utils.setWatermark
 
@@ -333,6 +334,9 @@ export default class Clairvoyant {
     doc.body.addEventListener(
       'mouseover',
       ev => {
+        if (!isWsOpened) {
+          return
+        }
         mouseX = ev.clientX
         mouseY = ev.clientY
         const t = Date.now()
@@ -574,11 +578,7 @@ export default class Clairvoyant {
   }
 
   observer (obj) {
-    const { evt, type, movement, xpath, targetClientRect, clientX, clientY, t } = obj
-    // domContentLoad之前除了sendLocalStorage其他事件都不应该发送
-    if (type !== 'sendLocalStorage' && document.readyState === 'loading') {
-      return
-    }
+    const { evt, movement, xpath, targetClientRect, clientX, clientY, t } = obj
     if (evt && evt.target && this.isBlocked(evt.target)) {
       return
     }
@@ -759,6 +759,7 @@ function domloaded (event) {
     if (iseebiz) {
       clairvoyant.wsSocket.onopen = function (evt) {
         console.log('Connection start.')
+        isWsOpened = true
         clairvoyant.observer({
           type: 'openpage',
           evt: evt
@@ -798,6 +799,7 @@ function domloaded (event) {
       }
       clairvoyant.wsSocket.onclose = function (evt) {
         // console.log('Connection closed.')
+        isWsOpened = false
       }
       clairvoyant.wsSocket.onerror = function (evt) {
         // console.log(evt)
