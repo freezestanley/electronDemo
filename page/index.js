@@ -574,7 +574,11 @@ export default class Clairvoyant {
   }
 
   observer (obj) {
-    const { evt, movement, xpath, targetClientRect, clientX, clientY, t } = obj
+    const { evt, type, movement, xpath, targetClientRect, clientX, clientY, t } = obj
+    // domContentLoad之前除了sendLocalStorage其他事件都不应该发送
+    if (type !== 'sendLocalStorage' && document.readyState === 'loading') {
+      return
+    }
     if (evt && evt.target && this.isBlocked(evt.target)) {
       return
     }
