@@ -7,7 +7,7 @@ import DomObserver from './observer'
 import Finger from './finger'
 import Cookie from './cookie'
 import { CreateXMLHttp } from './xmlhttprequest'
-import ProxyEvent from './proxyEvent'
+import { ProxyEvent } from 'event-shadow'
 import Checkhover from './checkhover'
 import * as utils from './utils'
 
@@ -68,8 +68,8 @@ const lazydomain = {
 const lazyPath = lazydomain[process.env.NODE_ENV]
 
 const proxyEvent = new ProxyEvent()
-proxyEvent.callback = function (ev) {
-  process.env.NODE_ENV === 'production' && console.log(`===${ev.type}===${ev.target}`)
+proxyEvent.addAfterGuard = function (ev) {
+  process.env.NODE_ENV != 'production' && console.log(`=${ev.type}===${ev.target}`)
 }
 let mousedownPoint
 const blockCls = getConfig('blockClass') || 'isee-block'
