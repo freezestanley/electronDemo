@@ -19,11 +19,11 @@ function Wsocket (url) {
   // 用来存储socket意外断开后页面操作产生的数据对应的标识id
   this.cachedDataIdList = []
   this.skt.onopen = ev => {
-    console.log('open')
+    // console.log('open')
     this.onopen(ev)
   }
   this.skt.onmessage = ev => {
-    console.log('message')
+    // console.log('message')
     this.onmessage(ev)
   }
   this.skt.onclose = this.onclose
@@ -70,7 +70,7 @@ Wsocket.prototype.flush = function () {
 Wsocket.prototype.reconnect = function (param) {
   this.skt = wsocket(this.url)
   this.skt.onopen = ev => {
-    console.log('reopen')
+    // console.log('reopen')
     // this.skt.send(param)
     this.flush()
   }
