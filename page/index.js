@@ -69,7 +69,7 @@ const lazyPath = lazydomain[process.env.NODE_ENV]
 
 const proxyEvent = new ProxyEvent()
 proxyEvent.addAfterGuard = function (ev) {
-  process.env.NODE_ENV != 'production' && console.log(`=${ev.type}===${ev.target}`)
+  // process.env.NODE_ENV != 'production' && console.log(`=${ev.type}===${ev.target}`)
 }
 let mousedownPoint
 const blockCls = getConfig('blockClass') || 'isee-block'
