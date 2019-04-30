@@ -215,7 +215,7 @@ export default class Clairvoyant {
     win.addEventListener(
       'wheel',
       debounce(ev => {
-        console.log(ev)
+        // console.log(ev)
         this.observer({
           type: 'scroll',
           evt: ev
@@ -247,7 +247,7 @@ export default class Clairvoyant {
       for (let mutation of mutationsList) {
         const nodeName = mutation.target.nodeName.toLowerCase()
         if (nodeName === 'body' && mutation.type == 'childList') {
-          console.log(mutation)
+          // console.log(mutation)
           debounce(
             () => {
               this.observer({
@@ -751,7 +751,7 @@ function domloaded (event) {
     }
     if (iseebiz) {
       clairvoyant.wsSocket.onopen = function (evt) {
-        console.log('Connection start.')
+        // console.log('Connection start.')
         clairvoyant.observer({
           type: 'openpage',
           evt: evt
