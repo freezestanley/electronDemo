@@ -1,78 +1,98 @@
+const ISEE_MSG_POOL = 'ISEE_MSG_POOL'
+const BATCH_COUNT = 10
+
 function wsocket (urlValue) {
   if (window.WebSocket) return new window.WebSocket(urlValue)
   // eslint-disable-next-line no-undef
   if (window.MozWebSocket) return new MozWebSocket(urlValue)
   return false
 }
-
-// 用来对socket断开后未发送出去的数据加上标记
-let __dataId = 0
-function identifyData (param) {
-  return param.__dataId || (param.__dataId = __dataId++)
-}
+const noop = function () {}
 
 function Wsocket (url) {
   this.url = url
   this.skt = wsocket(url)
-  // 用来存储socket意外断开后页面操作产生的数据
-  this.dataPool = []
-  // 用来存储socket意外断开后页面操作产生的数据对应的标识id
-  this.cachedDataIdList = []
+  this.dataPool = JSON.parse(localStorage.getItem(ISEE_MSG_POOL) || '[]')
+  this.raf = 0
   this.skt.onopen = ev => {
     // console.log('open')
     this.onopen(ev)
+    this.doSend()
   }
   this.skt.onmessage = ev => {
     // console.log('message')
     this.onmessage(ev)
+    this.onmessageCb()
   }
   this.skt.onclose = this.onclose
   this.skt.onerror = this.onerror
+  this.onmessageCb = noop
+  this.oncloseCb = noop
+  this.onerrorCb = noop
 }
 Wsocket.prototype.onopen = function (evt) {}
-Wsocket.prototype.onmessage = function (evt) {}
-Wsocket.prototype.onclose = function (evt) {}
+Wsocket.prototype.onmessage = function (evt) {
+  const { data } = evt
+  console.log('-----data', data)
+  const resData = (data && data.split(',')) || []
+  const msgList = JSON.parse(localStorage.getItem(ISEE_MSG_POOL) || '[]')
+  resData.forEach(item => {
+    const targetIdx = msgList.findIndex(msg => `${msg.id}` === item)
+    console.log('----targetIdx', targetIdx)
+    if (targetIdx >= 0) {
+      msgList.splice(targetIdx, 1)
+    }
+  })
+  localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(msgList))
+}
+Wsocket.prototype.onclose = function (evt) {
+  this.oncloseCb()
+}
 Wsocket.prototype.onerror = function (evt) {
+  this.onerrorCb()
   return new Error(evt)
 }
 Wsocket.prototype.send = function (param) {
   const paramJson = typeof param === 'string' ? JSON.parse(param) : param
-  if (this.skt.readyState === 1) {
-    this.skt.send(JSON.stringify(paramJson))
-  } else {
-    // cached的数据超过了10000个，为避免占用内存太大，清空cache
-    if (this.cachedDataIdList.length > 10000) {
-      this.cachedDataIdList = []
-      this.dataPool = []
-    }
-    const cachedDataId = identifyData(paramJson)
-    if (this.cachedDataIdList.indexOf(cachedDataId) === -1) {
-      this.cachedDataIdList.push(cachedDataId)
-      this.dataPool.push(paramJson)
-    }
-    if (this.skt.readyState === 3) {
-      this.reconnect(paramJson)
-    }
+  const target = this.dataPool.find(item => item.id === paramJson.id)
+  if (!target) {
+    this.dataPool.push(paramJson)
+    localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(this.dataPool))
   }
+}
+Wsocket.prototype.doSend = function () {
+  this.raf = setInterval(() => {
+    const msgList = JSON.parse(localStorage.getItem(ISEE_MSG_POOL) || '[]')
+    if (msgList.length > 0) {
+      const dataSlice = msgList.slice(0, BATCH_COUNT)
+      this.skt.send(JSON.stringify(dataSlice))
+    }
+  }, 500)
+}
+Wsocket.prototype.send = function (param) {
+  const paramJson = typeof param === 'string' ? JSON.parse(param) : param
+  const target = this.dataPool.find(item => item.id === paramJson.id)
+  if (!target) {
+    this.dataPool.push(paramJson)
+    localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(this.dataPool))
+  }
+  // if (this.skt.readyState === 1) {
+  //   this.skt.send(JSON.stringify(paramJson))
+  // } else {
+  // }
 }
 Wsocket.prototype.close = function () {
   this.skt.close()
-}
-Wsocket.prototype.flush = function () {
-  while (this.dataPool.length > 0) {
-    this.cachedDataIdList.shift()
-    const param = this.dataPool.shift()
-    this.send(param)
+  if (this.raf) {
+    clearInterval(this.raf)
+    this.raf = 0
   }
-  // 重置标识id
-  __dataId = 0
 }
 Wsocket.prototype.reconnect = function (param) {
   this.skt = wsocket(this.url)
   this.skt.onopen = ev => {
     // console.log('reopen')
     // this.skt.send(param)
-    this.flush()
   }
   this.skt.onmessage = this.onmessage
   this.skt.onclose = this.onclose

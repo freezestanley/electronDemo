@@ -562,10 +562,7 @@ export default class Clairvoyant {
       return false
     }
     if (node.nodeType === node.ELEMENT_NODE && node.classList) {
-      return (
-        node.classList.contains(blockCls) ||
-        this.isBlocked(node.parentNode, blockCls)
-      )
+      return node.classList.contains(blockCls) || this.isBlocked(node.parentNode, blockCls)
     }
     return this.isBlocked(node.parentNode)
   }
@@ -680,11 +677,11 @@ export default class Clairvoyant {
       touchdrag: function () {
         event = eventType.ACTION_DRAG
         const r = param.r.concat()
-        param.r = `${r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_DATA}${movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${movement.delta.x},${
-          movement.delta.y
-        },${movement.delta.z}${eventType.SPLIT_DATA}${xpath || readXPath(movement.ele)}${eventType.SPLIT_DATA}${evt._startPoint.changedTouches[0].clientX},${evt._startPoint.changedTouches[0].clientY}${
-          eventType.SPLIT_DATA
-        }${evt.changedTouches[0].clientX},${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        param.r = `${r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_DATA}${movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${
+          movement.delta.x
+        },${movement.delta.y},${movement.delta.z}${eventType.SPLIT_DATA}${xpath || readXPath(movement.ele)}${eventType.SPLIT_DATA}${evt._startPoint.changedTouches[0].clientX},${
+          evt._startPoint.changedTouches[0].clientY
+        }${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX},${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.pushData(param, event, 100)
       },
       paint: function () {
@@ -750,7 +747,7 @@ function domloaded (event) {
       return
     }
     if (iseebiz) {
-      clairvoyant.wsSocket.onopen = function (evt) {
+      clairvoyant.wsSocket.onopenCb = function (evt) {
         // console.log('Connection start.')
         clairvoyant.observer({
           type: 'openpage',
@@ -776,7 +773,7 @@ function domloaded (event) {
           }
         }
       }
-      clairvoyant.wsSocket.onmessage = function (evt) {
+      clairvoyant.wsSocket.onmessageCb = function (evt) {
         switch (evt.data) {
           // 需要发送localstorage
           case 'LS000':
@@ -789,10 +786,10 @@ function domloaded (event) {
         }
         // console.log("server:" + evt.data)
       }
-      clairvoyant.wsSocket.onclose = function (evt) {
+      clairvoyant.wsSocket.oncloseCb = function (evt) {
         // console.log('Connection closed.')
       }
-      clairvoyant.wsSocket.onerror = function (evt) {
+      clairvoyant.wsSocket.onerrorCb = function (evt) {
         // console.log(evt)
         let img = new Image()
         img.src = `http://gif-test.zhongan.io/i.gif?r=${JSON.stringify(evt)}`
@@ -831,13 +828,13 @@ function domloaded (event) {
         }
       }
     }
-    clairvoyant.wsSocket.onmessage = function (evt) {
+    clairvoyant.wsSocket.onmessageCb = function (evt) {
       // console.log('server:' + evt.data)
     }
-    clairvoyant.wsSocket.onclose = function (evt) {
+    clairvoyant.wsSocket.oncloseCb = function (evt) {
       // console.log('Connection closed.')
     }
-    clairvoyant.wsSocket.onerror = function (evt) {
+    clairvoyant.wsSocket.onerrorCb = function (evt) {
       // console.log(evt)
       let img = new Image()
       img.src = `http://gif-test.zhongan.io/i.gif?r=${JSON.stringify(evt)}`
