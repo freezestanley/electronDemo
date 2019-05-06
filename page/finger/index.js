@@ -1,4 +1,5 @@
 // import {throttle, debounce} from '../socket'
+import { readXPath } from '../xpath'
 
 const TOUCH_TAP = 'tap'
 const TOUCH_LONGTAP = 'longtap'
@@ -73,6 +74,8 @@ export default class Finger {
         this.finger = new FingerType()
         this.finger.start(ev)
         this._startPoint = ev
+        this._startTarget = ev.target
+        this._startXpath = readXPath(ev.target)
         // 临时解决办法，根据canvas是否含有touchmove事件来判断是否需要发送paint事件（是否为签名）
         if (ev.target.tagName.toLowerCase() === 'canvas' && (ev.target.__eventOrginList && ev.target.__eventOrginList.touchmove.length > 0)) {
           const canvasEle = ev.changedTouches[0].target
@@ -95,6 +98,11 @@ export default class Finger {
       ev => {
         // ev.preventDefault()
         const type = this.finger.end(ev)
+        if (ev.target == this._startTarget) {
+          ev._xpath = this._startXpath
+        } else {
+          ev._xpath = null
+        }
         if (type === TOUCH_TAP && this._touchtap) {
           this._touchtap(ev)
         }

@@ -457,9 +457,11 @@ export default class Clairvoyant {
     windowFinger.addEventListener(
       'touchtap',
       ev => {
+        const xpath = ev._xpath || null
         this.observer({
           type: 'click',
-          evt: ev
+          evt: ev,
+          xpath
         })
       },
       {
