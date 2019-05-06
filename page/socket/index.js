@@ -1,5 +1,4 @@
-const ISEE_MSG_POOL = 'ISEE_MSG_POOL'
-const BATCH_COUNT = 10
+import { ISEE_MSG_POOL, BATCH_COUNT } from '../constant'
 
 function wsocket (urlValue) {
   if (window.WebSocket) return new window.WebSocket(urlValue)
@@ -12,74 +11,72 @@ const noop = function () {}
 function Wsocket (url) {
   this.url = url
   this.skt = wsocket(url)
-  this.dataPool = JSON.parse(localStorage.getItem(ISEE_MSG_POOL) || '[]')
   this.raf = 0
+  this._pool = JSON.parse(localStorage.getItem(ISEE_MSG_POOL) || '[]')
   this.skt.onopen = ev => {
-    // console.log('open')
     this.onopen(ev)
     this.doSend()
   }
   this.skt.onmessage = ev => {
-    // console.log('message')
     this.onmessage(ev)
-    this.onmessageCb()
+    this.onmessageCb(ev)
   }
   this.skt.onclose = this.onclose
   this.skt.onerror = this.onerror
   this.onmessageCb = noop
   this.oncloseCb = noop
   this.onerrorCb = noop
+  this.debounceDoSend = debounce(() => this.doSend(), 500, 'debounceDoSend')
+  this.debouncePersist = debounce(
+    val => {
+      // console.log('------------writeToLocal', val)
+      localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(val))
+    },
+    300,
+    'debouncePersist'
+  )
+  Object.defineProperty(this, 'dataPool', {
+    enumerable: true,
+    configurable: true,
+    set: function (val) {
+      this._pool = val
+      this.debouncePersist(val)
+    },
+    get: function () {
+      return this._pool
+    }
+  })
 }
 Wsocket.prototype.onopen = function (evt) {}
 Wsocket.prototype.onmessage = function (evt) {
   const { data } = evt
-  console.log('-----data', data)
   const resData = (data && data.split(',')) || []
-  const msgList = JSON.parse(localStorage.getItem(ISEE_MSG_POOL) || '[]')
-  resData.forEach(item => {
-    const targetIdx = msgList.findIndex(msg => `${msg.id}` === item)
-    console.log('----targetIdx', targetIdx)
-    if (targetIdx >= 0) {
-      msgList.splice(targetIdx, 1)
-    }
-  })
-  localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(msgList))
+  this.dataPool = this.dataPool.filter(msg => resData.indexOf(`${msg.id}`) === -1)
 }
 Wsocket.prototype.onclose = function (evt) {
-  this.oncloseCb()
+  this.oncloseCb && this.oncloseCb(evt)
 }
 Wsocket.prototype.onerror = function (evt) {
-  this.onerrorCb()
+  this.onerrorCb(evt)
   return new Error(evt)
 }
 Wsocket.prototype.send = function (param) {
   const paramJson = typeof param === 'string' ? JSON.parse(param) : param
   const target = this.dataPool.find(item => item.id === paramJson.id)
   if (!target) {
-    this.dataPool.push(paramJson)
-    localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(this.dataPool))
+    this.dataPool = this.dataPool.concat([paramJson])
   }
+  this.debounceDoSend()
 }
-Wsocket.prototype.doSend = function () {
-  this.raf = setInterval(() => {
-    const msgList = JSON.parse(localStorage.getItem(ISEE_MSG_POOL) || '[]')
-    if (msgList.length > 0) {
-      const dataSlice = msgList.slice(0, BATCH_COUNT)
-      this.skt.send(JSON.stringify(dataSlice))
-    }
-  }, 500)
-}
-Wsocket.prototype.send = function (param) {
-  const paramJson = typeof param === 'string' ? JSON.parse(param) : param
-  const target = this.dataPool.find(item => item.id === paramJson.id)
-  if (!target) {
-    this.dataPool.push(paramJson)
-    localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(this.dataPool))
+/**
+ * @param {Boolean} isFlush 是否一次性发送localStorage中的所有信息
+ */
+Wsocket.prototype.doSend = function (isFlush) {
+  const msgList = this.dataPool
+  if (msgList.length > 0) {
+    const dataSlice = isFlush ? msgList : msgList.slice(0, BATCH_COUNT)
+    this.skt.send(JSON.stringify(dataSlice))
   }
-  // if (this.skt.readyState === 1) {
-  //   this.skt.send(JSON.stringify(paramJson))
-  // } else {
-  // }
 }
 Wsocket.prototype.close = function () {
   this.skt.close()
@@ -90,27 +87,13 @@ Wsocket.prototype.close = function () {
 }
 Wsocket.prototype.reconnect = function (param) {
   this.skt = wsocket(this.url)
-  this.skt.onopen = ev => {
-    // console.log('reopen')
-    // this.skt.send(param)
-  }
+  this.skt.onopen = ev => {}
   this.skt.onmessage = this.onmessage
   this.skt.onclose = this.onclose
   this.skt.onerror = this.onerror
 }
 
 export default Wsocket
-
-// export const debounce = function (method, delay) {
-//   let timer = null
-//   return function () {
-//     let context = this, args = arguments
-//     clearTimeout(timer)
-//     timer = setTimeout(function(){
-//       method.apply(context,args);
-//     }, delay)
-//   }
-// }
 
 export const debounce = function (method, delay, timerName = 'timer') {
   return function () {
@@ -128,29 +111,6 @@ export const debounce = function (method, delay, timerName = 'timer') {
   }
 }
 debounce.timer = null
-
-// class debounceClass {
-//   constructor() {
-//     this._time = 100
-//   }
-//   get time () {
-//     return this._time
-//   }
-//   set time (param) {
-//     this._time = param
-//   }
-//   debounce (method, delay) {
-//     let _this = this
-//     return function () {
-//       let context = this, args = arguments
-//       clearTimeout(_this.time)
-//       _this.timer = setTimeout(function(){
-//         method.apply(context,args);
-//       }, delay)
-//     }
-//   }
-// }
-// export const debClass = new debounceClass()
 
 export function throttle (fn, threshhold) {
   // 记录上次执行的时间

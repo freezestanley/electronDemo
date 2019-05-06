@@ -22,9 +22,12 @@ import * as utils from './utils'
  * path         cookie path     default  /
  * exp          cookie 过期事件  default 60 * 60 * 1000
  */
-
+import { ISEE_MSG_POOL } from './constant'
 let _eId = 1
-let ls = JSON.stringify(window.localStorage)
+let ls = JSON.parse(JSON.stringify(window.localStorage))
+// exclude ISEE_MSG_POOL
+delete ls[ISEE_MSG_POOL]
+ls = JSON.stringify(ls)
 const win = window
 const doc = window.document
 let ISEE_RE = ''
@@ -73,7 +76,8 @@ proxyEvent.addAfterGuard = function (ev) {
 }
 let mousedownPoint
 const blockCls = getConfig('blockClass') || 'isee-block'
-let idCount = 0
+// 初始化消息的id开始值
+let idCount = JSON.parse(localStorage.getItem(ISEE_MSG_POOL) || '[]').length
 
 export default class Clairvoyant {
   constructor (ws = wspath) {
@@ -192,6 +196,10 @@ export default class Clairvoyant {
           evt: ev
         })
         this.lazy()
+        // 页面离开前尝试一次性发送msg pool中的所有消息
+        if (win.clairvoyant && win.clairvoyant.wsSocket) {
+          win.clairvoyant.wsSocket.doSend(true)
+        }
       },
       {
         noShadow: true
