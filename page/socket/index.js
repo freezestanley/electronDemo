@@ -23,7 +23,6 @@ function Wsocket (url) {
     this.onopen(ev)
   }
   this.skt.onmessage = ev => {
-    // console.log('message')
     this.onmessage(ev)
   }
   this.skt.onclose = this.onclose

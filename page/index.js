@@ -10,6 +10,7 @@ import { CreateXMLHttp } from './xmlhttprequest'
 import { ProxyEvent } from 'event-shadow'
 import Checkhover from './checkhover'
 import * as utils from './utils'
+import MsgPool from './msgpool'
 
 /**
  *
@@ -73,14 +74,19 @@ proxyEvent.addAfterGuard = function (ev) {
 }
 let mousedownPoint
 const blockCls = getConfig('blockClass') || 'isee-block'
-let idCount = 0
 
 export default class Clairvoyant {
   constructor (ws = wspath) {
     if (!ISEE_RE && !ISEE_TEST) {
       this.wsSocket = new Wsocket(ws)
+      const self = this
+      this.msgPool = new MsgPool({
+        cookie,
+        sendCb (val) {
+          self.wsSocket.send(val)
+        }
+      })
     }
-    idCount = 0
     this.proxyEvent = proxyEvent
     this.plant = plant.IsPc()
     this.scrollList = []
@@ -564,10 +570,7 @@ export default class Clairvoyant {
       return false
     }
     if (node.nodeType === node.ELEMENT_NODE && node.classList) {
-      return (
-        node.classList.contains(blockCls) ||
-        this.isBlocked(node.parentNode, blockCls)
-      )
+      return node.classList.contains(blockCls) || this.isBlocked(node.parentNode, blockCls)
     }
     return this.isBlocked(node.parentNode)
   }
@@ -682,11 +685,11 @@ export default class Clairvoyant {
       touchdrag: function () {
         event = eventType.ACTION_DRAG
         const r = param.r.concat()
-        param.r = `${r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_DATA}${movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${movement.delta.x},${
-          movement.delta.y
-        },${movement.delta.z}${eventType.SPLIT_DATA}${xpath || readXPath(movement.ele)}${eventType.SPLIT_DATA}${evt._startPoint.changedTouches[0].clientX},${evt._startPoint.changedTouches[0].clientY}${
-          eventType.SPLIT_DATA
-        }${evt.changedTouches[0].clientX},${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        param.r = `${r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_DATA}${movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${
+          movement.delta.x
+        },${movement.delta.y},${movement.delta.z}${eventType.SPLIT_DATA}${xpath || readXPath(movement.ele)}${eventType.SPLIT_DATA}${evt._startPoint.changedTouches[0].clientX},${
+          evt._startPoint.changedTouches[0].clientY
+        }${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX},${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.pushData(param, event, 100)
       },
       paint: function () {
@@ -729,12 +732,14 @@ export default class Clairvoyant {
     }
     let pushMode = getConfig('pushMode') || 'once'
     if (pushMode === 'once') {
-      obj['id'] = idCount++
-      this.wsSocket.send(obj)
+      // obj['id'] = idCount++
+      // this.wsSocket.send(obj)
+      this.msgPool.addPool(obj)
     } else {
       this.messageList.push(obj)
       if (this.messageList.length >= 30) {
-        this.wsSocket.send(this.messageList)
+        // this.wsSocket.send(this.messageList)
+        this.msgPool.addPool(this.messageList)
         this.messageList = []
       }
     }
@@ -745,6 +750,48 @@ function domloaded (event) {
   var iseebiz = cookie.getCookie('ISEE_BIZ')
   ISEE_RE = cookie.getCookie('ISEE_RE') || ''
   ISEE_TEST = cookie.getCookie('ISEE_TEST') || ''
+  const onmessageCb = function (clairvoyant, evt) {
+    const data = evt.data
+    switch (data) {
+      // 需要发送localstorage
+      case 'LS000':
+        clairvoyant.observer({
+          type: 'sendLocalstorage'
+        })
+        break
+      default:
+        if (data) {
+          const arr = data.split(',')
+          clairvoyant.msgPool.removeConfirmPool(arr)
+        }
+        break
+    }
+    clairvoyant.msgPool.removePool()
+  }
+  const onopenCb = function (clairvoyant, evt) {
+    // console.log('Connection start.')
+    clairvoyant.observer({
+      type: 'openpage',
+      evt: evt
+    })
+    clairvoyant.observer({
+      type: 'collectDom',
+      evt: evt
+    })
+    let end = getConfig('end')
+    let type = getConfig('type')
+    if (end && type) {
+      if (type === 'history') {
+        if (location.pathname.indexOf(end) === 0) {
+          cookie.delCookie('ISEE_BIZ')
+        }
+      } else {
+        if (location.hash === end) {
+          cookie.delCookie('ISEE_BIZ')
+        }
+      }
+    }
+  }
   if (process.env.NODE_ENV != 'development') {
     const clairvoyant = (win.clairvoyant = new Clairvoyant())
     if (ISEE_RE || ISEE_TEST) {
@@ -753,43 +800,10 @@ function domloaded (event) {
     }
     if (iseebiz) {
       clairvoyant.wsSocket.onopen = function (evt) {
-        // console.log('Connection start.')
-        clairvoyant.observer({
-          type: 'openpage',
-          evt: evt
-        })
-        clairvoyant.observer({
-          type: 'collectDom',
-          evt: evt
-        })
-        let end = getConfig('end')
-        let type = getConfig('type')
-        if (end && type) {
-          if (type === 'history') {
-            if (location.pathname.indexOf(end) === 0) {
-              cookie.delCookie('ISEE_BIZ')
-              idCount = 0
-            }
-          } else {
-            if (location.hash === end) {
-              cookie.delCookie('ISEE_BIZ')
-              idCount = 0
-            }
-          }
-        }
+        onopenCb(clairvoyant, evt)
       }
       clairvoyant.wsSocket.onmessage = function (evt) {
-        switch (evt.data) {
-          // 需要发送localstorage
-          case 'LS000':
-            clairvoyant.observer({
-              type: 'sendLocalstorage'
-            })
-            break
-          default:
-            break
-        }
-        // console.log("server:" + evt.data)
+        onmessageCb(clairvoyant, evt)
       }
       clairvoyant.wsSocket.onclose = function (evt) {
         // console.log('Connection closed.')
@@ -808,33 +822,10 @@ function domloaded (event) {
       return
     }
     clairvoyant.wsSocket.onopen = function (evt) {
-      // console.log('Connection start.')
-      clairvoyant.observer({
-        type: 'openpage',
-        evt: evt
-      })
-      clairvoyant.observer({
-        type: 'collectDom',
-        evt: evt
-      })
-      let end = getConfig('end')
-      let type = getConfig('type')
-      if (end && type) {
-        if (type === 'history') {
-          if (location.pathname.indexOf(end) === 0) {
-            cookie.delCookie('ISEE_BIZ')
-            idCount = 0
-          }
-        } else {
-          if (location.hash === end) {
-            cookie.delCookie('ISEE_BIZ')
-            idCount = 0
-          }
-        }
-      }
+      onopenCb(clairvoyant, evt)
     }
     clairvoyant.wsSocket.onmessage = function (evt) {
-      // console.log('server:' + evt.data)
+      onmessageCb(clairvoyant, evt)
     }
     clairvoyant.wsSocket.onclose = function (evt) {
       // console.log('Connection closed.')
