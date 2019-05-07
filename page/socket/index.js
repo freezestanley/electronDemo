@@ -89,7 +89,7 @@ Wsocket.prototype.dataPoolChangeCb = function (msgList) {
     if (!this.sendTimer) {
       this.sendTimer = setInterval(() => {
         this.doSend(Date.now())
-      }, 2000)
+      }, 500)
     }
   } else {
     if (this.sendTimer) {
