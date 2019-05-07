@@ -122,14 +122,18 @@ Wsocket.prototype.send = function (param) {
  * @param {Date} t 发送消息时的时间
  */
 Wsocket.prototype.doSend = function (t) {
-  if (this.dataPool.length > 0) {
-    const dataSlice = this.dataPool.splice(0, ISEE_BATCH_COUNT)
-    // 放到confrim Pool中的数据添加发送时间属性
-    this.confirmPool = dataSlice
-      .filter(item => !includeMsg(this.confirmPool, item))
-      .map(item => ({ ...item, sentTime: t }))
-      .concat(this.confirmPool)
-    this.skt.send(JSON.stringify(dataSlice))
+  if (this.skt.readyState === 1) {
+    if (this.dataPool.length > 0) {
+      const dataSlice = this.dataPool.splice(0, ISEE_BATCH_COUNT)
+      // 放到confrim Pool中的数据添加发送时间属性
+      this.confirmPool = dataSlice
+        .filter(item => !includeMsg(this.confirmPool, item))
+        .map(item => ({ ...item, sentTime: t }))
+        .concat(this.confirmPool)
+      this.skt.send(JSON.stringify(dataSlice))
+    }
+  } else if (this.skt.readyState === 3) {
+    this.reconnect()
   }
 }
 Wsocket.prototype.close = function () {
@@ -139,7 +143,7 @@ Wsocket.prototype.close = function () {
     this.sendTimer = null
   }
 }
-Wsocket.prototype.reconnect = function (param) {
+Wsocket.prototype.reconnect = function () {
   this.skt = wsocket(this.url)
   this.skt.onopen = ev => {}
   this.skt.onmessage = this.onmessage

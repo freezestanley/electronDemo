@@ -84,7 +84,7 @@ export default class Clairvoyant {
       this.wsSocket = new Wsocket(ws)
     }
     // 初始化idCount
-    const msgObj = JSON.parse(localStorage.getItem(ISEE_MSG_ID) || '{}')
+    const msgObj = JSON.parse(cookie.getCookie(ISEE_MSG_ID) || '{}')
     idCount = msgObj[cookie.getCookie('ISEE_BIZ')] || 0
     console.log('-----initial idCounnt', idCount)
     this.proxyEvent = proxyEvent
@@ -96,7 +96,8 @@ export default class Clairvoyant {
     this.transformList = []
     this.debouncedStoreMsgId = debounce(
       val => {
-        localStorage.setItem(ISEE_MSG_ID, JSON.stringify(val))
+        // localStorage.setItem(ISEE_MSG_ID, JSON.stringify(val))
+        cookie.setCookie(ISEE_MSG_ID, JSON.stringify(val))
       },
       300,
       'debouncedStoreMsgId'
