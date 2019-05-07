@@ -1,4 +1,7 @@
-import { ISEE_MSG_POOL, BATCH_COUNT } from '../constant'
+import { ISEE_MSG_POOL, ISEE_BATCH_COUNT, RESEND_TIME_INTERVAL } from '../constant'
+function includeMsg (list, item) {
+  return list.find(citem => citem.id === item.id)
+}
 
 function wsocket (urlValue) {
   if (window.WebSocket) return new window.WebSocket(urlValue)
@@ -11,11 +14,11 @@ const noop = function () {}
 function Wsocket (url) {
   this.url = url
   this.skt = wsocket(url)
-  this.raf = 0
+  this.sendTimer = null
   this._pool = JSON.parse(localStorage.getItem(ISEE_MSG_POOL) || '[]')
+  this._confirmPool = []
   this.skt.onopen = ev => {
     this.onopen(ev)
-    this.doSend()
   }
   this.skt.onmessage = ev => {
     this.onmessage(ev)
@@ -26,32 +29,80 @@ function Wsocket (url) {
   this.onmessageCb = noop
   this.oncloseCb = noop
   this.onerrorCb = noop
-  this.debounceDoSend = debounce(() => this.doSend(), 500, 'debounceDoSend')
   this.debouncePersist = debounce(
     val => {
-      // console.log('------------writeToLocal', val)
       localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(val))
     },
-    300,
+    100,
     'debouncePersist'
   )
+  // 待发送的数据池子
   Object.defineProperty(this, 'dataPool', {
     enumerable: true,
     configurable: true,
     set: function (val) {
       this._pool = val
-      this.debouncePersist(val)
+      this.dataPoolChangeCb(val)
     },
     get: function () {
       return this._pool
     }
   })
+  // 发送过待确认的数据池子
+  Object.defineProperty(this, 'confirmPool', {
+    enumerable: true,
+    configurable: true,
+    set: function (val) {
+      this._confirmPool = val
+      this.confirmPoolChangeCb(val)
+    },
+    get: function () {
+      return this._confirmPool
+    }
+  })
+}
+// the callback of confirm pool change
+Wsocket.prototype.confirmPoolChangeCb = function (msgList) {
+  // persist the msg list
+  const now = Date.now()
+  let reSendMsgList = []
+  let remain = []
+  if (msgList.length > 0) {
+    // the msg list need to send again
+    reSendMsgList = msgList
+      .filter(item => {
+        const t = now - item.sentTime
+        console.log('-----t', t)
+        return t >= RESEND_TIME_INTERVAL
+      })
+      .filter(item => !includeMsg(this.dataPool, item))
+    remain = msgList.filter(item => !includeMsg(reSendMsgList, item))
+    if (reSendMsgList.length > 0) {
+      this.dataPool = reSendMsgList.concat(this.dataPool)
+    }
+  }
+  this.debouncePersist(remain.concat(this.dataPool))
+}
+// the callback of data pool change
+Wsocket.prototype.dataPoolChangeCb = function (msgList) {
+  if (msgList.length > 0) {
+    if (!this.sendTimer) {
+      this.sendTimer = setInterval(() => {
+        this.doSend(Date.now())
+      }, 2000)
+    }
+  } else {
+    if (this.sendTimer) {
+      clearInterval(this.sendTimer)
+      this.sendTimer = null
+    }
+  }
 }
 Wsocket.prototype.onopen = function (evt) {}
 Wsocket.prototype.onmessage = function (evt) {
   const { data } = evt
   const resData = (data && data.split(',')) || []
-  this.dataPool = this.dataPool.filter(msg => resData.indexOf(`${msg.id}`) === -1)
+  this.confirmPool = this.confirmPool.filter(msg => resData.indexOf(`${msg.id}`) === -1)
 }
 Wsocket.prototype.onclose = function (evt) {
   this.oncloseCb && this.oncloseCb(evt)
@@ -66,23 +117,26 @@ Wsocket.prototype.send = function (param) {
   if (!target) {
     this.dataPool = this.dataPool.concat([paramJson])
   }
-  this.debounceDoSend()
 }
 /**
- * @param {Boolean} isFlush 是否一次性发送localStorage中的所有信息
+ * @param {Date} t 发送消息时的时间
  */
-Wsocket.prototype.doSend = function (isFlush) {
-  const msgList = this.dataPool
-  if (msgList.length > 0) {
-    const dataSlice = isFlush ? msgList : msgList.slice(0, BATCH_COUNT)
+Wsocket.prototype.doSend = function (t) {
+  if (this.dataPool.length > 0) {
+    const dataSlice = this.dataPool.splice(0, ISEE_BATCH_COUNT)
+    // 放到confrim Pool中的数据添加发送时间属性
+    this.confirmPool = dataSlice
+      .filter(item => !includeMsg(this.confirmPool, item))
+      .map(item => ({ ...item, sentTime: t }))
+      .concat(this.confirmPool)
     this.skt.send(JSON.stringify(dataSlice))
   }
 }
 Wsocket.prototype.close = function () {
   this.skt.close()
-  if (this.raf) {
-    clearInterval(this.raf)
-    this.raf = 0
+  if (this.sendTimer) {
+    clearInterval(this.sendTimer)
+    this.sendTimer = null
   }
 }
 Wsocket.prototype.reconnect = function (param) {

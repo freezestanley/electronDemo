@@ -22,7 +22,7 @@ import * as utils from './utils'
  * path         cookie path     default  /
  * exp          cookie 过期事件  default 60 * 60 * 1000
  */
-import { ISEE_MSG_POOL } from './constant'
+import { ISEE_MSG_POOL, ISEE_MSG_ID } from './constant'
 let _eId = 1
 let ls = JSON.parse(JSON.stringify(window.localStorage))
 // exclude ISEE_MSG_POOL
@@ -76,15 +76,17 @@ proxyEvent.addAfterGuard = function (ev) {
 }
 let mousedownPoint
 const blockCls = getConfig('blockClass') || 'isee-block'
-// 初始化消息的id开始值
-let idCount = JSON.parse(localStorage.getItem(ISEE_MSG_POOL) || '[]').length
+let idCount = 0
 
 export default class Clairvoyant {
   constructor (ws = wspath) {
     if (!ISEE_RE && !ISEE_TEST) {
       this.wsSocket = new Wsocket(ws)
     }
-    idCount = 0
+    // 初始化idCount
+    const msgObj = JSON.parse(localStorage.getItem(ISEE_MSG_ID) || '{}')
+    idCount = msgObj[cookie.getCookie('ISEE_BIZ')] || 0
+    console.log('-----initial idCounnt', idCount)
     this.proxyEvent = proxyEvent
     this.plant = plant.IsPc()
     this.scrollList = []
@@ -92,6 +94,13 @@ export default class Clairvoyant {
     this.formlist = []
     this.canvasList = []
     this.transformList = []
+    this.debouncedStoreMsgId = debounce(
+      val => {
+        localStorage.setItem(ISEE_MSG_ID, JSON.stringify(val))
+      },
+      300,
+      'debouncedStoreMsgId'
+    )
   }
 
   static selectNode (xpath) {
@@ -196,10 +205,6 @@ export default class Clairvoyant {
           evt: ev
         })
         this.lazy()
-        // 页面离开前尝试一次性发送msg pool中的所有消息
-        if (win.clairvoyant && win.clairvoyant.wsSocket) {
-          win.clairvoyant.wsSocket.doSend(true)
-        }
       },
       {
         noShadow: true
@@ -727,13 +732,17 @@ export default class Clairvoyant {
       }
       return
     }
-    if (process.env.NODE_ENV === 'production' && !cookie.getCookie('ISEE_BIZ')) {
+    const iseeBizValue = cookie.getCookie('ISEE_BIZ')
+    if (process.env.NODE_ENV === 'production' && !iseeBizValue) {
       return
     }
     let pushMode = getConfig('pushMode') || 'once'
     if (pushMode === 'once') {
       obj['id'] = idCount++
       this.wsSocket.send(obj)
+      this.debouncedStoreMsgId({
+        [iseeBizValue]: idCount
+      })
     } else {
       this.messageList.push(obj)
       if (this.messageList.length >= 30) {
