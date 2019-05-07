@@ -335,7 +335,7 @@ export default class Clairvoyant {
       ev => {
         mouseX = ev.clientX
         mouseY = ev.clientY
-        debounceObserver(() => {
+        debounce(() => {
           this.observer({
             type: 'mouseover',
             evt: ev
@@ -378,7 +378,7 @@ export default class Clairvoyant {
               // })
             }
           }
-        }, delay)
+        }, delay)()
       },
       {
         noShadow: true
