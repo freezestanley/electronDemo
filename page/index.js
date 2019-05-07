@@ -630,7 +630,7 @@ export default class Clairvoyant {
       mouseover: function () {
         let tagName = evt.target.tagName.toLowerCase()
         let check = Checkhover(evt.target, ':hover')
-        if (tagName === 'li' || tagName === 'a' || check || evt.target.onmouseover || (evt.__eventOrginList && evt.__eventOrginList.length > 0)) {
+        if (tagName === 'li' || tagName === 'a' || check || evt.target.onmouseover || (evt.target.__proxy && evt.target.__proxy.__eventOrginList && evt.target.__proxy.__eventOrginList.length > 0)) {
           event = eventType.ACTION_HOVER
           param.r = `${param.r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_LINE}`
           _self.pushData(param, event)
