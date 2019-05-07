@@ -81,7 +81,7 @@ export const setMask = (xpath, config = true) => {
   // const bodyHeight = document.body.scrollHeight
   const appendMask = (direct) => {
     const maskElement = document.createElement('div')
-    let style = `position: fixed;background: none;z-index:998;`
+    let style = `position: fixed;background: none;z-index:99999;`
     switch (direct) {
       case 'top':
         style += `width:100%;height:${top}px;top:0;left:0;`
@@ -142,7 +142,7 @@ export const setWatermark = (content, style) => {
   }
   const element = document.createElement('div')
   element.innerHTML = content
-  const orginStyle = `position: fixed;background: none; z-index:998; top:10px; left:10px; font-size:26px; opacity: 0.5; pointer-events: none;`
+  const orginStyle = `position: fixed;background: none; z-index:99999; top:10px; left:10px; font-size:26px; opacity: 0.5; pointer-events: none;`
   element.setAttribute('style', style || orginStyle)
   const findTag = document.getElementsByTagName('iseewrap')
   let wrap = null

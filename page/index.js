@@ -470,9 +470,11 @@ export default class Clairvoyant {
     windowFinger.addEventListener(
       'touchtap',
       ev => {
+        const xpath = ev._xpath || null
         this.observer({
           type: 'click',
-          evt: ev
+          evt: ev,
+          xpath
         })
       },
       {
@@ -638,7 +640,7 @@ export default class Clairvoyant {
       mouseover: function () {
         let tagName = evt.target.tagName.toLowerCase()
         let check = Checkhover(evt.target, ':hover')
-        if (tagName === 'li' || tagName === 'a' || check || evt.target.onmouseover || (evt.__eventOrginList && evt.__eventOrginList.length > 0)) {
+        if (tagName === 'li' || tagName === 'a' || check || evt.target.onmouseover || (evt.target.__proxy && evt.target.__proxy.__eventOrginList && evt.target.__proxy.__eventOrginList.length > 0)) {
           event = eventType.ACTION_HOVER
           param.r = `${param.r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_LINE}`
           _self.pushData(param, event)
@@ -705,12 +707,12 @@ export default class Clairvoyant {
       popstate: function () {
         event = eventType.POP_STATE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        !ISEE_RE && !ISEE_TEST && _self.wsSocket.send(param)
+        !ISEE_RE && !ISEE_TEST && _self.pushData(param, event)
       },
       hashchange: function () {
         event = eventType.HASH_CHANGE
         param.r = `${param.r}${event}${eventType.SPLIT_LINE}`
-        !ISEE_RE && !ISEE_TEST && _self.wsSocket.send(param)
+        !ISEE_RE && !ISEE_TEST && _self.pushData(param, event)
       },
       inputBlur: function () {
         event = eventType.INPUT_BLUR
