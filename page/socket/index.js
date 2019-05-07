@@ -98,7 +98,9 @@ Wsocket.prototype.dataPoolChangeCb = function (msgList) {
     }
   }
 }
-Wsocket.prototype.onopen = function (evt) {}
+Wsocket.prototype.onopen = function (evt) {
+  this.onopenCb(evt)
+}
 Wsocket.prototype.onmessage = function (evt) {
   const { data } = evt
   const resData = (data && data.split(',')) || []
