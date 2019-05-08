@@ -256,19 +256,6 @@ export default class Clairvoyant {
         childrenList.push(doc.body.children[i].tagName.toLowerCase())
       }
       for (let mutation of mutationsList) {
-        const nodeName = mutation.target.nodeName.toLowerCase()
-        if (nodeName === 'body' && mutation.type == 'childList') {
-          // console.log(mutation)
-          debounce(
-            () => {
-              this.observer({
-                type: 'collectDom'
-              })
-            },
-            delay,
-            'collectTimer'
-          )()
-        }
         if (mutation.type == 'attributes') {
           transformList = mutationsList.map(mutation => mutation.target).filter(item => item.style.cssText.indexOf('translate') > -1) || []
           // console.log(mutation, mutationsList)
@@ -626,18 +613,6 @@ export default class Clairvoyant {
         param.ls = ls
         _self.pushData(param)
       },
-      collectDom: function () {
-        const domtree = []
-        const children = doc.body.children
-        if (children && children.length) {
-          for (let i = 0; i < children.length; i++) {
-            const child = children[i]
-            domtree.push(`t:${child.tagName.toLowerCase()}|c:${child.className}|i:${child.id}`)
-          }
-        }
-        param.r = `${param.r}${eventType.COLLECT_DOM}${eventType.SPLIT_DATA}${domtree.join('€')}${eventType.SPLIT_LINE}`
-        _self.pushData(param, eventType.COLLECT_DOM)
-      },
       click: function () {
         let point = ''
         let xPosition = ''
@@ -800,10 +775,6 @@ function domloaded (event) {
     // console.log('Connection start.')
     clairvoyant.observer({
       type: 'openpage',
-      evt: evt
-    })
-    clairvoyant.observer({
-      type: 'collectDom',
       evt: evt
     })
     let end = getConfig('end')
