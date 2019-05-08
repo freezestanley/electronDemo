@@ -220,7 +220,7 @@ export default class Clairvoyant {
           type: 'scroll',
           evt: ev
         })
-      }, delay),
+      }, delay, 'wheelTimer'),
       {
         noShadow: true
       }
@@ -325,7 +325,7 @@ export default class Clairvoyant {
 
   deskWatch () {
     const debounceObserver = (cb, delay) => {
-      debounce(cb, delay)()
+      debounce(cb, delay, 'clickTimer')()
     }
     let mouseX
     let mouseY
@@ -378,7 +378,7 @@ export default class Clairvoyant {
               // })
             }
           }
-        }, delay)()
+        }, delay, 'mouseoverTimer')()
       },
       {
         noShadow: true
@@ -513,7 +513,7 @@ export default class Clairvoyant {
           type: 'fingermove',
           evt: ev
         })
-      }, delay),
+      }, delay, 'touchmoveTimer'),
       {
         noShadow: true
       }
@@ -539,7 +539,7 @@ export default class Clairvoyant {
           }
         })
         this.transformList = []
-      }, delay),
+      }, delay, 'touchdragTimer'),
       {
         noShadow: true
       }
