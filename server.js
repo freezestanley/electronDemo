@@ -88,8 +88,8 @@ app.ws.use(
     ctx.websocket.on('message', function(message) {
       console.log('====' + message + '======')
       const idList = JSON.parse(message || '[]').map(item => item.id)
-      // ctx.websocket.send(idList.join(','))
-      ctx.websocket.send('done')
+      ctx.websocket.send(idList.join(','))
+      // ctx.websocket.send('done')
     })
   })
 )

@@ -1,5 +1,6 @@
 import { debounce } from '../socket'
-import { ISEE_MSG_POOL, ISEE_BATCH_COUNT, RESEND_TIME_INTERVAL, ISEE_MSG_ID } from '../constant'
+import { ISEE_MSG_POOL, ISEE_RESEND_MAX_COUNT, ISEE_BATCH_COUNT, ISEE_RESEND_TIME_INTERVAL, ISEE_MSG_ID } from '../constant'
+import { sendErrorMsg } from '../utils'
 
 const noop = function () {}
 const getType = function (obj) {
@@ -30,17 +31,21 @@ export default class MsgPool {
     const { cookie, sendCb } = options
     this.cookie = cookie
     this.sendCb = sendCb || noop
+    this.timer = null
     this._pool = getMsgListFromLocalStorage()
     this._msgId = getMsgIdFromLocalStorage(cookie)
     this._confirmPool = []
-    this.timer = null
-    this.resendCount = 0
-    this.persist = debounce(
-      val => {
-        localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(val))
+    this._resendCount = 0
+    this.debounceLoadDataFromLocalStorage = debounce(
+      () => {
+        const persistedMsgList = getMsgListFromLocalStorage()
+        // pool为空时，如果localStorage中不为空，则取localStorage中的数据填充pool
+        if (persistedMsgList.length > 0) {
+          this.pool = persistedMsgList
+        }
       },
-      300,
-      'persist'
+      200,
+      'debounceLoadDataFromLocalStorage'
     )
   }
   set pool (val) {
@@ -64,6 +69,22 @@ export default class MsgPool {
   get msgId () {
     return this._msgId
   }
+  set resendCount (val) {
+    this._resendCount = val
+    this.onResendCountChange(val)
+  }
+  get resendCount () {
+    return this._resendCount
+  }
+  persist (list) {
+    debounce(
+      val => {
+        localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(val))
+      },
+      300,
+      'persist'
+    ).call(this, list)
+  }
   addPool (val) {
     const msgList = normalizeParam(val)
     msgList.forEach(item => {
@@ -84,7 +105,9 @@ export default class MsgPool {
   }
   doSend (t) {
     if (this.pool.length > 0) {
-      const dataSlice = this._pool.splice(0, ISEE_BATCH_COUNT)
+      // const dataSlice = this._pool.splice(0, ISEE_BATCH_COUNT)
+      const dataSlice = this.pool.slice(0, ISEE_BATCH_COUNT)
+      this.pool = this.pool.slice(ISEE_BATCH_COUNT)
       // 放到confrim Pool中的数据添加发送时间属性
       this.confirmPool = dataSlice
         .filter(item => !includeMsg(this.confirmPool, item))
@@ -93,7 +116,27 @@ export default class MsgPool {
       this.sendCb(dataSlice)
     }
   }
+  onResendCountChange (val) {
+    // 处理重发次数超过最大值的情况
+    if (val >= ISEE_RESEND_MAX_COUNT) {
+      const errorMsg = `MsgPool:消息重发次数超过${ISEE_RESEND_MAX_COUNT}次`
+      sendErrorMsg(errorMsg)
+      console.log(errorMsg)
+    }
+  }
+  clearTimer () {
+    if (this.timer) {
+      clearInterval(this.timer)
+      this.timer = null
+    }
+  }
   onPoolChange (list) {
+    // 如果重发次数超过最大次数，停止重发动作，后续产生的事件缓存到localStorage
+    if (this.resendCount >= ISEE_RESEND_MAX_COUNT) {
+      this.clearTimer()
+      this.persist(this.confirmPool.concat(list))
+      return
+    }
     if (list.length > 0) {
       if (!this.timer) {
         this.timer = setInterval(() => {
@@ -101,16 +144,8 @@ export default class MsgPool {
         }, 500)
       }
     } else {
-      const persistedMsgList = getMsgListFromLocalStorage()
-      // pool为空时，如果localStorage中不为空，则取localStorage中的数据填充pool
-      if (persistedMsgList.length > 0) {
-        this.pool = persistedMsgList
-        return
-      }
-      if (this.timer) {
-        clearInterval(this.timer)
-        this.timer = null
-      }
+      this.debounceLoadDataFromLocalStorage()
+      this.clearTimer()
     }
   }
   onConfirmPoolChange (list) {
@@ -118,25 +153,28 @@ export default class MsgPool {
     let reSendMsgList = []
     let remain = []
     let pureReSendMsgList = []
+
     if (list.length > 0) {
       // the msg list need to send again
       reSendMsgList = list.filter(item => {
         const t = now - item.sentTime
         console.log('-----t', t)
-        return t >= RESEND_TIME_INTERVAL
+        return t >= ISEE_RESEND_TIME_INTERVAL
       })
       pureReSendMsgList = reSendMsgList.filter(item => !includeMsg(this.pool, item))
       remain = list.filter(item => !includeMsg(pureReSendMsgList, item))
       if (pureReSendMsgList.length > 0) {
         this.pool = pureReSendMsgList.concat(this.pool)
       }
+
       if (pureReSendMsgList.length === 0 && reSendMsgList.length > 0) {
-        if (this.resendCount >= 4) {
-          console.log('ws消息不能正常返回')
+        if (this.resendCount >= ISEE_RESEND_MAX_COUNT) {
+          return
         }
         this.resendCount++
       }
     }
+    // console.log('------remain', remain)
     this.persist(remain.concat(this.pool))
   }
   onMsgIdChange (val) {

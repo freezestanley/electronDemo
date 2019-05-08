@@ -26,9 +26,7 @@ export const getDelta = style => {
     y: '0',
     z: '0'
   }
-  const translateArr = style
-    .match(/(translate(X|Y|3D)?\().*?(?=\))/gi)
-    .map(attr => attr.replace('translate', '').toLowerCase())
+  const translateArr = style.match(/(translate(X|Y|3D)?\().*?(?=\))/gi).map(attr => attr.replace('translate', '').toLowerCase())
   translateArr.every(style => {
     if (style.indexOf('3d(') > -1) {
       const arr = style.replace('3d(', '').split(',')
@@ -79,7 +77,7 @@ export const setMask = (xpath, config = true) => {
   // }
   // const top = getElementTop(ele)
   // const bodyHeight = document.body.scrollHeight
-  const appendMask = (direct) => {
+  const appendMask = direct => {
     const maskElement = document.createElement('div')
     let style = `position: fixed;background: none;z-index:99999;`
     switch (direct) {
@@ -104,14 +102,14 @@ export const setMask = (xpath, config = true) => {
     if (mask && mask.length) {
       return true
     }
-    ['top', 'left', 'bottom', 'right'].forEach(item => {
+    ;['top', 'left', 'bottom', 'right'].forEach(item => {
       appendMask(item)
     })
   } else {
     if (!mask || !mask.length) {
       return false
     }
-    [...mask].forEach(m => {
+    ;[...mask].forEach(m => {
       m.parentNode.removeChild(m)
     })
   }
@@ -121,7 +119,17 @@ export const text2Img = (text, fontsize, fontcolor) => {
   var canvas = document.createElement('canvas')
   // 小于32字加1  小于60字加2  小于80字加4    小于100字加6
   let $buHeight = 0
-  if (fontsize <= 32) { $buHeight = 1 } else if (fontsize > 32 && fontsize <= 60) { $buHeight = 2 } else if (fontsize > 60 && fontsize <= 80) { $buHeight = 4 } else if (fontsize > 80 && fontsize <= 100) { $buHeight = 6 } else if (fontsize > 100) { $buHeight = 10 }
+  if (fontsize <= 32) {
+    $buHeight = 1
+  } else if (fontsize > 32 && fontsize <= 60) {
+    $buHeight = 2
+  } else if (fontsize > 60 && fontsize <= 80) {
+    $buHeight = 4
+  } else if (fontsize > 80 && fontsize <= 100) {
+    $buHeight = 6
+  } else if (fontsize > 100) {
+    $buHeight = 10
+  }
   // 对于g j 等有时会有遮挡，这里增加一些高度
   canvas.height = fontsize + $buHeight
   var context = canvas.getContext('2d')
@@ -132,7 +140,7 @@ export const text2Img = (text, fontsize, fontcolor) => {
   context.textBaseline = 'middle'
   context.fillText(text, 0, fontsize / 2)
 
-  var dataUrl = canvas.toDataURL('image/png')// 注意这里背景透明的话，需要使用png
+  var dataUrl = canvas.toDataURL('image/png') // 注意这里背景透明的话，需要使用png
   return dataUrl
 }
 
@@ -153,4 +161,9 @@ export const setWatermark = (content, style) => {
     document.body.appendChild(wrap)
   }
   wrap.innerHTML = element.outerHTML
+}
+
+export const sendErrorMsg = errorMsg => {
+  let img = new Image()
+  img.src = `http://gif-test.zhongan.io/i.gif?t=${Date.now()}&r=${errorMsg}`
 }
