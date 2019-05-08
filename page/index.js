@@ -29,6 +29,7 @@ const win = window
 const doc = window.document
 let ISEE_RE = ''
 let ISEE_TEST = ''
+let isWsOpened = false
 win.setMask = utils.setMask
 win.setWatermark = utils.setWatermark
 
@@ -214,13 +215,17 @@ export default class Clairvoyant {
     )
     win.addEventListener(
       'wheel',
-      debounce(ev => {
-        // console.log(ev)
-        this.observer({
-          type: 'scroll',
-          evt: ev
-        })
-      }, delay, 'wheelTimer'),
+      debounce(
+        ev => {
+          // console.log(ev)
+          this.observer({
+            type: 'scroll',
+            evt: ev
+          })
+        },
+        delay,
+        'wheelTimer'
+      ),
       {
         noShadow: true
       }
@@ -333,52 +338,61 @@ export default class Clairvoyant {
     doc.body.addEventListener(
       'mouseover',
       ev => {
+        if (!isWsOpened) {
+          return
+        }
         mouseX = ev.clientX
         mouseY = ev.clientY
-        debounce(() => {
-          this.observer({
-            type: 'mouseover',
-            evt: ev
-          })
-          const scrollNode = plant.FindScrollNode(ev.target)
-          if (scrollNode) {
-            // const targetXpath = readXPath(scrollNode);
-            const isListener = this.scrollList.find(ele => {
-              return ele === scrollNode
+        const t = Date.now()
+        debounce(
+          () => {
+            this.observer({
+              type: 'mouseover',
+              evt: ev,
+              t
             })
-            if (!isListener) {
-              this.scrollList.push(scrollNode)
-              const domScroll = throttle(ev => {
-                // console.log('domScroll')
-                this.observer({
-                  type: 'scroll',
-                  evt: ev
-                })
-              }, delay)
-
-              scrollNode.addEventListener('scroll', domScroll, {
-                noShadow: true
+            const scrollNode = plant.FindScrollNode(ev.target)
+            if (scrollNode) {
+              // const targetXpath = readXPath(scrollNode);
+              const isListener = this.scrollList.find(ele => {
+                return ele === scrollNode
               })
-              // console.log('scrollNode', scrollNode)
+              if (!isListener) {
+                this.scrollList.push(scrollNode)
+                const domScroll = throttle(ev => {
+                  // console.log('domScroll')
+                  this.observer({
+                    type: 'scroll',
+                    evt: ev
+                  })
+                }, delay)
 
-              // scrollNode.addEventListener('mouseenter', () => {
-              //   scrollNode.addEventListener('scroll', domScroll, {
-              //     noShadow: true
-              //   })
-              // }, {
-              //   noShadow: true
-              // })
+                scrollNode.addEventListener('scroll', domScroll, {
+                  noShadow: true
+                })
+                // console.log('scrollNode', scrollNode)
 
-              // scrollNode.addEventListener('mouseleave ', () => {
-              //   scrollNode.removeEventListener('scroll', domScroll, {
-              //     noShadow: true
-              //   })
-              // }, {
-              //   noShadow: true
-              // })
+                // scrollNode.addEventListener('mouseenter', () => {
+                //   scrollNode.addEventListener('scroll', domScroll, {
+                //     noShadow: true
+                //   })
+                // }, {
+                //   noShadow: true
+                // })
+
+                // scrollNode.addEventListener('mouseleave ', () => {
+                //   scrollNode.removeEventListener('scroll', domScroll, {
+                //     noShadow: true
+                //   })
+                // }, {
+                //   noShadow: true
+                // })
+              }
             }
-          }
-        }, delay, 'mouseoverTimer')()
+          },
+          delay,
+          'mouseoverTimer'
+        )()
       },
       {
         noShadow: true
@@ -403,6 +417,7 @@ export default class Clairvoyant {
         const targetClientRect = ev.target.getBoundingClientRect()
         const clientX = ev.target.clientX || mouseX
         const clientY = ev.target.clientY || mouseY
+        const t = Date.now()
         debounceObserver(() => {
           if (mousedownPoint.clientX === ev.clientX && mousedownPoint.clientY === ev.clientY && mousedownPoint.target === ev.target) {
             this.observer({
@@ -411,7 +426,8 @@ export default class Clairvoyant {
               xpath,
               clientX,
               clientY,
-              targetClientRect
+              targetClientRect,
+              t
             })
           } else {
             this.observer({
@@ -434,6 +450,7 @@ export default class Clairvoyant {
         const targetClientRect = ev.target.getBoundingClientRect()
         const clientX = ev.target.clientX || mouseX
         const clientY = ev.target.clientY || mouseY
+        const t = Date.now()
         debounceObserver(() => {
           this.observer({
             type: 'click',
@@ -441,7 +458,8 @@ export default class Clairvoyant {
             xpath,
             clientX,
             clientY,
-            targetClientRect
+            targetClientRect,
+            t
           })
         }, 10)
       },
@@ -508,12 +526,16 @@ export default class Clairvoyant {
 
     windowFinger.addEventListener(
       'touchmove',
-      debounce(ev => {
-        this.observer({
-          type: 'fingermove',
-          evt: ev
-        })
-      }, delay, 'touchmoveTimer'),
+      debounce(
+        ev => {
+          this.observer({
+            type: 'fingermove',
+            evt: ev
+          })
+        },
+        delay,
+        'touchmoveTimer'
+      ),
       {
         noShadow: true
       }
@@ -521,25 +543,29 @@ export default class Clairvoyant {
 
     windowFinger.addEventListener(
       'touchdrag',
-      debounce(ev => {
-        this.transformList.forEach(ele => {
-          const transformRect = ele.getBoundingClientRect()
-          const dragRect = ev.target.getBoundingClientRect()
-          if (utils.isOverlap(dragRect, transformRect)) {
-            // console.log(ele, this.transformList)
-            this.observer({
-              type: 'touchdrag',
-              evt: ev,
-              movement: {
-                ele,
-                delta: utils.getDelta(ele.style.cssText),
-                rect: transformRect
-              }
-            })
-          }
-        })
-        this.transformList = []
-      }, delay, 'touchdragTimer'),
+      debounce(
+        ev => {
+          this.transformList.forEach(ele => {
+            const transformRect = ele.getBoundingClientRect()
+            const dragRect = ev.target.getBoundingClientRect()
+            if (utils.isOverlap(dragRect, transformRect)) {
+              // console.log(ele, this.transformList)
+              this.observer({
+                type: 'touchdrag',
+                evt: ev,
+                movement: {
+                  ele,
+                  delta: utils.getDelta(ele.style.cssText),
+                  rect: transformRect
+                }
+              })
+            }
+          })
+          this.transformList = []
+        },
+        delay,
+        'touchdragTimer'
+      ),
       {
         noShadow: true
       }
@@ -564,28 +590,25 @@ export default class Clairvoyant {
       return false
     }
     if (node.nodeType === node.ELEMENT_NODE && node.classList) {
-      return (
-        node.classList.contains(blockCls) ||
-        this.isBlocked(node.parentNode, blockCls)
-      )
+      return node.classList.contains(blockCls) || this.isBlocked(node.parentNode, blockCls)
     }
     return this.isBlocked(node.parentNode)
   }
 
   observer (obj) {
-    const { evt, movement, xpath, targetClientRect, clientX, clientY } = obj
+    const { evt, movement, xpath, targetClientRect, clientX, clientY, t } = obj
     if (evt && evt.target && this.isBlocked(evt.target)) {
       return
     }
     let param = {
-      t: +new Date(),
+      t: t || +new Date(),
       i: cookie.getCookie('ISEE_BIZ'),
       a: this.plant ? eventType.AGENT_PC : eventType.AGENT_MOBILE,
       u: win.location.href
     }
     let event = null
     let _self = this
-    param.r = `${+new Date()}${eventType.SPLIT_DATA}`
+    param.r = `${t || +new Date()}${eventType.SPLIT_DATA}`
     const target = {
       openpage: function () {
         param.wh = _self.plant ? `${doc.documentElement.clientWidth}x${doc.documentElement.clientHeight}` : `${win.screen.width}x${win.screen.height}`
@@ -682,11 +705,11 @@ export default class Clairvoyant {
       touchdrag: function () {
         event = eventType.ACTION_DRAG
         const r = param.r.concat()
-        param.r = `${r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_DATA}${movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${movement.delta.x},${
-          movement.delta.y
-        },${movement.delta.z}${eventType.SPLIT_DATA}${xpath || readXPath(movement.ele)}${eventType.SPLIT_DATA}${evt._startPoint.changedTouches[0].clientX},${evt._startPoint.changedTouches[0].clientY}${
-          eventType.SPLIT_DATA
-        }${evt.changedTouches[0].clientX},${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
+        param.r = `${r}${event}${eventType.SPLIT_DATA}${xpath || readXPath(evt.target)}${eventType.SPLIT_DATA}${movement.rect.width},${movement.rect.height}${eventType.SPLIT_DATA}${
+          movement.delta.x
+        },${movement.delta.y},${movement.delta.z}${eventType.SPLIT_DATA}${xpath || readXPath(movement.ele)}${eventType.SPLIT_DATA}${evt._startPoint.changedTouches[0].clientX},${
+          evt._startPoint.changedTouches[0].clientY
+        }${eventType.SPLIT_DATA}${evt.changedTouches[0].clientX},${evt.changedTouches[0].clientY}${eventType.SPLIT_DATA}${eventType.SPLIT_LINE}`
         _self.pushData(param, event, 100)
       },
       paint: function () {
@@ -753,7 +776,8 @@ function domloaded (event) {
     }
     if (iseebiz) {
       clairvoyant.wsSocket.onopen = function (evt) {
-        // console.log('Connection start.')
+        console.log('Connection start.')
+        isWsOpened = true
         clairvoyant.observer({
           type: 'openpage',
           evt: evt
@@ -793,6 +817,7 @@ function domloaded (event) {
       }
       clairvoyant.wsSocket.onclose = function (evt) {
         // console.log('Connection closed.')
+        isWsOpened = false
       }
       clairvoyant.wsSocket.onerror = function (evt) {
         // console.log(evt)
