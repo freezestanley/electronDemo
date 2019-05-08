@@ -344,11 +344,13 @@ export default class Clairvoyant {
         mouseX = ev.clientX
         mouseY = ev.clientY
         const t = Date.now()
+        const xpath = readXPath(ev.target)
         debounce(
           () => {
             this.observer({
               type: 'mouseover',
               evt: ev,
+              xpath,
               t
             })
             const scrollNode = plant.FindScrollNode(ev.target)
