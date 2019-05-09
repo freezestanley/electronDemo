@@ -725,6 +725,16 @@ export default class Clairvoyant {
     target[obj.type]()
   }
   pushData (obj, eventType, time = 0) {
+    if (ISEE_RE || ISEE_TEST) {
+      if (eventType) {
+        window.sessionStorage.setItem(`iseeAction-${eventType}`, JSON.stringify(obj))
+      }
+      return
+    }
+    if (process.env.NODE_ENV === 'production' && !cookie.getCookie('ISEE_BIZ')) {
+      return
+    }
+    let pushMode = getConfig('pushMode') || 'once'
     // 发现超时后重新链接
     if ((this.msgPool && this.msgPool.resndMaxExceed) || isWsOpened === 'close') {
       debounce(
@@ -742,16 +752,6 @@ export default class Clairvoyant {
     if (isWsOpened === 'initial') {
       return
     }
-    if (ISEE_RE || ISEE_TEST) {
-      if (eventType) {
-        window.sessionStorage.setItem(`iseeAction-${eventType}`, JSON.stringify(obj))
-      }
-      return
-    }
-    if (process.env.NODE_ENV === 'production' && !cookie.getCookie('ISEE_BIZ')) {
-      return
-    }
-    let pushMode = getConfig('pushMode') || 'once'
 
     if (pushMode === 'once') {
       this.msgPool.addPool(obj)
