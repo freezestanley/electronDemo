@@ -331,9 +331,6 @@ export default class Clairvoyant {
     doc.body.addEventListener(
       'mouseover',
       ev => {
-        if (!isWsOpened) {
-          return
-        }
         mouseX = ev.clientX
         mouseY = ev.clientY
         const t = Date.now()
@@ -724,6 +721,9 @@ export default class Clairvoyant {
     target[obj.type]()
   }
   pushData (obj, eventType, time = 0) {
+    if (!isWsOpened) {
+      return
+    }
     if (ISEE_RE || ISEE_TEST) {
       if (eventType) {
         window.sessionStorage.setItem(`iseeAction-${eventType}`, JSON.stringify(obj))
