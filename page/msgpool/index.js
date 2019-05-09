@@ -35,7 +35,9 @@ export default class MsgPool {
     this._pool = getMsgListFromLocalStorage()
     this._msgId = getMsgIdFromLocalStorage(cookie)
     this._confirmPool = []
+    // 用来存储最近发送过的消息列表，最大长度为 ISEE_BATCH_COUNT * ISEE_RESEND_MAX_COUNT
     this.lastResentList = []
+    // 用来表示同一个消息重复发送的次数是否超过了最大限制
     this.resndMaxExceed = false
     this.debounceLoadDataFromLocalStorage = debounce(
       () => {
@@ -69,6 +71,10 @@ export default class MsgPool {
   }
   get msgId () {
     return this._msgId
+  }
+  resetResndMaxExceed () {
+    this.resndMaxExceed = false
+    this.lastResentList = []
   }
   persist (list) {
     debounce(
@@ -116,6 +122,13 @@ export default class MsgPool {
       this.timer = null
     }
   }
+  startTimer () {
+    if (!this.timer) {
+      this.timer = setInterval(() => {
+        this.doSend(Date.now())
+      }, 500)
+    }
+  }
   onPoolChange (list) {
     // 如果重发次数超过最大次数，停止重发动作，后续产生的事件缓存到localStorage
     if (this.resndMaxExceed) {
@@ -124,11 +137,7 @@ export default class MsgPool {
       return
     }
     if (list.length > 0) {
-      if (!this.timer) {
-        this.timer = setInterval(() => {
-          this.doSend(Date.now())
-        }, 500)
-      }
+      this.startTimer()
     } else {
       this.debounceLoadDataFromLocalStorage()
       this.clearTimer()

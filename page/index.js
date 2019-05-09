@@ -30,7 +30,8 @@ const win = window
 const doc = window.document
 let ISEE_RE = ''
 let ISEE_TEST = ''
-let isWsOpened = false
+// websocket打开之前不发送任何消息，确保wh为第一条消息
+let isWsOpened = 'initial'
 win.setMask = utils.setMask
 win.setWatermark = utils.setWatermark
 
@@ -721,7 +722,20 @@ export default class Clairvoyant {
     target[obj.type]()
   }
   pushData (obj, eventType, time = 0) {
-    if (!isWsOpened) {
+    // 发现超时后重新链接
+    if (this.msgPool.resndMaxExceed || this.wsSocket.skt.readyState === 3) {
+      debounce(
+        () => {
+          this.wsSocket.reconnect(() => {
+            this.msgPool.startTimer()
+            this.msgPool.resetResndMaxExceed()
+          })
+        },
+        300,
+        'reconnect'
+      )()
+    }
+    if (isWsOpened === 'initial') {
       return
     }
     if (ISEE_RE || ISEE_TEST) {
@@ -734,9 +748,8 @@ export default class Clairvoyant {
       return
     }
     let pushMode = getConfig('pushMode') || 'once'
+
     if (pushMode === 'once') {
-      // obj['id'] = idCount++
-      // this.wsSocket.send(obj)
       this.msgPool.addPool(obj)
     } else {
       this.messageList.push(obj)
@@ -772,7 +785,7 @@ function domloaded (event) {
   }
   const onopenCb = function (clairvoyant, evt) {
     // console.log('Connection start.')
-    isWsOpened = true
+    isWsOpened = 'done'
     clairvoyant.observer({
       type: 'openpage',
       evt: evt
@@ -809,7 +822,7 @@ function domloaded (event) {
     }
     clairvoyant.wsSocket.onclose = function (evt) {
       // console.log('Connection closed.')
-      isWsOpened = false
+      isWsOpened = 'close'
     }
     clairvoyant.wsSocket.onerror = function (evt) {
       // console.log(evt)

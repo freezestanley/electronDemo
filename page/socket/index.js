@@ -32,10 +32,10 @@ Wsocket.prototype.send = function (param) {
 Wsocket.prototype.close = function () {
   this.skt.close()
 }
-Wsocket.prototype.reconnect = function (param) {
+Wsocket.prototype.reconnect = function (cb) {
   this.skt = wsocket(this.url)
   this.skt.onopen = ev => {
-    this.reconnectSuccessCb && this.reconnectSuccessCb()
+    cb()
   }
   this.skt.onmessage = this.onmessage
   this.skt.onclose = this.onclose
