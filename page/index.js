@@ -723,12 +723,13 @@ export default class Clairvoyant {
   }
   pushData (obj, eventType, time = 0) {
     // 发现超时后重新链接
-    if (this.msgPool.resndMaxExceed || this.wsSocket.skt.readyState === 3) {
+    if ((this.msgPool && this.msgPool.resndMaxExceed) || isWsOpened === 'close') {
       debounce(
         () => {
           this.wsSocket.reconnect(() => {
             this.msgPool.startTimer()
             this.msgPool.resetResndMaxExceed()
+            isWsOpened = 'done'
           })
         },
         300,

@@ -165,7 +165,7 @@ export default class MsgPool {
       // 需要重发的消息列表
       reSendMsgList = list.filter(item => {
         const t = now - item.sentTime
-        // console.log('----消息超时时间：', t)
+        console.log('----resend duration:', t)
         return t >= ISEE_RESEND_TIME_INTERVAL
       })
       pureReSendMsgList = reSendMsgList.filter(item => !includeMsg(this.pool, item))
