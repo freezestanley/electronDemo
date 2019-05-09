@@ -51,12 +51,18 @@ export const getDelta = style => {
 }
 
 export const setMask = (xpath, config = true) => {
-  const ele = document.evaluate(xpath, document).iterateNext()
-  if (!ele) {
-    console.log(`找不到${xpath}对应的dom元素`)
-  }
-  const { top, left, right, width, height } = ele.getBoundingClientRect()
   const mask = document.getElementsByClassName('isee-selenium-mask')
+  if (!config) {
+    if (!mask || !mask.length) {
+      return false
+    }
+    ;[...mask].forEach(m => {
+      m.parentNode.removeChild(m)
+    })
+    return
+  }
+  const ele = document.evaluate(xpath, document).iterateNext()
+  const { top, left, right, width, height } = ele.getBoundingClientRect()
   // const getTranslate = (element) => {
   //   var transformMatrix = element.style['WebkitTransform'] || getComputedStyle(element, '').getPropertyValue('-webkit-transform') || element.style['transform'] || getComputedStyle(element, '').getPropertyValue('transform')
 
@@ -101,21 +107,12 @@ export const setMask = (xpath, config = true) => {
     maskElement.setAttribute('class', 'isee-selenium-mask')
     document.body.appendChild(maskElement)
   }
-  if (config) {
-    if (mask && mask.length) {
-      return true
-    }
-    ;['top', 'left', 'bottom', 'right'].forEach(item => {
-      appendMask(item)
-    })
-  } else {
-    if (!mask || !mask.length) {
-      return false
-    }
-    ;[...mask].forEach(m => {
-      m.parentNode.removeChild(m)
-    })
+  if (mask && mask.length) {
+    return true
   }
+  ;['top', 'left', 'bottom', 'right'].forEach(item => {
+    appendMask(item)
+  })
 }
 
 export const text2Img = (text, fontsize, fontcolor) => {
