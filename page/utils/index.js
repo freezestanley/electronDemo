@@ -52,7 +52,7 @@ export const getDelta = style => {
 
 export const setMask = (xpath, config = true) => {
   const ele = document.evaluate(xpath, document).iterateNext()
-  const { top, left, right, width, height, bottom } = ele.getBoundingClientRect()
+  const { top, left, right, width, height } = ele.getBoundingClientRect()
   const mask = document.getElementsByClassName('isee-selenium-mask')
   // const getTranslate = (element) => {
   //   var transformMatrix = element.style['WebkitTransform'] || getComputedStyle(element, '').getPropertyValue('-webkit-transform') || element.style['transform'] || getComputedStyle(element, '').getPropertyValue('transform')
@@ -88,7 +88,7 @@ export const setMask = (xpath, config = true) => {
         style += `width:${left}px;height:${height}px;top:${top}px;left:0;`
         break
       case 'bottom':
-        style += `width:100%;height:${bottom}px;top:${top + height}px;left:0;`
+        style += `width:100%;height:100%;top:${top + height}px;left:0;`
         break
       case 'right':
         style += `width:${right}px;height:${height}px;top:${top}px;left:${left + width}px;`
