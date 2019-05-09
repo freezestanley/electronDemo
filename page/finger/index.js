@@ -44,6 +44,88 @@ export class FingerType {
   }
 }
 
+export const fingerEventsCallback = {
+  touchstart (ev, _this = this, eventsFunc) {
+    if (eventsFunc) {
+      _this._touchstart = eventsFunc['touchstart']
+    }
+    _this.finger = new FingerType()
+    _this.finger.start(ev)
+    _this._startPoint = ev
+    _this._startTarget = ev.target
+    _this._startXpath = readXPath(ev.target)
+    // 临时解决办法，根据canvas是否含有touchmove事件来判断是否需要发送paint事件（是否为签名）
+    if (ev.target.tagName.toLowerCase() === 'canvas' && (ev.target.__proxy && ev.target.__proxy.__eventOrginList && ev.target.__proxy.__eventOrginList.touchmove.length > 0)) {
+      const canvasEle = ev.changedTouches[0].target
+      const x = ev.changedTouches[0].clientX - canvasEle.getBoundingClientRect().left + ''
+      const y = ev.changedTouches[0].clientY - canvasEle.getBoundingClientRect().top + ''
+      _this._movePoint = `${x.split('.')[0]}-${y.split('.')[0]}€`
+    } else {
+      _this._movePoint = null
+    }
+    if (_this._touchstart) _this._touchstart(ev)
+  },
+  touchend (ev, _this = this, eventsFunc) {
+    if (eventsFunc) {
+      _this._touchend = eventsFunc['touchend']
+      _this._touchdrag = eventsFunc['touchdrag']
+      _this._touchPaint = eventsFunc['touchPaint']
+    }
+    const type = _this.finger.end(ev)
+    if (ev.target == _this._startTarget) {
+      ev._xpath = _this._startXpath
+    } else {
+      ev._xpath = null
+    }
+    if (type === TOUCH_TAP && _this._touchtap) {
+      _this._touchtap(ev)
+    }
+
+    if (type === TOUCH_DRAGTAP) {
+      if (_this._touchdrag) {
+        ev._startPoint = _this._startPoint
+        _this._touchdrag(ev)
+      }
+      if (_this._touchPaint && ev.target.tagName.toLowerCase() === 'canvas' && _this._movePoint) {
+        const allPoints = _this._movePoint.split('€').filter(item => !!item)
+        const movePoints = []
+        let prevIndex = 0
+        allPoints.forEach((point, index) => {
+          if (index === 0 || index === allPoints.length - 1) {
+            movePoints.push(point)
+            prevIndex = index
+          } else {
+            const [prevPointX, prevPointY] = allPoints[prevIndex].split('-')
+            const [pointX, pointY] = point.split('-')
+            if (Math.abs(pointX - prevPointX) > 3 || Math.abs(pointY - prevPointY) > 3) {
+              movePoints.push(point)
+              prevIndex = index
+            }
+          }
+        })
+        ev._movePoint = movePoints.join('€')
+        _this._touchPaint(ev)
+      }
+    }
+
+    if (_this._touchend) _this._touchend(ev)
+    _this._startPoint = null
+    _this._movePoint = null
+  },
+  touchmove (ev, _this = this, eventsFunc) {
+    if (eventsFunc) {
+      _this._touchmove = eventsFunc['touchmove']
+    }
+    _this.finger.move(ev)
+    if (_this._movePoint) {
+      const canvasEle = ev.changedTouches[0].target
+      const x = ev.changedTouches[0].clientX - canvasEle.getBoundingClientRect().left + ''
+      const y = ev.changedTouches[0].clientY - canvasEle.getBoundingClientRect().top + ''
+      _this._movePoint += `${x.split('.')[0]}-${y.split('.')[0]}€`
+    }
+    if (_this._touchmove) _this._touchmove(ev)
+  }
+}
 export default class Finger {
   constructor (node = window, ev) {
     this._touchstart = null
@@ -70,22 +152,7 @@ export default class Finger {
     node.addEventListener(
       'touchstart',
       ev => {
-        // ev.preventDefault()
-        this.finger = new FingerType()
-        this.finger.start(ev)
-        this._startPoint = ev
-        this._startTarget = ev.target
-        this._startXpath = readXPath(ev.target)
-        // 临时解决办法，根据canvas是否含有touchmove事件来判断是否需要发送paint事件（是否为签名）
-        if (ev.target.tagName.toLowerCase() === 'canvas' && (ev.target.__proxy && ev.target.__proxy.__eventOrginList && ev.target.__proxy.__eventOrginList.touchmove.length > 0)) {
-          const canvasEle = ev.changedTouches[0].target
-          const x = ev.changedTouches[0].clientX - canvasEle.getBoundingClientRect().left + ''
-          const y = ev.changedTouches[0].clientY - canvasEle.getBoundingClientRect().top + ''
-          this._movePoint = `${x.split('.')[0]}-${y.split('.')[0]}€`
-        } else {
-          this._movePoint = null
-        }
-        if (this._touchstart) this._touchstart(ev)
+        fingerEventsCallback['touchstart'](ev, this)
       },
       {
         passive: false,
@@ -96,48 +163,7 @@ export default class Finger {
     node.addEventListener(
       'touchend',
       ev => {
-        // ev.preventDefault()
-        const type = this.finger.end(ev)
-        if (ev.target == this._startTarget) {
-          ev._xpath = this._startXpath
-        } else {
-          ev._xpath = null
-        }
-        if (type === TOUCH_TAP && this._touchtap) {
-          this._touchtap(ev)
-        }
-
-        if (type === TOUCH_DRAGTAP) {
-          if (this._touchdrag) {
-            ev._startPoint = this._startPoint
-            this._touchdrag(ev)
-          }
-          if (this._touchPaint && ev.target.tagName.toLowerCase() === 'canvas' && this._movePoint) {
-            const allPoints = this._movePoint.split('€').filter(item => !!item)
-            const movePoints = []
-            let prevIndex = 0
-            allPoints.forEach((point, index) => {
-              if (index === 0 || index === allPoints.length - 1) {
-                movePoints.push(point)
-                prevIndex = index
-              } else {
-                const [prevPointX, prevPointY] = allPoints[prevIndex].split('-')
-                const [pointX, pointY] = point.split('-')
-                if (Math.abs(pointX - prevPointX) > 3 || Math.abs(pointY - prevPointY) > 3) {
-                  movePoints.push(point)
-                  prevIndex = index
-                }
-              }
-            })
-            ev._movePoint = movePoints.join('€')
-            this._touchPaint(ev)
-          }
-        }
-
-        if (this._touchend) this._touchend(ev)
-
-        this._startPoint = null
-        this._movePoint = null
+        fingerEventsCallback['touchend'](ev, this)
       },
       {
         passive: false,
@@ -148,14 +174,7 @@ export default class Finger {
     node.addEventListener(
       'touchmove',
       ev => {
-        this.finger.move(ev)
-        if (this._movePoint) {
-          const canvasEle = ev.changedTouches[0].target
-          const x = ev.changedTouches[0].clientX - canvasEle.getBoundingClientRect().left + ''
-          const y = ev.changedTouches[0].clientY - canvasEle.getBoundingClientRect().top + ''
-          this._movePoint += `${x.split('.')[0]}-${y.split('.')[0]}€`
-        }
-        if (this._touchmove) this._touchmove(ev)
+        fingerEventsCallback['touchmove'](ev, this)
       },
       {
         passive: false,

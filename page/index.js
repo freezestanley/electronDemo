@@ -4,7 +4,8 @@ import * as plant from './plant'
 import { readXPath, selectNodes } from './xpath'
 import * as eventType from './enum'
 import DomObserver from './observer'
-import Finger from './finger'
+import Finger, { fingerEventsCallback } from './finger'
+import Mouse, { mouseEventsCallback } from './mouse'
 import Cookie from './cookie'
 import { CreateXMLHttp } from './xmlhttprequest'
 import { ProxyEvent } from 'event-shadow'
@@ -88,6 +89,266 @@ export default class Clairvoyant {
     this.formlist = []
     this.canvasList = []
     this.transformList = []
+    const self = this
+    this.eventFunction = {
+      visibilitychange (ev, _this = self) {
+        typeof doc.hidden === 'boolean' && doc.hidden === false
+          ? _this.observer({
+            type: 'visibilitychange',
+            evt: ev
+          })
+          : _this.observer({
+            type: 'visibilityblur',
+            evt: ev
+          })
+      },
+      input (ev, _this = self) {
+        let target = ev.target.nodeName.toLocaleLowerCase()
+        if (target === 'textarea') {
+          _this.observer({
+            type: 'inputChange',
+            evt: ev
+          })
+        } else if (target === 'select') {
+          _this.observer({
+            type: 'select',
+            evt: ev
+          })
+        } else if (target === 'input') {
+          _this.observer({
+            type: 'inputChange',
+            evt: ev
+          })
+        }
+      },
+      popstate (ev, _this = self) {
+        _this.observer({
+          type: 'popstate',
+          evt: ev
+        })
+      },
+      hashchange (ev, _this = self) {
+        _this.observer({
+          type: 'hashchange',
+          evt: ev
+        })
+      },
+      beforeunload (ev, _this = self) {
+        _this.observer({
+          type: 'unload',
+          evt: ev
+        })
+        _this.lazy()
+      },
+      scroll (ev, _this = self) {
+        throttle(() => {
+          _this.observer({
+            type: 'scroll',
+            evt: ev
+          })
+        }, delay)()
+      },
+      wheel (ev, _this = self) {
+        debounce(() => {
+          this.observer({
+            type: 'scroll',
+            evt: ev
+          })
+        }, delay, 'wheelTimer')()
+      },
+      focus (ev, _this = self) {
+        _this.inputFocusEvent.bind(_this)()
+      },
+      blur (ev, _this = self) {
+        _this.inputBlurEvent.bind(_this)()
+      },
+      mouseover (ev, _this = self) {
+        _this.mouseX = ev.clientX
+        _this.mouseY = ev.clientY
+        debounce(() => {
+          _this.observer({
+            type: 'mouseover',
+            evt: ev
+          })
+          const scrollNode = plant.FindScrollNode(ev.target)
+          if (scrollNode) {
+            // const targetXpath = readXPath(scrollNode);
+            const isListener = _this.scrollList.find(ele => {
+              return ele === scrollNode
+            })
+            if (!isListener) {
+              _this.scrollList.push(scrollNode)
+              const domScroll = throttle(ev => {
+                // console.log('domScroll')
+                _this.observer({
+                  type: 'scroll',
+                  evt: ev
+                })
+              }, delay)
+
+              scrollNode.addEventListener('scroll', domScroll, {
+                noShadow: true
+              })
+              // console.log('scrollNode', scrollNode)
+
+              // scrollNode.addEventListener('mouseenter', () => {
+              //   scrollNode.addEventListener('scroll', domScroll, {
+              //     noShadow: true
+              //   })
+              // }, {
+              //   noShadow: true
+              // })
+
+              // scrollNode.addEventListener('mouseleave ', () => {
+              //   scrollNode.removeEventListener('scroll', domScroll, {
+              //     noShadow: true
+              //   })
+              // }, {
+              //   noShadow: true
+              // })
+            }
+          }
+        }, delay, 'mouseoverTimer')()
+      },
+      mousedown (ev, _this = self) {
+        mousedownPoint = ev
+      },
+      mouseup (ev, _this = self) {
+        const evt = ev
+        const xpath = readXPath(ev.target)
+        const targetClientRect = ev.target.getBoundingClientRect()
+        const clientX = ev.target.clientX || _this.mouseX
+        const clientY = ev.target.clientY || _this.mouseY
+        debounce(() => {
+          if (mousedownPoint.clientX === ev.clientX && mousedownPoint.clientY === ev.clientY && mousedownPoint.target === ev.target) {
+            _this.observer({
+              type: 'click',
+              evt,
+              xpath,
+              clientX,
+              clientY,
+              targetClientRect
+            })
+          } else {
+            _this.observer({
+              type: 'mousemove',
+              evt,
+              xpath
+            })
+          }
+        }, 10, 'clickTimer')()
+      },
+      click (ev, _this = self) {
+        const evt = ev
+        const xpath = readXPath(ev.target)
+        const targetClientRect = ev.target.getBoundingClientRect()
+        const clientX = ev.target.clientX || _this.mouseX
+        const clientY = ev.target.clientY || _this.mouseY
+        debounce(() => {
+          _this.observer({
+            type: 'click',
+            evt,
+            xpath,
+            clientX,
+            clientY,
+            targetClientRect
+          })
+        }, 10, 'clickTimer')()
+      },
+      mousedrag (ev, _this = self) {
+        debounce(() => {
+          _this.transformList.forEach(ele => {
+            const transformRect = ele.getBoundingClientRect()
+            const dragRect = ev.target.getBoundingClientRect()
+            if (utils.isOverlap(dragRect, transformRect)) {
+              // console.log(ele, this.transformList)
+              _this.observer({
+                type: 'touchdrag',
+                evt: ev,
+                movement: {
+                  ele,
+                  delta: utils.getDelta(ele.style.cssText),
+                  rect: transformRect
+                }
+              })
+            }
+          })
+          _this.transformList = []
+        }, delay, 'mousedragTimer')()
+      },
+      touchtap (ev, _this = self) {
+        const xpath = ev._xpath || null
+        _this.observer({
+          type: 'click',
+          evt: ev,
+          xpath
+        })
+      },
+      touchstart (ev, _this = self) {
+        const scrolltarget = plant.FindScrollNode(ev.target)
+        // console.log('-----scrolltarget', scrolltarget)
+        if (scrolltarget) {
+          // const targetXpath = readXPath(scrolltarget);
+          const isListener = _this.scrollList.find(id => {
+            return id === eId(scrolltarget)
+          })
+          if (!isListener) {
+            _this.scrollList.push(eId(scrolltarget))
+            const domScroll = throttle(ev => {
+              _this.observer({
+                type: 'scroll',
+                evt: ev
+              })
+            }, delay)
+            scrolltarget.addEventListener('scroll', domScroll, {
+              noShadow: true
+            })
+            // scrolltarget.addEventListener('touchstart', () => {
+            // scrolltarget.addEventListener('scroll', domScroll)
+            // })
+
+            // scrolltarget.addEventListener('touchend', () => {
+            //   scrolltarget.removeEventListener('scroll', domScroll)
+            // })
+          }
+        }
+      },
+      touchmove (ev, _this = self) {
+        debounce(() => {
+          _this.observer({
+            type: 'fingermove',
+            evt: ev
+          })
+        }, delay, 'touchmoveTimer')()
+      },
+      touchdrag (ev, _this = self) {
+        debounce(() => {
+          _this.transformList.forEach(ele => {
+            const transformRect = ele.getBoundingClientRect()
+            const dragRect = ev.target.getBoundingClientRect()
+            if (utils.isOverlap(dragRect, transformRect)) {
+              // console.log(ele, this.transformList)
+              _this.observer({
+                type: 'touchdrag',
+                evt: ev,
+                movement: {
+                  ele,
+                  delta: utils.getDelta(ele.style.cssText),
+                  rect: transformRect
+                }
+              })
+            }
+          })
+          _this.transformList = []
+        }, delay, 'touchdragTimer')()
+      },
+      touchpaint (ev, _this = self) {
+        _this.observer({
+          type: 'paint',
+          evt: ev
+        })
+      }
+    }
   }
 
   static selectNode (xpath) {
@@ -112,119 +373,49 @@ export default class Clairvoyant {
     this.addBaseEvent()
     this.mutationWatch()
     this.plant ? this.deskWatch() : this.mobileWatch()
+    const self = this
+    this._stopPropagation = Event.prototype.stopPropagation
+    Object.defineProperty(Event.prototype, 'stopPropagation', {
+      get () {
+        return function () {
+          self.eventFunction[this.type](this)
+          self.plant ? mouseEventsCallback[this.type](this, self, self.eventFunction) : fingerEventsCallback[this.type](this, self, self.eventFunction)
+          self._stopPropagation()
+        }
+      },
+      enumerable: true,
+      configurable: true
+    })
   }
 
   addBaseEvent () {
     // 添加全局基础事件
-    doc.addEventListener(
-      'visibilitychange',
-      ev => {
-        typeof doc.hidden === 'boolean' && doc.hidden === false
-          ? this.observer({
-            type: 'visibilitychange',
-            evt: ev
-          })
-          : this.observer({
-            type: 'visibilityblur',
-            evt: ev
-          })
-      },
-      {
-        noShadow: true
-      }
-    )
-    win.addEventListener(
-      'input',
-      ev => {
-        let target = ev.target.nodeName.toLocaleLowerCase()
-        if (target === 'textarea') {
-          this.observer({
-            type: 'inputChange',
-            evt: ev
-          })
-        } else if (target === 'select') {
-          this.observer({
-            type: 'select',
-            evt: ev
-          })
-        } else if (target === 'input') {
-          this.observer({
-            type: 'inputChange',
-            evt: ev
-          })
+    const docEvents = ['visibilitychange']
+    const windowEvents = ['input', 'popstate', 'hashchange', 'beforeunload', 'scroll', 'wheel']
+
+    docEvents.forEach(eventType => {
+      doc.addEventListener(
+        eventType,
+        ev => {
+          this.eventFunction[eventType](ev)
+        },
+        {
+          noShadow: true
         }
-      },
-      {
-        noShadow: true
-      }
-    )
-    win.addEventListener(
-      'popstate',
-      ev => {
-        this.observer({
-          type: 'popstate',
-          evt: ev
-        })
-      },
-      {
-        noShadow: true
-      }
-    )
+      )
+    })
 
-    win.addEventListener(
-      'hashchange',
-      ev => {
-        this.observer({
-          type: 'hashchange',
-          evt: ev
-        })
-      },
-      {
-        noShadow: true
-      }
-    )
-
-    win.addEventListener(
-      'beforeunload',
-      ev => {
-        this.observer({
-          type: 'unload',
-          evt: ev
-        })
-        this.lazy()
-      },
-      {
-        noShadow: true
-      }
-    )
-
-    win.addEventListener(
-      'scroll',
-      throttle(
-        ev =>
-          this.observer({
-            type: 'scroll',
-            evt: ev
-          }),
-        delay
-      ),
-      {
-        noShadow: true
-      }
-    )
-    win.addEventListener(
-      'wheel',
-      debounce(ev => {
-        // console.log(ev)
-        this.observer({
-          type: 'scroll',
-          evt: ev
-        })
-      }, delay, 'wheelTimer'),
-      {
-        noShadow: true
-      }
-    )
+    windowEvents.forEach(eventType => {
+      win.addEventListener(
+        eventType,
+        ev => {
+          this.eventFunction[eventType](ev)
+        },
+        {
+          noShadow: true
+        }
+      )
+    })
   }
 
   mutationWatch () {
@@ -275,10 +466,10 @@ export default class Clairvoyant {
         // cNode.addEventListener("change", _this.inputChangEvent.bind(_this), {   //
         // noShadow: true   // }); } else
         if (cNode.type != 'radio' || cNode.type != 'checkbox' || cNode.type != 'select') {
-          cNode.addEventListener('focus', _this.inputFocusEvent.bind(_this), {
+          cNode.addEventListener('focus', ev => { _this.eventFunction['focus'](ev, _this) }, {
             noShadow: true
           })
-          cNode.addEventListener('blur', _this.inputBlurEvent.bind(_this), {
+          cNode.addEventListener('blur', ev => { _this.eventFunction['blur'](ev, _this) }, {
             noShadow: true
           })
         }
@@ -324,239 +515,46 @@ export default class Clairvoyant {
   }
 
   deskWatch () {
-    const debounceObserver = (cb, delay) => {
-      debounce(cb, delay, 'clickTimer')()
-    }
-    let mouseX
-    let mouseY
-    // div 内滚动
-    doc.body.addEventListener(
-      'mouseover',
-      ev => {
-        mouseX = ev.clientX
-        mouseY = ev.clientY
-        debounce(() => {
-          this.observer({
-            type: 'mouseover',
-            evt: ev
-          })
-          const scrollNode = plant.FindScrollNode(ev.target)
-          if (scrollNode) {
-            // const targetXpath = readXPath(scrollNode);
-            const isListener = this.scrollList.find(ele => {
-              return ele === scrollNode
-            })
-            if (!isListener) {
-              this.scrollList.push(scrollNode)
-              const domScroll = throttle(ev => {
-                // console.log('domScroll')
-                this.observer({
-                  type: 'scroll',
-                  evt: ev
-                })
-              }, delay)
+    const windowMouse = new Mouse(win)
+    const deskEvents = ['mouseover', 'mousedown', 'mouseup', 'click']
+    const mouseEvents = ['mousedrag']
 
-              scrollNode.addEventListener('scroll', domScroll, {
-                noShadow: true
-              })
-              // console.log('scrollNode', scrollNode)
+    deskEvents.forEach(eventType => {
+      doc.body.addEventListener(
+        eventType,
+        ev => {
+          this.eventFunction[eventType](ev)
+        },
+        {
+          noShadow: true
+        }
+      )
+    })
 
-              // scrollNode.addEventListener('mouseenter', () => {
-              //   scrollNode.addEventListener('scroll', domScroll, {
-              //     noShadow: true
-              //   })
-              // }, {
-              //   noShadow: true
-              // })
-
-              // scrollNode.addEventListener('mouseleave ', () => {
-              //   scrollNode.removeEventListener('scroll', domScroll, {
-              //     noShadow: true
-              //   })
-              // }, {
-              //   noShadow: true
-              // })
-            }
-          }
-        }, delay, 'mouseoverTimer')()
-      },
-      {
-        noShadow: true
-      }
-    )
-
-    // 页面点击
-    doc.body.addEventListener(
-      'mousedown',
-      ev => {
-        mousedownPoint = ev
-      },
-      {
-        noShadow: true
-      }
-    )
-    doc.body.addEventListener(
-      'mouseup',
-      ev => {
-        const evt = ev
-        const xpath = readXPath(ev.target)
-        const targetClientRect = ev.target.getBoundingClientRect()
-        const clientX = ev.target.clientX || mouseX
-        const clientY = ev.target.clientY || mouseY
-        debounceObserver(() => {
-          if (mousedownPoint.clientX === ev.clientX && mousedownPoint.clientY === ev.clientY && mousedownPoint.target === ev.target) {
-            this.observer({
-              type: 'click',
-              evt,
-              xpath,
-              clientX,
-              clientY,
-              targetClientRect
-            })
-          } else {
-            this.observer({
-              type: 'mousemove',
-              evt,
-              xpath
-            })
-          }
-        }, 10)
-      },
-      {
-        noShadow: true
-      }
-    )
-    doc.body.addEventListener(
-      'click',
-      ev => {
-        const evt = ev
-        const xpath = readXPath(ev.target)
-        const targetClientRect = ev.target.getBoundingClientRect()
-        const clientX = ev.target.clientX || mouseX
-        const clientY = ev.target.clientY || mouseY
-        debounceObserver(() => {
-          this.observer({
-            type: 'click',
-            evt,
-            xpath,
-            clientX,
-            clientY,
-            targetClientRect
-          })
-        }, 10)
-      },
-      {
-        noShadow: true
-      }
-    )
+    mouseEvents.forEach(eventType => {
+      windowMouse.addEventListener(
+        eventType,
+        ev => {
+          this.eventFunction[eventType](ev)
+        },
+        {
+          noShadow: true
+        }
+      )
+    })
   }
 
   mobileWatch () {
     let windowFinger = new Finger(win)
+    const fingerEvents = ['touchtap', 'touchstart', 'touchmove', 'touchdrag', 'touchpaint']
     // 页面点击
-    windowFinger.addEventListener(
-      'touchtap',
-      ev => {
-        const xpath = ev._xpath || null
-        this.observer({
-          type: 'click',
-          evt: ev,
-          xpath
+    fingerEvents.forEach(eventType => {
+      windowFinger.addEventListener(
+        eventType,
+        ev => {
+          this.eventFunction[eventType](ev)
         })
-      },
-      {
-        noShadow: true
-      }
-    )
-
-    // div 内滚动
-    windowFinger.addEventListener(
-      'touchstart',
-      ev => {
-        const scrolltarget = plant.FindScrollNode(ev.target)
-        // console.log('-----scrolltarget', scrolltarget)
-        if (scrolltarget) {
-          // const targetXpath = readXPath(scrolltarget);
-          const isListener = this.scrollList.find(id => {
-            return id === eId(scrolltarget)
-          })
-          if (!isListener) {
-            this.scrollList.push(eId(scrolltarget))
-            const domScroll = throttle(ev => {
-              this.observer({
-                type: 'scroll',
-                evt: ev
-              })
-            }, delay)
-            scrolltarget.addEventListener('scroll', domScroll, {
-              noShadow: true
-            })
-            // scrolltarget.addEventListener('touchstart', () => {
-            // scrolltarget.addEventListener('scroll', domScroll)
-            // })
-
-            // scrolltarget.addEventListener('touchend', () => {
-            //   scrolltarget.removeEventListener('scroll', domScroll)
-            // })
-          }
-        }
-      },
-      {
-        noShadow: true
-      }
-    )
-
-    windowFinger.addEventListener(
-      'touchmove',
-      debounce(ev => {
-        this.observer({
-          type: 'fingermove',
-          evt: ev
-        })
-      }, delay, 'touchmoveTimer'),
-      {
-        noShadow: true
-      }
-    )
-
-    windowFinger.addEventListener(
-      'touchdrag',
-      debounce(ev => {
-        this.transformList.forEach(ele => {
-          const transformRect = ele.getBoundingClientRect()
-          const dragRect = ev.target.getBoundingClientRect()
-          if (utils.isOverlap(dragRect, transformRect)) {
-            // console.log(ele, this.transformList)
-            this.observer({
-              type: 'touchdrag',
-              evt: ev,
-              movement: {
-                ele,
-                delta: utils.getDelta(ele.style.cssText),
-                rect: transformRect
-              }
-            })
-          }
-        })
-        this.transformList = []
-      }, delay, 'touchdragTimer'),
-      {
-        noShadow: true
-      }
-    )
-
-    windowFinger.addEventListener(
-      'touchpaint',
-      ev => {
-        this.observer({
-          type: 'paint',
-          evt: ev
-        })
-      },
-      {
-        noShadow: true
-      }
-    )
+    })
   }
 
   isBlocked (node) {
