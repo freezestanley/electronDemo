@@ -750,7 +750,6 @@ export default class Clairvoyant {
 }
 
 function domloaded (event) {
-  var iseebiz = cookie.getCookie('ISEE_BIZ')
   ISEE_RE = cookie.getCookie('ISEE_RE') || ''
   ISEE_TEST = cookie.getCookie('ISEE_TEST') || ''
   const onmessageCb = function (clairvoyant, evt) {
@@ -773,6 +772,7 @@ function domloaded (event) {
   }
   const onopenCb = function (clairvoyant, evt) {
     // console.log('Connection start.')
+    isWsOpened = true
     clairvoyant.observer({
       type: 'openpage',
       evt: evt
@@ -791,33 +791,14 @@ function domloaded (event) {
       }
     }
   }
-  if (process.env.NODE_ENV != 'development') {
+  const clairvoyantInit = function (isDev) {
+    var iseebiz = cookie.getCookie('ISEE_BIZ')
     const clairvoyant = (win.clairvoyant = new Clairvoyant())
     if (ISEE_RE || ISEE_TEST) {
       clairvoyant.init()
       return
     }
-    if (iseebiz) {
-      clairvoyant.wsSocket.onopen = function (evt) {
-        onopenCb(clairvoyant, evt)
-      }
-      clairvoyant.wsSocket.onmessage = function (evt) {
-        onmessageCb(clairvoyant, evt)
-      }
-      clairvoyant.wsSocket.onclose = function (evt) {
-        // console.log('Connection closed.')
-        isWsOpened = false
-      }
-      clairvoyant.wsSocket.onerror = function (evt) {
-        // console.log(evt)
-        utils.sendErrorMsg(JSON.stringify(evt))
-      }
-      clairvoyant.init()
-    }
-  } else {
-    const clairvoyant = (win.clairvoyant = new Clairvoyant())
-    if (ISEE_RE || ISEE_TEST) {
-      clairvoyant.init()
+    if (!isDev && !iseebiz) {
       return
     }
     clairvoyant.wsSocket.onopen = function (evt) {
@@ -828,14 +809,19 @@ function domloaded (event) {
     }
     clairvoyant.wsSocket.onclose = function (evt) {
       // console.log('Connection closed.')
+      isWsOpened = false
     }
     clairvoyant.wsSocket.onerror = function (evt) {
       // console.log(evt)
-      let img = new Image()
-      img.src = `http://gif-test.zhongan.io/i.gif?r=${JSON.stringify(evt)}`
+      utils.sendErrorMsg(JSON.stringify(evt))
+    }
+    clairvoyant.wsSocket.reconnectSuccessCb = function (evt) {
+      // 重新连接成功后把resendCount复位
+      clairvoyant.msgPool.rendMaxExceed = false
     }
     clairvoyant.init()
   }
+  clairvoyantInit(process.env.NODE_ENV === 'development')
 }
 
 doc.addEventListener('DOMContentLoaded', domloaded, {

@@ -167,3 +167,29 @@ export const sendErrorMsg = errorMsg => {
   let img = new Image()
   img.src = `http://gif-test.zhongan.io/i.gif?t=${Date.now()}&r=${errorMsg}`
 }
+
+export const getMaxRepeatCount = arr => {
+  var hash = {} // 利用hash 来记录次数
+  var m = 1 // 现在的最大次数
+  var trueEl = [] // 最大的元素，可能出现不止一个最大元素，所以为数组
+  for (var i = 0, len = arr.length; i < len; i++) {
+    var el = arr[i]
+    var uniqueEl = typeof el + el // 为了区分 1 和 '1'
+    if (!hash[uniqueEl]) {
+      // 利用对象的hash检验是否元素重复
+      hash[uniqueEl] = 1
+    } else {
+      hash[uniqueEl]++
+    }
+    if (hash[uniqueEl] == m) {
+      trueEl.push(el) // 把当前最大次数的元素放到数组里
+    } else if (hash[uniqueEl] > m) {
+      trueEl = [] // 清空数组
+      m = hash[uniqueEl]
+      trueEl.push(el)
+    }
+  }
+  const targetEl = trueEl[0]
+  const key = typeof targetEl + targetEl
+  return hash[key]
+}
