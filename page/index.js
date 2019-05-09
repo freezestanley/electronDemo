@@ -195,10 +195,13 @@ export default class Clairvoyant {
     win.addEventListener(
       'beforeunload',
       ev => {
-        this.observer({
-          type: 'unload',
-          evt: ev
-        })
+        // 离开页面不要主动关闭连接
+        // this.observer({
+        //   type: 'unload',
+        //   evt: ev
+        // })
+        console.log('------unload')
+        this.msgPool && this.msgPool.persistSync()
         this.lazy()
       },
       {

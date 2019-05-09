@@ -52,6 +52,9 @@ export const getDelta = style => {
 
 export const setMask = (xpath, config = true) => {
   const ele = document.evaluate(xpath, document).iterateNext()
+  if (!ele) {
+    console.log(`找不到${xpath}对应的dom元素`)
+  }
   const { top, left, right, width, height } = ele.getBoundingClientRect()
   const mask = document.getElementsByClassName('isee-selenium-mask')
   // const getTranslate = (element) => {
