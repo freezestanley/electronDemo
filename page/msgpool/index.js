@@ -76,14 +76,19 @@ export default class MsgPool {
     this.resndMaxExceed = false
     this.lastResentList = []
   }
-  persist (list) {
-    debounce(
-      val => {
-        localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(val))
-      },
-      300,
-      'persist'
-    ).call(this, list)
+  // 不能debounce，因为离开页面的时候可能会丢失
+  // persist (list) {
+  //   debounce(
+  //     val => {
+  //       localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(val))
+  //     },
+  //     300,
+  //     'persist'
+  //   ).call(this, list)
+  // }
+  persistSync () {
+    const sList = this._confirmPool.concat(this._pool.filter(item => !includeMsg(this._confirmPool, item)))
+    localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(sList))
   }
   addPool (val) {
     const msgList = normalizeParam(val)
@@ -133,7 +138,7 @@ export default class MsgPool {
     // 如果重发次数超过最大次数，停止重发动作，后续产生的事件缓存到localStorage
     if (this.resndMaxExceed) {
       this.clearTimer()
-      this.persist(this.confirmPool.concat(list))
+      this.persistSync()
       return
     }
     if (list.length > 0) {
@@ -175,7 +180,7 @@ export default class MsgPool {
       }
     }
     // 持久化消息
-    this.persist(list.concat(this.pool.filter(item => !includeMsg(list, item))))
+    this.persistSync()
   }
   onMsgIdChange (val) {
     const iseebiz = this.cookie.getCookie('ISEE_BIZ')
