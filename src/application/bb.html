@@ -67,35 +67,42 @@
       console.log("dd");
     }
     window.id="11111111111111111111111111111"
-    window.addEventListener(
-      "load",
-      function(e) {
-        alert(window.id)
-        console.log("onload");
-        document.getElementById("foo").addEventListener("click", aa, { noShadow: true });
-        document.getElementById("foo").addEventListener("click", bb);
-        document.getElementById("foo").addEventListener("click", cc);
-        document.getElementById("foo").addEventListener("click", dd);
-        var ere = document.createElement('div')
-        document.getElementById('fo').appendChild(ere)
-        ere.appendChild(document.createElement('div'))
-        document.getElementById('fioo').appendChild(document.createElement('div'))
+    // window.addEventListener(
+    //   "load",
+    //   function(e) {
+    //     alert(window.id)
+    //     console.log("onload");
+    //     document.getElementById("foo").addEventListener("click", aa, { noShadow: true });
+    //     document.getElementById("foo").addEventListener("click", bb);
+    //     document.getElementById("foo").addEventListener("click", cc);
+    //     document.getElementById("foo").addEventListener("click", dd);
+    //     var ere = document.createElement('div')
+    //     document.getElementById('fo').appendChild(ere)
+    //     ere.appendChild(document.createElement('div'))
+    //     document.getElementById('fioo').appendChild(document.createElement('div'))
 
 
 
 
-        document.body.innerHTML += `
-        <select>
-        <option value ="volvo">Volvo</option>
-        <option value ="saab">Saab</option>
-        <option value="opel">Opel</option>
-        <option value="audi">Audi</option>
-        </select>
-        <input type="text">
-        `
-      },
-      { noShadow: true }
-    );
-   
+    //     document.body.innerHTML += `
+    //     <select>
+    //     <option value ="volvo">Volvo</option>
+    //     <option value ="saab">Saab</option>
+    //     <option value="opel">Opel</option>
+    //     <option value="audi">Audi</option>
+    //     </select>
+    //     <input type="text">
+    //     `
+    //   },
+    //   { noShadow: true }
+    // );
+   document.getElementById('foor').click = function (e) {
+     document.body.innerHTML += `
+      <div>
+        asdfasdf
+        <div>asdfasdf</div>
+      </div>
+     `
+   }
   </script>
 </html>

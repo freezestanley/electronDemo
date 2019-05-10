@@ -53,15 +53,15 @@
   <video></video>
   <div id="app">
 
-    <iframe src="http://localhost:3000/bb" width="500" height="300"></iframe>
+    <!-- <iframe src="http://localhost:3000/bb" width="500" height="300"></iframe>
 
     <iframe src="http://localhost:3000/bb" width="500" height="300"></iframe>
     <canvas width="200" height="200" style="border: 1px solid;">
 
-    </canvas>
+    </canvas> -->
 
     <div onclick="aa()">butt1ee2</div>
-    <div id="test">
+    <!-- <div id="test">
         <a href="http://www.163.com" onclick= "bb()">butt1</a><br/>
         
     </div>
@@ -170,7 +170,7 @@
   <div onclick="getPost()">ajax post</div>
 
   <a id="foo" href="www.google.com">click me!</a>
-  <div style="border:1px solid" id="canvas"></div>
+  <div style="border:1px solid" id="canvas"></div> -->
 </body>
 
 <script>
@@ -426,10 +426,17 @@
 //   document.querySelector('#foo').addEventListener('click', e => handleClick(new Proxy(e, new AdaptedEvent(e))));
 
 //   }
-window.id = 'adasdfsf'
-  window.onload = function () {
-    alert(window.id)
-  }
+// window.id = 'adasdfsf'
+//   window.onload = function () {
+//     alert(window.id)
+//   }
   
+  function aa () {
+    for (var i = 0; i < 30; i++) {
+      let div = document.createElement('div')
+      div.innerHTML = i
+      document.body.append(div)
+    }
+  }
 </script>
 </html>
