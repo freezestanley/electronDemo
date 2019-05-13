@@ -237,53 +237,54 @@ export default class Clairvoyant {
     let transformList = []
     let mutationEventCallback = (mutationsList, itself) => {
       const _this = this
-      let doit = () => {
-        const childrenList = []
-        for (let i = 0; i < doc.body.children.length; i++) {
-          childrenList.push(doc.body.children[i].tagName.toLowerCase())
+      // let doit = () => {
+      const childrenList = []
+      for (let i = 0; i < doc.body.children.length; i++) {
+        childrenList.push(doc.body.children[i].tagName.toLowerCase())
+      }
+      for (let mutation of mutationsList) {
+        // const nodeName = mutation.target.nodeName.toLowerCase()
+        // if (nodeName === 'body' && mutation.type == 'childList') {
+        //   // console.log(mutation)
+        //   debounce(
+        //     () => {
+        //       this.observer({
+        //         type: 'collectDom'
+        //       })
+        //     },
+        //     delay,
+        //     'collectTimer'
+        //   )()
+        // }
+        if (mutation.type == 'attributes') {
+          transformList = mutationsList.map(mutation => mutation.target).filter((target) => {
+            const transformStyle = target.style.transform
+            return transformStyle && transformStyle.indexOf('translate') > -1
+          }) || []
         }
-        for (let mutation of mutationsList) {
-          const nodeName = mutation.target.nodeName.toLowerCase()
-          if (nodeName === 'body' && mutation.type == 'childList') {
-            // console.log(mutation)
-            debounce(
-              () => {
-                this.observer({
-                  type: 'collectDom'
-                })
-              },
-              delay,
-              'collectTimer'
-            )()
-          }
-          if (mutation.type == 'attributes') {
-            transformList = mutationsList.map(mutation => mutation.target).filter(item => item.style.cssText.indexOf('translate') > -1) || []
-          // console.log(mutation, mutationsList)
-          // console.log(mutation.target.getBoundingClientRect())
-          }
-        }
-        _this.transformList = [...new Set([..._this.transformList, ...transformList])]
-        let currentNode = [...doc.querySelectorAll('input'), ...doc.querySelectorAll('textarea'), ...doc.querySelectorAll('select')]
-        currentNode = currentNode.filter(v => _this.formlist.indexOf(v) === -1)
+      }
+      _this.transformList = [...new Set([..._this.transformList, ...transformList])]
+      let currentNode = [...doc.querySelectorAll('input'), ...doc.querySelectorAll('textarea'), ...doc.querySelectorAll('select')]
+      currentNode = currentNode.filter(v => _this.formlist.indexOf(v) === -1)
 
-        currentNode.map((cNode, index, array) => {
+      currentNode.map((cNode, index, array) => {
         // if (cNode.type === "select") {   // cNode.addEventListener("change",
         // _this.selectChangEvent.bind(_this), {   //   noShadow: true   // }); } else
         // if (   cNode.type === "radio" ||   cNode.type === "checkbox" ) {   //
         // cNode.addEventListener("change", _this.inputChangEvent.bind(_this), {   //
         // noShadow: true   // }); } else
-          if (cNode.type != 'radio' || cNode.type != 'checkbox' || cNode.type != 'select') {
-            cNode.addEventListener('focus', _this.inputFocusEvent.bind(_this), {
-              noShadow: true
-            })
-            cNode.addEventListener('blur', _this.inputBlurEvent.bind(_this), {
-              noShadow: true
-            })
-          }
-        })
-        _this.formlist = _this.formlist.concat(currentNode)
-      }
-      setTimeout(doit, 0)
+        if (cNode.type != 'radio' || cNode.type != 'checkbox' || cNode.type != 'select') {
+          cNode.addEventListener('focus', _this.inputFocusEvent.bind(_this), {
+            noShadow: true
+          })
+          cNode.addEventListener('blur', _this.inputBlurEvent.bind(_this), {
+            noShadow: true
+          })
+        }
+      })
+      _this.formlist = _this.formlist.concat(currentNode)
+      // }
+      // setTimeout(doit, 0)
     }
 
     this.domObserver = new DomObserver(doc.body, config, mutationEventCallback)
@@ -523,7 +524,7 @@ export default class Clairvoyant {
               evt: ev,
               movement: {
                 ele,
-                delta: utils.getDelta(ele.style.cssText),
+                delta: utils.getDelta(ele.style.transform),
                 rect: transformRect
               }
             })
