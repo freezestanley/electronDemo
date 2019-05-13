@@ -261,7 +261,11 @@ export default class Clairvoyant {
       }
       for (let mutation of mutationsList) {
         if (mutation.type == 'attributes') {
-          transformList = mutationsList.map(mutation => mutation.target).filter(item => item.style.cssText.indexOf('translate') > -1) || []
+          transformList = mutationsList.map(mutation => mutation.target).filter((target) => {
+            const transformStyle = target.style.transform
+            return transformStyle && transformStyle.indexOf('translate') > -1
+          }) || []
+          // transformList = mutationsList.map(mutation => mutation.target).filter(item => item.style.cssText.indexOf('translate') > -1) || []
           // console.log(mutation, mutationsList)
           // console.log(mutation.target.getBoundingClientRect())
         }
@@ -551,7 +555,7 @@ export default class Clairvoyant {
                 evt: ev,
                 movement: {
                   ele,
-                  delta: utils.getDelta(ele.style.cssText),
+                  delta: utils.getDelta(ele.style.transform),
                   rect: transformRect
                 }
               })
