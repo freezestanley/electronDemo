@@ -45,7 +45,18 @@ router.get('/', async (ctx, next) => {
   await ctx.render('index')
   await next()
 })
-
+router.get('/admin', async (ctx, next) => {
+  await ctx.render('index')
+  await next()
+})
+router.get('/bb', async (ctx, next) => {
+  await ctx.render('bb')
+  await next()
+})
+router.get('/p/:id', async (ctx, next) => {
+  await ctx.render('index')
+  await next()
+})
 router.get('/test', async (ctx, next) => {
   ctx.body = 'this is test'
   // shell.exec('npm run build')
@@ -107,7 +118,11 @@ router.get('/create', async (ctx, next) => {
   //     })
   //     .saveToFile('./movie.mpeg')
 })
-
+router.all('/test/:id', ctx => {
+  ctx.body = 'this is test id ' + ctx.params.id
+  console.log('================================')
+  console.dir(ctx)
+})
 // entryServer(router)
 
 module.exports = router

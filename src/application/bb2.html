@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<head>
+  <title>myVue</title>
+  <meta name="viewport" content="target-densitydpi=device-dpi,width=750,user-scalable=no,initial-scale=0">
+  <script>
+    window.st_conf = {
+      end: '/dm/open/cashier/cashier_pay_return.do',
+      type: 'history',
+      domain: 'localhost'
+    }
+  </script>
+  <script src="http://localhost:3000/st.js?v="></script>
+</head>
+<body>
+
+</body>
+
+<script>
+  document.addEventListener('click', {handleEvent: function (e) {
+    console.log(this)
+  }})
+  document.addEventListener('click', {handleEvent: (e) => {
+    console.log(this)
+  }})
+  document.addEventListener('click', function (e) {
+    console.log(this)
+  })
+  document.addEventListener('click', (e) => {
+    console.log(this)
+  })
+</script>
+</html>

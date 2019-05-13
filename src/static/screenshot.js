@@ -45,7 +45,6 @@ function debounce(method, delay){
   result()
 }
 function snap() {
-  debugger
   html2canvas(document.body).then(function(canvas) {
     // let imgData = []
     // imgData.push(canvas.toDataURL("image/png"))
@@ -57,7 +56,6 @@ function snap() {
       },
       data: canvas.toDataURL("image/jpeg",0.1)
     }).then(function (response) {
-      debugger
       console.log(response.data)
     }).catch(function (error) {
       console.log(error);
@@ -80,7 +78,7 @@ function domlistener () {
   // 配置观察选项:
   var config = { attributes: true, childList: true, characterData: true, subtree: true, attributeOldValue: true, characterDataOldValue: true } 
   // 传入目标节点和观察选项
-  observer.observe(target, config); 
+  // observer.observe(target, config); 
   
   // 随后,你还可以停止观察
   // observer.disconnect();
