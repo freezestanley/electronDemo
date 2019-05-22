@@ -38,7 +38,7 @@ export default class MsgPool {
     // 用来存储最近发送过的消息列表，最大长度为 ISEE_BATCH_COUNT * ISEE_RESEND_MAX_COUNT
     this.lastResentList = []
     // 用来表示同一个消息重复发送的次数是否超过了最大限制
-    this.resndMaxExceed = false
+    this._resndMaxExceed = false
     this.debounceLoadDataFromLocalStorage = debounce(
       () => {
         const persistedMsgList = getMsgListFromLocalStorage()
@@ -50,6 +50,14 @@ export default class MsgPool {
       200,
       'debounceLoadDataFromLocalStorage'
     )
+  }
+  set resndMaxExceed (val) {
+    const oldValue = this._resndMaxExceed
+    this._resndMaxExceed = val
+    this.onResndMaxExceedChange(val, oldValue)
+  }
+  get resndMaxExceed () {
+    return this._resndMaxExceed
   }
   set pool (val) {
     this._pool = val
@@ -72,20 +80,16 @@ export default class MsgPool {
   get msgId () {
     return this._msgId
   }
+
+  onResndMaxExceedChange (val, oldValue) {
+    if (oldValue === true && val === false) {
+      this.debounceLoadDataFromLocalStorage()
+    }
+  }
   resetResndMaxExceed () {
     this.resndMaxExceed = false
     this.lastResentList = []
   }
-  // 不能debounce，因为离开页面的时候可能会丢失
-  // persist (list) {
-  //   debounce(
-  //     val => {
-  //       localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(val))
-  //     },
-  //     300,
-  //     'persist'
-  //   ).call(this, list)
-  // }
   persistSync () {
     const sList = this._confirmPool.concat(this._pool.filter(item => !includeMsg(this._confirmPool, item)))
     localStorage.setItem(ISEE_MSG_POOL, JSON.stringify(sList))
@@ -144,7 +148,8 @@ export default class MsgPool {
     if (list.length > 0) {
       this.startTimer()
     } else {
-      this.debounceLoadDataFromLocalStorage()
+      // 移除为空时从localstorage取数据的逻辑，因为这有可能造成无限循环
+      // this.debounceLoadDataFromLocalStorage()
       this.clearTimer()
     }
   }

@@ -11,6 +11,7 @@ import { ProxyEvent } from 'event-shadow'
 import Checkhover from './checkhover'
 import * as utils from './utils'
 import MsgPool from './msgpool'
+import { ISEE_MSG_POOL } from './constant'
 
 /**
  *
@@ -25,7 +26,9 @@ import MsgPool from './msgpool'
  */
 
 let _eId = 1
-let ls = JSON.stringify(window.localStorage)
+const storageData = { ...window.localStorage }
+delete storageData[ISEE_MSG_POOL]
+let ls = JSON.stringify(storageData)
 const win = window
 const doc = window.document
 let ISEE_RE = ''
@@ -261,10 +264,13 @@ export default class Clairvoyant {
       }
       for (let mutation of mutationsList) {
         if (mutation.type == 'attributes') {
-          transformList = mutationsList.map(mutation => mutation.target).filter((target) => {
-            const transformStyle = target.style.transform
-            return transformStyle && transformStyle.indexOf('translate') > -1
-          }) || []
+          transformList =
+            mutationsList
+              .map(mutation => mutation.target)
+              .filter(target => {
+                const transformStyle = target.style.transform
+                return transformStyle && transformStyle.indexOf('translate') > -1
+              }) || []
           // transformList = mutationsList.map(mutation => mutation.target).filter(item => item.style.cssText.indexOf('translate') > -1) || []
           // console.log(mutation, mutationsList)
           // console.log(mutation.target.getBoundingClientRect())
@@ -789,7 +795,8 @@ function domloaded (event) {
         }
         break
     }
-    clairvoyant.msgPool.removePool()
+    // 搞不清这段代码做什么的
+    // clairvoyant.msgPool.removePool()
   }
   const onopenCb = function (clairvoyant, evt) {
     // console.log('Connection start.')
