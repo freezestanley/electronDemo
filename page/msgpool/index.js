@@ -163,7 +163,7 @@ export default class MsgPool {
       this.resndMaxExceed = true
       const errorMsg = `MsgPool:消息重发次数超过${ISEE_RESEND_MAX_COUNT}次,页面刷新前停止发送，用户新的操作消息会继续写入localStorage`
       sendErrorMsg(errorMsg)
-      console.log(errorMsg)
+      // console.log(errorMsg)
     }
   }
   onConfirmPoolChange (list) {
@@ -175,7 +175,7 @@ export default class MsgPool {
       // 需要重发的消息列表
       reSendMsgList = list.filter(item => {
         const t = now - item.sentTime
-        console.log('----resend duration:', t)
+        // console.log('----resend duration:', t)
         return t >= ISEE_RESEND_TIME_INTERVAL
       })
       pureReSendMsgList = reSendMsgList.filter(item => !includeMsg(this.pool, item))
