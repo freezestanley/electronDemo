@@ -14,6 +14,10 @@ const hotdev = {
     eye: [
       'webpack-hot-middleware/client?noInfo=false&reload=true&quiet=false',
       './page/eye.js'
+    ],
+    test: [
+      'webpack-hot-middleware/client?noInfo=false&reload=true&quiet=false',
+      './page/test.js'
     ]
   },
   output: {

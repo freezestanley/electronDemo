@@ -7,7 +7,8 @@ module.exports = {
   mode: 'development',
   entry: {
     st: './page/index.js',
-    eye: './page/eye.js'
+    eye: './page/eye.js',
+    test: './page/test.js'
   },
   output: {
     filename: '[name].js',
@@ -31,7 +32,10 @@ module.exports = {
         test: /\.m?js$/,
         exclude: /(node_modules|bower_components)/,
         use: {
-          loader: 'babel-loader'
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
         }
       }
     ]

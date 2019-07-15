@@ -7,6 +7,8 @@ const Koa = require('koa'),
   path = require('path')
 ;(logger = require('./src/until/log')), (router = require('./src/router')), (route = require('koa-route'))
 websockify = require('koa-websocket')
+const compress = require('koa-compress');
+const sse = require('koa-sse-stream');
 
 const webpack = require('webpack'),
   webpackconfig = require('./build/webpack.hotdev'),
@@ -23,6 +25,25 @@ onerror(app)
 
 app.use(koaStatic(path.join(__dirname, './src/static')))
 app.use(koaStatic(path.join(__dirname, './dist')))
+
+app.use(compress())
+// app.use(sse({
+//   maxClients: 5000,
+//   pingInterval: 5000
+// }));
+// app.use(route.all('/sse', async (ctx, next) => {
+//   console.log('===============this is /sse ==================') // websocket
+//   ctx.sse.send('a notice');
+//   ctx.sse.sendEnd();
+//   await next()
+// }))
+
+// app.use(async (ctx) => {
+//   // ctx.sse is a writable stream and has extra method 'send'
+//   ctx.sse.send('a notice');
+//   ctx.sse.sendEnd();
+// });
+
 // logger
 app.use(async (ctx, next) => {
   await next()
@@ -84,11 +105,11 @@ app.ws.use(function(ctx, next) {
   return next(ctx)
 })
 app.ws.use(
-  route.all('/test/:id', function(ctx) {
+  route.all('/test/:id', function(ctx) { // websocket
     ctx.websocket.on('message', function(message) {
       console.log('====' + message + '======')
-      const idList = JSON.parse(message || '[]').map(item => item.id)
-      ctx.websocket.send(idList.join(','))
+      // const idList = JSON.parse(message)
+      ctx.websocket.send(message)
       // ctx.websocket.send('done')
     })
   })
@@ -96,7 +117,7 @@ app.ws.use(
 app.use(router.routes())
 
 logger.trace('starting')
-logger.trace('listening on port 3000')
+logger.trace('listening on port 8080')
 logger.error('error')
 
-app.listen(3000)
+app.listen(8080)

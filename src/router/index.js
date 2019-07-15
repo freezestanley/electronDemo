@@ -40,9 +40,16 @@ function removefolder (pathImg) {
     fs.rmdirSync(pathImg);
   }
 }
-
 router.get('/', async (ctx, next) => {
   await ctx.render('index')
+  await next()
+})
+router.get('/watch', async (ctx, next) => {
+  await ctx.render('test')
+  await next()
+})
+router.get('/watchaa', async (ctx, next) => {
+  await ctx.render('testaa')
   await next()
 })
 router.get('/admin', async (ctx, next) => {
@@ -55,6 +62,10 @@ router.get('/bb', async (ctx, next) => {
 })
 router.get('/p/:id', async (ctx, next) => {
   await ctx.render('index')
+  await next()
+})
+router.post('/testpost', async (ctx, next) => {
+  ctx.body = 'this is test'
   await next()
 })
 router.get('/test', async (ctx, next) => {

@@ -27,7 +27,8 @@ module.exports = {
     eqeqeq: ['off'],
     'vue/require-prop-types': ['off'],
     'vue/require-default-prop': ['off'],
-    'vue/order-in-components': ['off']
+    'vue/order-in-components': ['off'],
+    'no-redeclare': 0
   },
   parserOptions: {
     sourceType: 'module',

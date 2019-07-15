@@ -3,7 +3,8 @@ const webpack = require('webpack')
 module.exports = {
   mode: 'production',
   entry: {
-    eye: './page/index.js'
+    eye: './page/index.js',
+    watch: './page/test.js'
   },
   output: {
     filename: '[name].js',
@@ -27,7 +28,10 @@ module.exports = {
         test: /\.m?js$/,
         exclude: /(node_modules|bower_components)/,
         use: {
-          loader: 'babel-loader'
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
         }
       }
     ]
