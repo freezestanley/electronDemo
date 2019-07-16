@@ -29,7 +29,10 @@ class Eye {
     this.result['timing'] = this.pf.getTiming()
     this.result['navigation'] = this.pf.getNavigation()
     this.result['resource'] = []
-    this.result['error'] = []
+    this.result['error'] = {
+      code: [],
+      source: []
+    }
     this.result['ajax'] = []
     this.result['fetch'] = []
     window.addEventListener('load', function (e) {
@@ -55,20 +58,20 @@ class Eye {
     //   console.log(e.data)
     // })
   }
-  pushMessage (e, t) {
+  pushMessage (e, t = 'resource', t2) {
     let result = Array.isArray(e)
-    let target = 'resource'
-    if (t === 'ajax') {
-      target = 'ajax'
-    } else if (t === 'error') {
-      target = 'error'
-    } else if (t === 'fetch') {
-      target = 'fetch'
-    }
     if (result) {
-      this.result[target] = this.result[target].concat(e)
+      if (t2) {
+        this.result[t][t2] = this.result[t][t2].concat(e)
+      } else {
+        this.result[t] = this.result[t].concat(e)
+      }
     } else {
-      this.result[target].push(e)
+      if (t2) {
+        this.result[t][t2].push(e)
+      } else {
+        this.result[t].push(e)
+      }
     }
     // console.log('======================')
     // console.log(JSON.stringify(this.result))
@@ -103,11 +106,12 @@ class Eye {
         result.lineno = evt.lineno
         result.file = evt.filename
         result.type = 'script'
+        _self.pushMessage(result, 'error', 'code')
       } else {
         result.src = evt.target.src
         result.type = evt.target.localName
+        _self.pushMessage(result, 'error', 'source')
       }
-      _self.pushMessage(result, 'error')
     }, true)
 
     let oldError = console.error
@@ -123,14 +127,14 @@ class Eye {
         result.lineno = lineNumber
         result.colno = columnNumber
         result.type = 'script'
-        _self.pushMessage(result, 'error')
+        _self.pushMessage(result, 'error', 'code')
       } else {
         result.errorMsg = errorMsg
         result.lineno = lineNumber
         result.colno = columnNumber
         result.type = 'script'
         result.errorObj = errorObj
-        _self.pushMessage(result, 'error')
+        _self.pushMessage(result, 'error', 'code')
       }
       return oldError.apply(console, arguments)
     }
@@ -145,7 +149,7 @@ class Eye {
         errorMsg = e.reason
         errorStack = ''
       }
-      _self.pushMessage({ errorMsg, errorStack }, 'error')
+      _self.pushMessage({ errorMsg, errorStack }, 'error', 'code')
       // console.log(errorMsg, errorStack)
       // siftAndMakeUpMessage('on_error', errorMsg, WEB_LOCATION, 0, 0, 'UncaughtInPromiseError: ' + errorStack)
     }
