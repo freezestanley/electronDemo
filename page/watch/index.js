@@ -1,6 +1,7 @@
 // import { ProxyEvent, getXpath } from 'event-shadow'
 import Pform from './preformance'
 import Hook from 'ajax-hook'
+import worker from './worker'
 // import EventSource from 'eventsource'
 // import axios from 'axios'
 
@@ -19,22 +20,37 @@ window.jQuery.ajax({
   }
 });
 */
+const AJAX_API = 'https://logserver-test.zhongan.io/v1/saveWebMonitorLog'
 class Eye {
   constructor () {
     let _self = this
     this.result = {}
+    this.pool = []
+    this.debounceTimer = {}
+    worker.postMessage(
+      JSON.stringify({
+        event: 'init',
+        data: AJAX_API
+      })
+    )
+    worker.onmessage = e => {
+      const data = JSON.parse(e.data)
+      if (data.status === 'message') {
+        const ev = data.event
+        this.callback(ev)
+      } else if (data.status === 'error') {
+        // if (data.event === 'timeout' && this.retryCount < 3) {
+        //   this.retryCount++
+        //   this.callback(false)
+        // } else {
+        console.log('接口错误，请稍候重试', data.event)
+        // }
+      }
+    }
     this.pf = window.pf = new Pform({ eventCallback: (e, o) => {
       _self.pushMessage(e.getEntries())
     } })
-    this.result['timing'] = this.pf.getTiming()
-    this.result['navigation'] = this.pf.getNavigation()
-    this.result['resource'] = []
-    this.result['error'] = {
-      code: [],
-      source: []
-    }
-    this.result['ajax'] = []
-    this.result['fetch'] = []
+    this.resultInit()
     window.addEventListener('load', function (e) {
       _self.pf.observe()
       _self.pushMessage(_self.pf.getResource())
@@ -45,6 +61,34 @@ class Eye {
     this.monitorAjax()
     this.monitorError()
     // this.sourceEvent()
+  }
+  debounce (method, delay, timerName = 'timer') {
+    const _this = this
+    return function () {
+      let context = this
+      let args = arguments
+      console.log('debounceTimer[timerName]', _this.debounceTimer[timerName])
+      if (_this.debounceTimer[timerName]) {
+        clearTimeout(_this.debounceTimer[timerName])
+        _this.debounceTimer[timerName] = undefined
+      }
+      _this.debounceTimer[timerName] = setTimeout(function () {
+        method.apply(context, args)
+        clearTimeout(_this.debounceTimer[timerName])
+        _this.debounceTimer[timerName] = undefined
+      }, delay)
+    }
+  }
+  resultInit () {
+    this.result['timing'] = this.pf.getTiming()
+    this.result['navigation'] = this.pf.getNavigation()
+    this.result['resource'] = []
+    this.result['error'] = {
+      code: [],
+      source: []
+    }
+    this.result['ajax'] = []
+    this.result['fetch'] = []
   }
   sourceEvent () {
     var es = new EventSource('http://localhost:8080/sse')
@@ -73,6 +117,13 @@ class Eye {
         this.result[t].push(e)
       }
     }
+    this.debounce(() => {
+      worker.postMessage(JSON.stringify({
+        event: 'send',
+        data: this.result
+      }))
+      this.resultInit()
+    }, 300, 'workerTimer')()
     // console.log('======================')
     // console.log(JSON.stringify(this.result))
   }
@@ -158,8 +209,8 @@ class Eye {
 
   }
 }
-let bigEye = window.bigEye = new Eye()
-console.log(bigEye)
+// let bigEye = window.bigEye = new Eye()
+// console.log(bigEye)
 // window.addEventListener('load', function (e) {
 //   console.log('ffffffffffffffff')
 //   this.pf.observe()
